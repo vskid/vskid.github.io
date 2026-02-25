@@ -384,6 +384,8 @@ body {
 /* Title bar ; draggable, contains title text + minimize/close */
 .title-bar {
     height: 32px;
+    min-height: 32px;   /* prevent squishing when window is resized short */
+    flex-shrink: 0;     /* title bar never shrinks in a flex column window */
     background: linear-gradient(to bottom,
         rgba(255, 255, 255, 0.6) 0%,
         rgba(200, 230, 255, 0.4) 100%);
@@ -473,68 +475,9 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Scrollable content area inside a window */
-.window-content {
-    flex-grow: 1;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 1rem;
-    overflow-y: auto;
-}
+/* .window-content styles live in apps/explorer/explorer.css */
 
-/* Grid of file/folder icons */
-.file-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-/* Individual file icon ; hover + active states */
-.file-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0.5rem;
-    width: 100px;
-    cursor: pointer;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    transition: all 0.1s;
-}
-
-.file-item:hover {
-    background: rgba(220, 240, 255, 0.5);
-    border-color: rgba(150, 200, 255, 0.8);
-}
-
-.file-icon {
-    font-size: 3rem;
-    margin-bottom: 0.25rem;
-}
-
-.file-name {
-    font-size: 0.85rem;
-    color: #222;
-    text-align: center;
-    word-break: break-all;
-}
-
-.file-item:hover .file-name {
-    color: #005a9e;
-    text-decoration: underline;
-}
-
-.file-date {
-    font-size: 0.75rem;
-    color: #777;
-    margin-top: 0.2rem;
-}
-
-/* Wrapper <a> tag for project items ; resets link styles */
-.file-item-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-}
+/* File grid + items are styled in apps/explorer/explorer.css */
 
 
 /* ============================================================
@@ -650,4 +593,50 @@ body {
     font-size: 0.8rem;
     color: #003b6d;
     font-weight: 500;
+}
+
+/* ============================================================
+   9. RESIZE HANDLE
+   SE corner only — injected by makeResizable() into every .window.
+   Large enough to be easily grabbed on touch screens.
+   ============================================================ */
+.resize-handle {
+    position: absolute;
+    z-index: 10;
+}
+
+.resize-se {
+    bottom: 0;
+    right: 0;
+    width: 18px;
+    height: 18px;
+    /* Subtle visual grip indicator */
+    background:
+        linear-gradient(135deg,
+            transparent 40%,
+            rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.15) 50%,
+            transparent 50%,
+            transparent 60%,
+            rgba(255,255,255,0.15) 60%, rgba(255,255,255,0.15) 70%,
+            transparent 70%);
+    border-radius: 0 0 6px 0;
+}
+
+
+/* ============================================================
+   10. MOBILE RESPONSIVE
+   Smaller viewports: windows fill more of the screen.
+   ============================================================ */
+@media (max-width: 640px) {
+    .window {
+        width: 95% !important;
+        max-width: none !important;
+        left: 2.5% !important;
+        top: 2% !important;
+    }
+
+    /* Allow transform (drag/resize) to override these */
+    .window[style*="transform"] {
+        left: 0 !important;
+    }
 }

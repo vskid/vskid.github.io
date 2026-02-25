@@ -67,6 +67,14 @@ export const FOLDERS = [
                 id:    'WyKAZt27A9w',
                 title: 'National Anthem',
             },
+            {
+                type:  'video',
+                icon:  '🎬',
+                name:  'Video Taken 2001',
+                date:  '11-09-2001',
+                id:    '/videos/nokiavideotest.webm',
+                title: 'National Anthem',
+            },
             // Add videos here
         ],
     },

@@ -46,6 +46,9 @@ export async function initExplorer({ registerWindow, openWindow }) {
 
         document.body.insertAdjacentHTML('beforeend', html);
         const windowEl = document.getElementById(folder.windowId);
+        // Title bar always shows "📁 Explorer" regardless of which folder is open
+        const titleTextEl = windowEl.querySelector('.title-text');
+        if (titleTextEl) titleTextEl.innerHTML = '<span class="title-icon">📁</span> Explorer';
 
         const entry = registerWindow(windowEl, { icon: '📁' });
         iconEl.addEventListener('dblclick', () => openWindow(entry));
@@ -53,9 +56,9 @@ export async function initExplorer({ registerWindow, openWindow }) {
         // ── DOM refs ─────────────────────────────────────────
         const backBtn    = windowEl.querySelectorAll('.nav-btn')[0];
         const fwdBtn     = windowEl.querySelectorAll('.nav-btn')[1];
+        backBtn.title = 'Back (navigate via sidebar first)';
+        fwdBtn.title  = 'Forward';
         const addressBar = windowEl.querySelector('.address-bar');
-        const titleIcon  = windowEl.querySelector('.title-icon');
-        const titleText  = windowEl.querySelector('.title-text');
         const fileGrid   = windowEl.querySelector('.file-grid');
         const sidebar    = windowEl.querySelector('.explorer-sidebar');
 
@@ -91,12 +94,6 @@ export async function initExplorer({ registerWindow, openWindow }) {
                 navHistory.push(folderIndex);
                 cursor = navHistory.length - 1;
             }
-
-            // Update header
-            titleIcon.textContent = target.icon;
-            const textNode = Array.from(titleText.childNodes)
-                .find(n => n.nodeType === Node.TEXT_NODE);
-            if (textNode) textNode.textContent = ' ' + target.title;
 
             // Update toolbar
             addressBar.textContent = target.path;

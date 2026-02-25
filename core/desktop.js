@@ -67,8 +67,9 @@ function initWindowSystem() {
             ?.addEventListener('click', () => minimizeWindow(entry));
         windowEl.addEventListener('mousedown', () => bringToFront(windowEl));
 
-        // Make the title bar draggable
+        // Make the title bar draggable + edges/corners resizable
         makeDraggable(windowEl, bringToFront);
+        makeResizable(windowEl);
 
         return entry;
     }
@@ -88,6 +89,15 @@ function initWindowSystem() {
         entry.el.classList.remove('minimized');
         entry.taskbarBtn?.remove();
         entry.taskbarBtn = null;
+        // Reset any inline styles set by drag or resize so the window
+        // returns to its original CSS-defined size and position.
+        const el = entry.el;
+        el.style.width     = '';
+        el.style.height    = '';
+        el.style.maxWidth  = '';
+        el.style.maxHeight = '';
+        el.style.transform = '';
+        el.style.animation = '';
     }
 
     function minimizeWindow(entry) {
@@ -163,6 +173,77 @@ function makeDraggable(windowEl, bringToFront) {
     document.addEventListener('touchend',   up);
     document.addEventListener('mousemove',  move);
     document.addEventListener('touchmove',  move, { passive: false });
+}
+
+
+// ── WINDOW RESIZING ──────────────────────────────────────────
+// Injects 8 resize handles (corners + edges) into every window.
+// Dragging a handle resizes the window by adjusting inline
+// width/height directly. Min size: 240×160px.
+// On mobile, only right/bottom/corner handles are shown to
+// avoid conflicting with scroll gestures.
+
+function makeResizable(windowEl) {
+    const MIN_W = 240, MIN_H = 160;
+
+    // SE corner only — simplest resize: just drag bottom-right corner.
+    const handle = document.createElement('div');
+    handle.className    = 'resize-handle resize-se';
+    handle.style.cursor = 'se-resize';
+    windowEl.appendChild(handle);
+
+    let active = false, startX, startY, startW, startH;
+
+    handle.addEventListener('mousedown', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        active  = true;
+        startX  = e.clientX;
+        startY  = e.clientY;
+        const r = windowEl.getBoundingClientRect();
+        startW  = r.width;
+        startH  = r.height;
+        document.body.style.cursor     = 'se-resize';
+        document.body.style.userSelect = 'none';
+    });
+
+    // Touch support for mobile
+    handle.addEventListener('touchstart', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        active  = true;
+        startX  = e.touches[0].clientX;
+        startY  = e.touches[0].clientY;
+        const r = windowEl.getBoundingClientRect();
+        startW  = r.width;
+        startH  = r.height;
+    }, { passive: false });
+
+    document.addEventListener('mousemove', e => {
+        if (!active) return;
+        windowEl.style.width     = Math.max(MIN_W, startW + e.clientX - startX) + 'px';
+        windowEl.style.height    = Math.max(MIN_H, startH + e.clientY - startY) + 'px';
+        windowEl.style.maxHeight = 'none';
+        windowEl.style.maxWidth  = 'none';
+        windowEl.style.animation = 'none';
+    });
+
+    document.addEventListener('touchmove', e => {
+        if (!active) return;
+        windowEl.style.width     = Math.max(MIN_W, startW + e.touches[0].clientX - startX) + 'px';
+        windowEl.style.height    = Math.max(MIN_H, startH + e.touches[0].clientY - startY) + 'px';
+        windowEl.style.maxHeight = 'none';
+        windowEl.style.maxWidth  = 'none';
+        windowEl.style.animation = 'none';
+    }, { passive: true });
+
+    document.addEventListener('mouseup',  () => {
+        if (!active) return;
+        active = false;
+        document.body.style.cursor     = '';
+        document.body.style.userSelect = '';
+    });
+    document.addEventListener('touchend', () => { active = false; });
 }
 
 

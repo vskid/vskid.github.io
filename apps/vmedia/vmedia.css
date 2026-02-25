@@ -87,6 +87,8 @@
         rgba(5, 15, 35, 1) 100%);
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* no glass gap when window is resized taller than content */
+    flex: 1;          /* fill all available height inside the window */
 }
 
 /* 16:9 iframe container ; aspect-ratio ensures it scales correctly */
@@ -296,15 +298,6 @@
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Green glowing dot when ready, turns orange when playing (toggled via JS if desired) */
-.wmp-status-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: #3aff8a;
-    box-shadow: 0 0 6px rgba(58, 255, 138, 0.7);
-    flex-shrink: 0;
-}
-
 .wmp-status-text {
     font-size: 0.72rem;
     color: rgba(140, 180, 220, 0.6);
@@ -415,7 +408,9 @@
     min-height: unset;
     max-height: unset;
     top: 8%;
-    left: calc(50% + 270px); /* sit to the right of vMedia */
+    /* On wide screens: sit to the right of vMedia (520px wide, centered).
+       On narrow screens: stack below by using a safe left value. */
+    left: min(calc(50% + 270px), calc(100vw - 330px));
     transform: none;
     background: transparent;
     box-shadow:
@@ -610,4 +605,12 @@
 .wmp-menu-item.active {
     background: rgba(100, 180, 255, 0.18);
     color: #e8f4ff;
+}
+/* EQ window on mobile: full width, stack at top */
+@media (max-width: 640px) {
+    #wmp-eq-window {
+        width: calc(100vw - 16px);
+        left: 8px;
+        top: 4%;
+    }
 }

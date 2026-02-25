@@ -142,3 +142,19 @@
     opacity: 0.3;
     cursor: default;
 }
+
+/* ── Mobile: hide sidebar to save space, show file grid full width ── */
+@media (max-width: 500px) {
+    .explorer-sidebar {
+        display: none;
+    }
+    .window-content {
+        padding: 0.5rem;
+    }
+    .file-item {
+        width: 72px;
+    }
+    .file-icon {
+        font-size: 2rem;
+    }
+}
