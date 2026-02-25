@@ -223,20 +223,31 @@ export async function initVMedia({ registerWindow, openWindow }) {
 
     const albumArtEl = document.getElementById('wmp-album-art');
 
-    function tryLoadAlbumArt(file) {
-        if (!file || !(file instanceof File) || !window.jsmediatags) {
-            albumArtEl.textContent = '\u{1F3B5}'; return;
+    function tryLoadAlbumArt(src, file = null) {
+        albumArtEl.textContent = '\u{1F3B5}';
+        // Prefer a real File object (drag-drop), fall back to fetching the URL.
+        if (file instanceof File) {
+            readTagsFromBlob(file);
+        } else if (src) {
+            fetch(src)
+                .then(r => r.blob())
+                .then(blob => readTagsFromBlob(blob))
+                .catch(() => {}); // network/CORS failure; keep emoji placeholder
         }
-        window.jsmediatags.read(file, {
+    }
+
+    function readTagsFromBlob(blob) {
+        if (!window.jsmediatags) return;
+        window.jsmediatags.read(blob, {
             onSuccess(tag) {
                 const pic = tag.tags?.picture;
-                if (!pic) { albumArtEl.textContent = '\u{1F3B5}'; return; }
+                if (!pic) return;
                 const bytes = new Uint8Array(pic.data);
-                const blob  = new Blob([bytes], { type: pic.format });
-                const url   = URL.createObjectURL(blob);
+                const imgBlob = new Blob([bytes], { type: pic.format });
+                const url = URL.createObjectURL(imgBlob);
                 albumArtEl.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" alt="">`;
             },
-            onError() { albumArtEl.textContent = '\u{1F3B5}'; },
+            onError() {}, // no art in tags; keep emoji placeholder
         });
     }
 
@@ -252,7 +263,7 @@ export async function initVMedia({ registerWindow, openWindow }) {
         ensureNoVideo();
 
         albumArtEl.textContent = '\u{1F3B5}';
-        tryLoadAlbumArt(file);
+        tryLoadAlbumArt(src, file ?? null);
 
         audioEl.src          = src;
         audioEl.volume       = volumeSlider.value / 100;
@@ -300,7 +311,18 @@ export async function initVMedia({ registerWindow, openWindow }) {
         if (ytPlayer) { try { ytPlayer.destroy(); } catch (_) {} ytPlayer = null; }
 
         const videoEl = ensureVideoEl();
-        videoEl.src          = src;
+
+        // Encode the path so special characters (spaces, brackets, etc.) are safe.
+        // new URL() resolves relative paths against the page origin correctly.
+        let safeSrc = src;
+        try {
+            const url = new URL(src, location.href);
+            safeSrc = url.href;
+        } catch (_) {
+            // If URL() fails it's probably already absolute or malformed ; use as-is
+        }
+
+        videoEl.src          = safeSrc;
         videoEl.volume       = volumeSlider.value / 100;
         videoEl.playbackRate = speed;
 
@@ -320,7 +342,13 @@ export async function initVMedia({ registerWindow, openWindow }) {
         };
         videoEl.onpause  = () => { setStatus('Paused');  setPlayUI(false); stopProgressTimer(); };
         videoEl.onended  = () => { setStatus('Ended');   setPlayUI(false); stopProgressTimer(); progressFill.style.width = '100%'; };
-        videoEl.onerror  = () => setStatus('Error loading video');
+        videoEl.onerror  = () => {
+            const err = videoEl.error;
+            const codes = { 1: 'aborted', 2: 'network error', 3: 'decode error', 4: 'unsupported format' };
+            const msg = err ? (codes[err.code] || 'unknown error') : 'load error';
+            console.error('[vmedia] Video error', err?.code, err?.message, 'src:', safeSrc);
+            setStatus('Error: ' + msg);
+        };
     }
 
     audioEl.addEventListener('canplay', () => {
@@ -425,8 +453,13 @@ export async function initVMedia({ registerWindow, openWindow }) {
         resetUI();
 
         if (type === 'video') {
-            if (src && HTML5_VIDEO_EXT.test(src)) {
-                loadLocalVideo(src, title);          // local video file
+            // Local video: path may be stored in either src or id field.
+            // A YouTube ID is always a short alphanumeric string (11 chars, no slashes).
+            const localSrc = (src && HTML5_VIDEO_EXT.test(src)) ? src
+                           : (id  && HTML5_VIDEO_EXT.test(id))  ? id
+                           : null;
+            if (localSrc) {
+                loadLocalVideo(localSrc, title);     // local video file
             } else {
                 await loadYouTube(id, title);        // YouTube ID
             }
@@ -519,6 +552,7 @@ export async function initVMedia({ registerWindow, openWindow }) {
         speedBtn.textContent = '1\xD7';
         speedBtn.classList.remove('active');
         setStatus('Ready');
+        closeEQ(); // EQ closes with vMedia
     }, true);
 
     // ── Menu bar — VLC-style dropdowns ───────────────────────
@@ -682,7 +716,28 @@ export async function initVMedia({ registerWindow, openWindow }) {
     const VIS_BARS = 40;
 
     const eqWindowEl = document.getElementById('wmp-eq-window');
-    const eqEntry    = registerWindow(eqWindowEl, { icon: '📊' });
+    // EQ is NOT registered with the desktop window system ; no taskbar button.
+    // Draggable via a minimal local implementation.
+    // z-index starts high (above any registered window) and bumps on click.
+    eqWindowEl.style.zIndex = 200;
+    {
+        const bar = eqWindowEl.querySelector('.title-bar');
+        let ox = 0, oy = 0, sx, sy, active = false;
+        eqWindowEl.addEventListener('mousedown', () => {
+            eqWindowEl.style.zIndex = 300; // always on top when interacted with
+        });
+        bar.addEventListener('mousedown', e => {
+            if (e.target.closest('.window-controls')) return;
+            e.stopPropagation(); // don't let vMedia's drag handler steal this
+            sx = e.clientX - ox; sy = e.clientY - oy; active = true;
+        });
+        document.addEventListener('mousemove', e => {
+            if (!active) return;
+            ox = e.clientX - sx; oy = Math.max(0, e.clientY - sy);
+            eqWindowEl.style.transform = `translate3d(${ox}px,${oy}px,0)`;
+        });
+        document.addEventListener('mouseup', () => { active = false; });
+    }
     const eqCanvas   = document.getElementById('wmp-eq-canvas');
     const eqSliders  = document.getElementById('wmp-eq-sliders');
     const eqLabels   = document.getElementById('wmp-eq-labels');
@@ -760,45 +815,27 @@ export async function initVMedia({ registerWindow, openWindow }) {
     });
 
     // ── View → EQ: open/close EQ window ─────────────────────
-    // openEQ / closeEQ are called from the dropdown menu (see menu system below).
-    // The EQ window is a proper desktop window — desktop.js handles its
-    // close-btn and taskbar button automatically via registerWindow.
-    // We only need to start/stop the visualiser on top of that.
+    // EQ has no desktop entry ; show/hide directly, no taskbar involvement.
 
     function openEQ() {
-        openWindow(eqEntry);
-        // If HTML5 audio is already playing, wire it up to the analyser now.
-        if (mode === 'audio-html5' && !audioEl.paused) {
-            connectAudioEl();
-        }
-        // Defer resize+start until the browser has laid out the window.
-        requestAnimationFrame(() => {
-            resizeCanvas();
-            startVisualiser();
-        });
+        eqWindowEl.classList.remove('hidden');
+        if (mode === 'audio-html5' && !audioEl.paused) connectAudioEl();
+        requestAnimationFrame(() => { resizeCanvas(); startVisualiser(); });
     }
 
     function closeEQ() {
-        // Don't manipulate taskbarBtn manually — closeWindow in desktop.js does it.
-        // Just hide the window and stop the visualiser.
         eqWindowEl.classList.add('hidden');
-        eqWindowEl.classList.remove('minimized');
-        if (eqEntry.taskbarBtn) { eqEntry.taskbarBtn.remove(); eqEntry.taskbarBtn = null; }
         stopVisualiser();
     }
 
     function toggleEQ() {
-        const isOpen = !eqWindowEl.classList.contains('hidden') &&
-                       !eqWindowEl.classList.contains('minimized');
-        isOpen ? closeEQ() : openEQ();
+        eqWindowEl.classList.contains('hidden') ? openEQ() : closeEQ();
     }
 
     // When the EQ window's own X button is clicked, stop the visualiser.
-    // registerWindow already wires the close-btn to closeWindow(entry),
-    // so we listen on the window element itself (capture phase fires first,
-    // but we just need to clean up the rAF loop — order doesn't matter).
+    // EQ close button ; just call closeEQ() which hides + stops visualiser.
     eqWindowEl.querySelector('.close-btn').addEventListener('click', () => {
-        stopVisualiser();
+        closeEQ();
     });
 
     function resizeCanvas() {
@@ -957,8 +994,7 @@ export async function initVMedia({ registerWindow, openWindow }) {
     }
 
     audioEl.addEventListener('play', () => {
-        const eqIsOpen = eqWindowEl && !eqWindowEl.classList.contains('hidden') &&
-                         !eqWindowEl.classList.contains('minimized');
+        const eqIsOpen = eqWindowEl && !eqWindowEl.classList.contains('hidden');
         if (mode === 'audio-html5' && eqIsOpen) connectAudioEl();
         if (audioCtx?.state === 'suspended') audioCtx.resume();
     });

@@ -1,21 +1,15 @@
 // ============================================================
 // apps/explorer/explorer.js
 // ============================================================
-// Generic file-explorer. Handles ALL folder windows.
+// Generic file explorer. Handles all folder windows.
 //
-// On init:
-//   1. Injects explorer.css into <head>
-//   2. Fetches explorer.html template once
-//   3. For each folder in config.js, clones + populates the
-//      template and appends it to <body>
-//   4. Registers each window with the desktop window system
-//   5. Wires desktop icon double-clicks to open the window
+// Each folder gets its own window (opened from desktop icon).
+// Inside each window, the sidebar lists ALL folders ; clicking
+// one navigates in-place (updates content, address bar, title).
+// Back/forward buttons maintain per-window history.
 //
-// File items dispatch a 'file-open' custom event so other
-// app modules can react without being coupled here.
-//
-// The taskbar icon is always 📁 regardless of which folder
-// is open ; explorer is one app, not four.
+// Adding a new folder: just add it to FOLDERS in config.js.
+// The sidebar and navigation update automatically.
 // ============================================================
 
 import { FOLDERS } from '../../core/config.js';
@@ -23,8 +17,6 @@ import { FOLDERS } from '../../core/config.js';
 export async function initExplorer({ registerWindow, openWindow }) {
 
     // ── Inject CSS ───────────────────────────────────────────
-    // import.meta.url is this file's URL; replace .js with .css for a sibling path.
-    // This works correctly regardless of where the site is hosted (root or subdirectory).
     const link = document.createElement('link');
     link.rel  = 'stylesheet';
     link.href = new URL('explorer.css', import.meta.url).href;
@@ -41,32 +33,96 @@ export async function initExplorer({ registerWindow, openWindow }) {
     }
 
     // ── Build + register each folder window ─────────────────
-    FOLDERS.forEach(folder => {
+    FOLDERS.forEach((folder, startIndex) => {
         const iconEl = document.getElementById(folder.iconId);
         if (!iconEl) return;
 
-        // Render file items to HTML string
-        const itemsHtml = folder.items.map(item => renderItem(item)).join('\n');
-
-        // Populate template placeholders
         const html = template
             .replaceAll('{{windowId}}', folder.windowId)
             .replaceAll('{{icon}}',     folder.icon)
             .replaceAll('{{title}}',    folder.title)
             .replaceAll('{{path}}',     folder.path)
-            .replaceAll('{{items}}',    itemsHtml);
+            .replaceAll('{{items}}',    folder.items.map(renderItem).join('\n'));
 
-        // Inject into DOM
         document.body.insertAdjacentHTML('beforeend', html);
         const windowEl = document.getElementById(folder.windowId);
 
-        // Register with desktop ; override icon to always be 📁
         const entry = registerWindow(windowEl, { icon: '📁' });
-
-        // Desktop icon double-click opens the window
         iconEl.addEventListener('dblclick', () => openWindow(entry));
 
-        // Delegate file-item clicks : dispatch file-open event
+        // ── DOM refs ─────────────────────────────────────────
+        const backBtn    = windowEl.querySelectorAll('.nav-btn')[0];
+        const fwdBtn     = windowEl.querySelectorAll('.nav-btn')[1];
+        const addressBar = windowEl.querySelector('.address-bar');
+        const titleIcon  = windowEl.querySelector('.title-icon');
+        const titleText  = windowEl.querySelector('.title-text');
+        const fileGrid   = windowEl.querySelector('.file-grid');
+        const sidebar    = windowEl.querySelector('.explorer-sidebar');
+
+        // ── Per-window nav history ────────────────────────────
+        const navHistory = [startIndex];
+        let cursor = 0;
+
+        // ── Sidebar ───────────────────────────────────────────
+        // One section label + one button per folder.
+        // Adding folders to config.js automatically adds sidebar items.
+        const sectionLabel = document.createElement('div');
+        sectionLabel.className   = 'sidebar-section-label';
+        sectionLabel.textContent = 'Folders';
+        sidebar.appendChild(sectionLabel);
+
+        const sidebarBtns = FOLDERS.map((f, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'sidebar-item' + (idx === startIndex ? ' active' : '');
+            btn.innerHTML = `<span class="sidebar-item-icon">${f.icon}</span>${f.title}`;
+            btn.title     = f.path;
+            btn.addEventListener('click', () => navigateTo(idx));
+            sidebar.appendChild(btn);
+            return btn;
+        });
+
+        // ── Navigation ────────────────────────────────────────
+        function navigateTo(folderIndex, push = true) {
+            const target = FOLDERS[folderIndex];
+            if (!target) return;
+
+            if (push) {
+                navHistory.splice(cursor + 1);
+                navHistory.push(folderIndex);
+                cursor = navHistory.length - 1;
+            }
+
+            // Update header
+            titleIcon.textContent = target.icon;
+            const textNode = Array.from(titleText.childNodes)
+                .find(n => n.nodeType === Node.TEXT_NODE);
+            if (textNode) textNode.textContent = ' ' + target.title;
+
+            // Update toolbar
+            addressBar.textContent = target.path;
+            backBtn.disabled = cursor <= 0;
+            fwdBtn.disabled  = cursor >= navHistory.length - 1;
+
+            // Update content
+            fileGrid.innerHTML = target.items.map(renderItem).join('\n');
+
+            // Update sidebar active state
+            sidebarBtns.forEach((btn, i) => btn.classList.toggle('active', i === folderIndex));
+        }
+
+        backBtn.addEventListener('click', () => {
+            if (cursor <= 0) return;
+            cursor--;
+            navigateTo(navHistory[cursor], false);
+        });
+
+        fwdBtn.addEventListener('click', () => {
+            if (cursor >= navHistory.length - 1) return;
+            cursor++;
+            navigateTo(navHistory[cursor], false);
+        });
+
+        // ── File item clicks ──────────────────────────────────
         windowEl.addEventListener('click', e => {
             const item = e.target.closest('.file-item[data-type]');
             if (!item) return;
@@ -76,7 +132,6 @@ export async function initExplorer({ registerWindow, openWindow }) {
                     id:             item.dataset.id    ?? null,
                     title:          item.dataset.title ?? 'Untitled',
                     src:            item.dataset.src   ?? null,
-                    ext:            item.dataset.ext   ?? null,
                     sourceWindowId: folder.windowId,
                 }
             }));
@@ -85,6 +140,7 @@ export async function initExplorer({ registerWindow, openWindow }) {
 }
 
 // ── Item renderers ───────────────────────────────────────────
+// Add new item types here; sidebar and navigation update for free.
 
 function renderItem(item) {
     switch (item.type) {
@@ -99,13 +155,9 @@ function renderItem(item) {
 </a>`;
 
         case 'video':
-            // YouTube video (has id field)
             return `
-<div class="file-item"
-     data-type="video"
-     data-id="${item.id ?? ''}"
-     data-src="${item.src ?? ''}"
-     data-title="${item.title}">
+<div class="file-item" data-type="video"
+     data-id="${item.id ?? ''}" data-src="${item.src ?? ''}" data-title="${item.title}">
   <div class="file-icon">${item.icon}</div>
   <div class="file-name">${item.name}</div>
   <div class="file-date">${item.date}</div>
@@ -113,10 +165,8 @@ function renderItem(item) {
 
         case 'audio':
             return `
-<div class="file-item"
-     data-type="audio"
-     data-src="${item.src}"
-     data-title="${item.title}">
+<div class="file-item" data-type="audio"
+     data-src="${item.src}" data-title="${item.title}">
   <div class="file-icon">${item.icon}</div>
   <div class="file-name">${item.name}</div>
   <div class="file-date">${item.date}</div>
@@ -124,10 +174,8 @@ function renderItem(item) {
 
         case 'image':
             return `
-<div class="file-item"
-     data-type="image"
-     data-src="${item.src}"
-     data-title="${item.title}">
+<div class="file-item" data-type="image"
+     data-src="${item.src}" data-title="${item.title}">
   <div class="file-icon">${item.icon}</div>
   <div class="file-name">${item.name}</div>
   <div class="file-date">${item.date}</div>

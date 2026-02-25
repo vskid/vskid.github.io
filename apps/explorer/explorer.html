@@ -1,13 +1,8 @@
 <!--
   apps/explorer/explorer.html
   Template for a single explorer folder window.
-  Cloned and populated by explorer.js for each folder in config.js.
-  Placeholders replaced by JS:
-    {{windowId}}  ; element id
-    {{icon}}      ; title bar emoji
-    {{title}}     ; folder name
-    {{path}}      ; address bar path
-    {{items}}     ; rendered file item HTML
+  Populated by explorer.js for each folder in config.js.
+  Placeholders: {{windowId}} {{icon}} {{title}} {{path}} {{items}}
 -->
 <div class="window glass-panel hidden" id="{{windowId}}">
   <div class="title-bar">
@@ -21,13 +16,19 @@
     </div>
   </div>
   <div class="window-toolbar">
-    <button class="nav-btn">←</button>
-    <button class="nav-btn">→</button>
+    <button class="nav-btn" title="Back" disabled>←</button>
+    <button class="nav-btn" title="Forward" disabled>→</button>
     <div class="address-bar">{{path}}</div>
   </div>
-  <main class="window-content">
-    <div class="file-grid">
-      {{items}}
-    </div>
-  </main>
+  <!-- Body splits into sidebar + content -->
+  <div class="explorer-body">
+    <nav class="explorer-sidebar">
+      <!-- Populated by explorer.js with one .sidebar-item per folder -->
+    </nav>
+    <main class="window-content">
+      <div class="file-grid">
+        {{items}}
+      </div>
+    </main>
+  </div>
 </div>

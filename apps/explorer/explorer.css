@@ -4,12 +4,79 @@
    Window chrome (frame, title bar, toolbar) lives in core/desktop.css.
    ============================================================ */
 
-/* Scrollable content area */
+/* ── Body: sidebar + content side by side ───────────────────── */
+.explorer-body {
+    display: flex;
+    flex: 1;
+    min-height: 0; /* allow flex children to scroll independently */
+    overflow: hidden;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────── */
+.explorer-sidebar {
+    width: 148px;
+    flex-shrink: 0;
+    background: rgba(230, 240, 255, 0.75);
+    border-right: 1px solid rgba(150, 180, 220, 0.5);
+    padding: 6px 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.sidebar-section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(0, 60, 140, 0.45);
+    padding: 8px 12px 3px;
+    user-select: none;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    color: #223;
+    cursor: pointer;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    width: 100%;
+    transition: background 0.1s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-item:hover {
+    background: rgba(180, 210, 255, 0.5);
+    color: #003a9e;
+}
+
+.sidebar-item.active {
+    background: rgba(0, 100, 220, 0.12);
+    color: #003a9e;
+    font-weight: 600;
+}
+
+.sidebar-item-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ── Content area ────────────────────────────────────────────── */
 .window-content {
-    flex-grow: 1;
-    background: rgba(255, 255, 255, 0.9);
+    flex: 1;
+    background: rgba(255, 255, 255, 0.92);
     padding: 1rem;
     overflow-y: auto;
+    min-width: 0;
 }
 
 /* Grid of file/folder icons */
@@ -17,6 +84,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
+    align-content: flex-start;
 }
 
 /* Individual file icon */
@@ -25,28 +93,30 @@
     flex-direction: column;
     align-items: center;
     padding: 0.5rem;
-    width: 100px;
+    width: 90px;
     cursor: pointer;
     border: 1px solid transparent;
     border-radius: 4px;
-    transition: all 0.1s;
+    transition: background 0.1s, border-color 0.1s;
 }
 
 .file-item:hover {
-    background: rgba(220, 240, 255, 0.5);
+    background: rgba(220, 240, 255, 0.6);
     border-color: rgba(150, 200, 255, 0.8);
 }
 
 .file-icon {
-    font-size: 3rem;
+    font-size: 2.6rem;
     margin-bottom: 0.25rem;
+    line-height: 1;
 }
 
 .file-name {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: #222;
     text-align: center;
-    word-break: break-all;
+    word-break: break-word;
+    line-height: 1.2;
 }
 
 .file-item:hover .file-name {
@@ -55,8 +125,8 @@
 }
 
 .file-date {
-    font-size: 0.75rem;
-    color: #777;
+    font-size: 0.7rem;
+    color: #888;
     margin-top: 0.2rem;
 }
 
@@ -65,4 +135,10 @@
     text-decoration: none;
     color: inherit;
     display: block;
+}
+
+/* Disabled back/forward nav buttons */
+.nav-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
 }
