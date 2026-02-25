@@ -99,10 +99,12 @@ function renderItem(item) {
 </a>`;
 
         case 'video':
+            // YouTube video (has id field)
             return `
 <div class="file-item"
      data-type="video"
-     data-id="${item.id}"
+     data-id="${item.id ?? ''}"
+     data-src="${item.src ?? ''}"
      data-title="${item.title}">
   <div class="file-icon">${item.icon}</div>
   <div class="file-name">${item.name}</div>

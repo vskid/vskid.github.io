@@ -51,6 +51,14 @@ export const FOLDERS = [
                 id:    'dQw4w9WgXcQ',
                 title: 'Important Message!',
             },
+            {
+                type:  'video',
+                icon:  '🎬',
+                name:  'Man Plays Saxophone',
+                date:  '25-10-87',
+                id:    '/videos/Video by perrellcpt [IG/p/Cw4C7cMsL76] copy.mp4',
+                title: 'Man Plays Saxophone',
+            },
             // Add videos here
         ],
     },
@@ -66,7 +74,7 @@ export const FOLDERS = [
                 icon:  '🎧',
                 name:  'Sandstorm',
                 date:  '25-02-26',
-                src:   'https://open.spotify.com/embed/track/4PTG3Z6ehGkBFwjybzWkR8?utm_source=generator',
+                src:   '/music/Darude - Sandstorm.mp3',
                 title: 'Darude - Sandstorm',
             },
             // Add audio here
@@ -87,7 +95,7 @@ export const FOLDERS = [
                 icon:  '🖼️',
                 name:  'Example',
                 date:  '01-01-25',
-                src:   'https://upload.wikimedia.org/wikipedia/commons/8/8b/Minimalist_loss.svg',
+                src:   'https://upload.wikimedia.org/wikipedia/commons/b/b8/Loss.svg',
                 title: 'Example Image',
             },
             // Add images here

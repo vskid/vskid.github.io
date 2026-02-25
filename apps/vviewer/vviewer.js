@@ -33,6 +33,7 @@ export async function initVviewer({ registerWindow, openWindow }) {
     const img        = document.getElementById('vv-img');
     const titleEl    = document.getElementById('vv-title');
     const statusEl   = document.getElementById('vv-status');
+    const statusDot  = windowEl.querySelector('.vv-status-dot');
     const counterEl  = document.getElementById('vv-counter');
     const prevBtn    = document.getElementById('vv-prev');
     const nextBtn    = document.getElementById('vv-next');
@@ -40,6 +41,12 @@ export async function initVviewer({ registerWindow, openWindow }) {
     const zoomOutBtn = document.getElementById('vv-zoom-out');
     const fitBtn     = document.getElementById('vv-fit');
     const viewport   = document.getElementById('vv-viewport');
+
+    // ── Status helper ────────────────────────────────────────
+    function setStatus(text, isError = false) {
+        statusEl.textContent = text;
+        statusDot.classList.toggle('vv-dot-error', isError);
+    }
 
     // ── State ───────────────────────────────────────────────
     let images    = [];
@@ -69,12 +76,26 @@ export async function initVviewer({ registerWindow, openWindow }) {
         const { src, title } = images[current];
 
         img.style.opacity = '0';
-        img.onload = () => { fitToWindow(); img.style.opacity = '1'; statusEl.textContent = 'OK'; };
-        img.onerror = () => { statusEl.textContent = 'Error loading image'; };
+        img.removeAttribute('data-error');
+        img.onload = () => { fitToWindow(); img.style.opacity = '1'; setStatus('OK'); };
+        img.onerror = () => {
+            img.setAttribute('data-error', '');
+            img.src = 'data:image/svg+xml,' + encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200">' +
+                '<rect width="320" height="200" fill="none"/>' +
+                '<text x="50%" y="44%" dominant-baseline="middle" text-anchor="middle" ' +
+                'font-family="monospace" font-size="28" fill="rgba(180,60,60,0.75)">⚠</text>' +
+                '<text x="50%" y="62%" dominant-baseline="middle" text-anchor="middle" ' +
+                'font-family="monospace" font-size="11" fill="rgba(180,60,60,0.6)">FAILED TO LOAD</text>' +
+                '</svg>'
+            );
+            img.style.opacity = '1';
+            setStatus('Error loading image', true);
+        };
         img.src = src;
 
         titleEl.textContent   = title;
-        statusEl.textContent  = 'Loading…';
+        setStatus('Loading\u2026');
         counterEl.textContent = `${current + 1} / ${images.length}`;
 
         prevBtn.disabled = images.length <= 1;
@@ -159,9 +180,10 @@ export async function initVviewer({ registerWindow, openWindow }) {
     // ── Reset on close ───────────────────────────────────────
     windowEl.querySelector('.close-btn').addEventListener('click', () => {
         img.src = '';
+        img.removeAttribute('data-error');
         titleEl.textContent   = '—';
-        statusEl.textContent  = 'Ready';
         counterEl.textContent = '';
+        setStatus('Ready');
         fitToWindow();
     }, true);
 }

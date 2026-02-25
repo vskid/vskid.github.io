@@ -78,6 +78,22 @@
     display: block;
     pointer-events: none;
     user-select: none;
+    /* Checkerboard reveals transparency in PNGs/SVGs.
+       White + light-grey squares, classic Photoshop style. */
+    background-color: #fff;
+    background-image:
+        linear-gradient(45deg, #ccc 25%, transparent 25%),
+        linear-gradient(-45deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* Error placeholder: suppress checkerboard, show dark bg instead */
+#vv-img[data-error] {
+    background: rgba(40, 10, 10, 0.85);
+    background-image: none;
 }
 
 /* Empty state placeholder */
@@ -204,6 +220,12 @@
     background: #3aff8a;
     box-shadow: 0 0 5px rgba(58, 255, 138, 0.6);
     flex-shrink: 0;
+    transition: background 0.25s, box-shadow 0.25s;
+}
+
+.vv-status-dot.vv-dot-error {
+    background: #ff8c00;
+    box-shadow: 0 0 6px rgba(255, 140, 0, 0.75);
 }
 
 #vv-status {

@@ -404,3 +404,210 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.15),
         0 0 10px rgba(255, 120, 0, 0.35);
 }
+/* ── EQ Floating Window ──────────────────────────────────────
+   Separate window, ~4:3, smaller than the main vMedia window.
+   Positioned to the right of vMedia by default.
+   ─────────────────────────────────────────────────────────── */
+
+#wmp-eq-window {
+    width: 320px;
+    height: auto;
+    min-height: unset;
+    max-height: unset;
+    top: 8%;
+    left: calc(50% + 270px); /* sit to the right of vMedia */
+    transform: none;
+    background: transparent;
+    box-shadow:
+        0 10px 32px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+#wmp-eq-window.hidden,
+#wmp-eq-window.minimized {
+    display: none;
+}
+
+/* EQ body — dark, tight padding */
+.wmp-eq-body {
+    background: linear-gradient(160deg,
+        rgba(6, 10, 22, 0.99) 0%,
+        rgba(3, 6, 16, 1) 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 10px 6px;
+}
+
+/* Spectrum analyser canvas — fills width, fixed height */
+.wmp-eq-canvas {
+    width: 100%;
+    height: 80px;
+    border-radius: 3px;
+    background: #000;
+    border: 1px solid rgba(255, 120, 0, 0.15);
+    display: block;
+    margin-bottom: 6px;
+}
+
+/* Row of vertical band sliders */
+.wmp-eq-sliders {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2px;
+    padding: 0 2px;
+}
+
+.wmp-eq-band {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+}
+
+/* dB value above the slider */
+.wmp-eq-band-val {
+    font-size: 0.55rem;
+    color: rgba(255, 140, 0, 0.6);
+    letter-spacing: 0.02em;
+    height: 10px;
+    line-height: 10px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Vertical range input — webkit/blink */
+.wmp-eq-slider {
+    -webkit-appearance: slider-vertical;
+    appearance: slider-vertical;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: 18px;
+    height: 70px;
+    cursor: pointer;
+    accent-color: #ff8c00;
+    background: transparent;
+    outline: none;
+}
+
+/* Frequency labels row */
+.wmp-eq-labels {
+    display: flex;
+    justify-content: space-between;
+    padding: 2px 4px 0;
+}
+
+.wmp-eq-label {
+    font-size: 0.5rem;
+    color: rgba(140, 180, 220, 0.4);
+    letter-spacing: 0.01em;
+    text-align: center;
+    flex: 1;
+}
+
+/* Bottom status strip: Reset button + hint */
+.wmp-eq-statusbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.wmp-eq-reset-btn {
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 120, 0, 0.3);
+    background: rgba(40, 20, 5, 0.6);
+    color: rgba(255, 160, 60, 0.8);
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+
+.wmp-eq-reset-btn:hover {
+    background: rgba(80, 40, 8, 0.7);
+    color: #ffb347;
+    box-shadow: 0 0 6px rgba(255, 120, 0, 0.3);
+}
+
+.wmp-eq-hint {
+    font-size: 0.55rem;
+    color: rgba(140, 180, 220, 0.3);
+    letter-spacing: 0.03em;
+}
+
+/* View button highlight when EQ window is open — now handled by .wmp-menu-item.active */
+/* ── Menu dropdowns (VLC-style) ──────────────────────────────
+   Positioned absolutely relative to the viewport (body-level).
+   Built and destroyed dynamically by JS on each menu open.
+   ─────────────────────────────────────────────────────────── */
+
+.wmp-dropdown {
+    position: fixed;
+    z-index: 9999;
+    min-width: 160px;
+    background: linear-gradient(to bottom,
+        rgba(18, 28, 48, 0.98) 0%,
+        rgba(10, 18, 35, 0.99) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid rgba(100, 160, 255, 0.2);
+    border-radius: 0 0 5px 5px;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(0, 0, 0, 0.4);
+    padding: 3px 0;
+    user-select: none;
+}
+
+.wmp-dropdown-item {
+    padding: 6px 18px 6px 14px;
+    font-size: 0.8rem;
+    color: rgba(200, 225, 255, 0.85);
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    transition: background 0.08s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wmp-dropdown-item:hover {
+    background: rgba(80, 140, 255, 0.18);
+    color: #e8f4ff;
+}
+
+.wmp-dropdown-item.disabled {
+    color: rgba(150, 170, 200, 0.3);
+    cursor: default;
+}
+
+.wmp-dropdown-item::before {
+    content: '';
+    width: 14px;
+    flex-shrink: 0;
+    /* space for future checkmarks / icons */
+}
+
+.wmp-dropdown-item[data-checked]::before {
+    content: '✓';
+    color: #ffa820;
+    font-size: 0.75rem;
+}
+
+.wmp-dropdown-sep {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.07);
+    margin: 3px 8px;
+}
+
+/* Slightly highlight the menu bar item whose dropdown is open */
+.wmp-menu-item.active {
+    background: rgba(100, 180, 255, 0.18);
+    color: #e8f4ff;
+}

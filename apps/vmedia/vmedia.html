@@ -19,7 +19,7 @@
   <!-- Menu bar ; data-menu keys ready for dropdown wiring -->
   <div class="wmp-menubar">
     <div class="wmp-menu-item" data-menu="file">File</div>
-    <div class="wmp-menu-item" data-menu="view">View</div>
+    <div class="wmp-menu-item" data-menu="view" id="wmp-view-btn">View</div>
     <div class="wmp-menu-item" data-menu="playback">Playback</div>
     <div class="wmp-menu-item" data-menu="tools">Tools</div>
     <div class="wmp-menu-item" data-menu="help">Help</div>
@@ -77,5 +77,31 @@
       <span class="wmp-status-text" id="wmp-status">Ready</span>
     </div>
 
+  </div>
+</div>
+<!-- ── vMedia EQ Window ────────────────────────────────────────
+     Separate floating window, opened/closed by the View button.
+     4:3 aspect, smaller than the main vMedia window.
+──────────────────────────────────────────────────────────────── -->
+<div class="window hidden" id="wmp-eq-window">
+  <div class="title-bar wmp-title-bar">
+    <div class="title-text">
+      <span class="title-icon">📊</span>
+      vMedia EQ
+    </div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"   title="Close">×</button>
+    </div>
+  </div>
+
+  <div class="wmp-eq-body">
+    <canvas id="wmp-eq-canvas" class="wmp-eq-canvas"></canvas>
+    <div class="wmp-eq-sliders" id="wmp-eq-sliders"></div>
+    <div class="wmp-eq-labels"  id="wmp-eq-labels"></div>
+    <div class="wmp-eq-statusbar">
+      <button class="wmp-eq-reset-btn" id="wmp-eq-reset">Reset All</button>
+      <span class="wmp-eq-hint">dbl-click band to reset · scroll to nudge</span>
+    </div>
   </div>
 </div>
