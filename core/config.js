@@ -87,7 +87,7 @@ export const FOLDERS = [
                 icon:  '🖼️',
                 name:  'Example',
                 date:  '01-01-25',
-                src:   'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/280px-PNG_transparency_demonstration_1.png',
+                src:   'https://upload.wikimedia.org/wikipedia/commons/8/8b/Minimalist_loss.svg',
                 title: 'Example Image',
             },
             // Add images here
