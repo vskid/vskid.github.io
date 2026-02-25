@@ -1,0 +1,406 @@
+9. vMEDIA PLAYER
+   Dark Aero-Winamp hybrid skin for the YouTube embed window.
+   Overrides the base .window and .title-bar styles for this
+   specific window (#media-player-window).
+
+   Sub-sections:
+     9a. Window frame override
+     9b. Title bar (dark blue-grey)
+     9c. Menu bar (File/View/Playback/Tools/Help)
+     9d. Player body + video screen
+     9e. Now Playing bar
+     9f. Progress bar
+     9g. Transport controls (Play/Pause + volume)
+     9h. Status bar
+   ============================================================ */
+
+/* 9a. Window frame ; fixed width, centered, no min-height */
+#media-player-window {
+    width: 520px;
+    min-height: unset;
+    max-height: unset;
+    height: auto;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* 9b. Title bar ; dark slate, orange Winamp glow on text */
+.wmp-title-bar {
+    background: linear-gradient(to bottom,
+        rgba(60, 80, 110, 0.95) 0%,
+        rgba(30, 50, 80, 0.98) 100%);
+    border-bottom: 1px solid rgba(255, 160, 40, 0.2);
+}
+
+.wmp-title-bar .title-text {
+    color: #ffa820;
+    text-shadow: 0 0 10px rgba(255, 140, 0, 0.7);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+}
+
+/* 9c. Menu bar ; very dark, compact 24px tall row of text items
+   Each item has a data-menu attribute for future dropdown wiring */
+.wmp-menubar {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(to bottom,
+        rgba(25, 40, 65, 0.97) 0%,
+        rgba(15, 28, 50, 0.99) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0 4px;
+    height: 24px;
+    gap: 2px;
+}
+
+.wmp-menu-item {
+    padding: 0 10px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-size: 0.78rem;
+    color: rgba(180, 210, 240, 0.85);
+    cursor: pointer;
+    border-radius: 3px;
+    letter-spacing: 0.02em;
+    transition: background 0.1s, color 0.1s;
+}
+
+.wmp-menu-item:hover,
+.wmp-menu-item.active {
+    background: rgba(100, 180, 255, 0.18);
+    color: #e8f4ff;
+}
+
+/* 9d. Player body + video screen */
+.wmp-body {
+    background: linear-gradient(160deg,
+        rgba(10, 20, 40, 0.98) 0%,
+        rgba(5, 15, 35, 1) 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 16:9 iframe container ; aspect-ratio ensures it scales correctly */
+.wmp-screen {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.wmp-screen iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* 9e. Now Playing bar ; label | scrolling track name | YouTube button */
+.wmp-nowplaying-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* "NOW PLAYING" label ; small, uppercase, Winamp orange */
+.wmp-nowplaying-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: rgba(255, 140, 20, 0.85);
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+/* Track name ; orange-white glow */
+.wmp-nowplaying-track {
+    flex: 1;
+    font-size: 0.82rem;
+    color: #ffe0a0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 0 8px rgba(255, 160, 40, 0.5);
+}
+
+/* "▶ YouTube" button ; red-tinted, opens source video in new tab */
+.wmp-yt-btn {
+    flex-shrink: 0;
+    padding: 2px 10px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 60, 60, 0.5);
+    background: linear-gradient(to bottom,
+        rgba(200, 30, 30, 0.3),
+        rgba(140, 10, 10, 0.4));
+    color: rgba(255, 150, 150, 0.9);
+    font-size: 0.72rem;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+}
+
+.wmp-yt-btn:hover {
+    background: linear-gradient(to bottom,
+        rgba(220, 50, 50, 0.5),
+        rgba(160, 20, 20, 0.6));
+    color: #ffaaaa;
+    border-color: rgba(255, 80, 80, 0.7);
+    box-shadow: 0 0 8px rgba(255, 50, 50, 0.3);
+}
+
+/* 9f. Progress bar ; visual only (not wired to real playback time yet)
+   Wire to YouTube IFrame API's getCurrentTime/getDuration for real scrubbing */
+.wmp-progress-wrap {
+    padding: 4px 12px;
+}
+
+.wmp-progress-track {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* The fill ; orange Winamp color; width set by JS to reflect playback progress */
+.wmp-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, #ff6a00, #ffb347);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(255, 120, 0, 0.7);
+    transition: width 0.5s linear;
+}
+
+/* Progress track is clickable for seeking */
+.wmp-progress-track {
+    cursor: pointer;
+}
+
+/* 9g. Transport controls ; Play/Pause on the left, volume on the right */
+.wmp-controls-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    gap: 12px;
+}
+
+.wmp-transport {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Circular play/pause button ; glassy blue */
+.wmp-ctrl-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(100, 180, 255, 0.3);
+    background: linear-gradient(145deg,
+        rgba(60, 100, 160, 0.5) 0%,
+        rgba(20, 50, 100, 0.7) 100%);
+    color: #a8d8ff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: all 0.15s;
+}
+
+.wmp-ctrl-btn:hover {
+    background: linear-gradient(145deg,
+        rgba(80, 140, 220, 0.6) 0%,
+        rgba(40, 80, 150, 0.8) 100%);
+    color: #dff0ff;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 10px rgba(80, 160, 255, 0.35);
+}
+
+.wmp-ctrl-btn:active {
+    background: linear-gradient(145deg,
+        rgba(20, 60, 120, 0.8) 0%,
+        rgba(60, 110, 180, 0.5) 100%);
+}
+
+/* Volume slider */
+.wmp-volume-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wmp-vol-icon {
+    font-size: 0.85rem;
+    opacity: 0.6;
+}
+
+/* Custom range input ; webkit only; add -moz- rules for Firefox support */
+.wmp-volume {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 90px;
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    cursor: pointer;
+}
+
+.wmp-volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffb347, #ff6a00);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 6px rgba(255, 120, 0, 0.6);
+    cursor: grab;
+}
+
+.wmp-volume::-webkit-slider-thumb:active {
+    cursor: grabbing;
+}
+
+.wmp-ctrl-btn.playing {
+    border-color: rgba(255, 140, 0, 0.5);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        0 0 12px rgba(255, 120, 0, 0.4);
+    color: #ffb347;
+}
+
+/* Status bar */
+.wmp-statusbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Green glowing dot when ready, turns orange when playing (toggled via JS if desired) */
+.wmp-status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #3aff8a;
+    box-shadow: 0 0 6px rgba(58, 255, 138, 0.7);
+    flex-shrink: 0;
+}
+
+.wmp-status-text {
+    font-size: 0.72rem;
+    color: rgba(140, 180, 220, 0.6);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* ── Audio panel (shown instead of video screen for audio mode) ── */
+#wmp-audio-wrap {
+    display: none; /* shown by JS in audio mode */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 16 / 9;
+    background: radial-gradient(ellipse at center,
+        rgba(30, 18, 5, 0.95) 0%,
+        rgba(5, 5, 12, 1) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Pulsing ring behind album art when playing */
+#wmp-audio-wrap::before {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 120, 0, 0.15);
+    animation: audioRing 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes audioRing {
+    0%, 100% { transform: scale(1);   opacity: 0.4; }
+    50%       { transform: scale(1.12); opacity: 0.15; }
+}
+
+#wmp-album-art {
+    width: 100px;
+    height: 100px;
+    border-radius: 6px;
+    background: rgba(255, 140, 0, 0.08);
+    border: 1px solid rgba(255, 140, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 20px rgba(255, 100, 0, 0.1);
+}
+
+/* Mode label (VIDEO / AUDIO / SOUNDCLOUD) */
+#wmp-mode-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: rgba(255, 140, 0, 0.45);
+    text-transform: uppercase;
+    margin-left: auto;
+    padding-right: 2px;
+}
+
+/* Hidden native <audio> element ; we drive it via JS */
+#wmp-audio {
+    display: none;
+}
+
+/* Status dot playing state */
+#wmp-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3aff8a;
+    box-shadow: 0 0 6px rgba(58, 255, 138, 0.7);
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+#wmp-status-dot.dot-playing {
+    background: #ff8c00;
+    box-shadow: 0 0 8px rgba(255, 140, 0, 0.8);
+}
+/* Speed button ; smaller text to fit the label (1x / 2x) */
+.wmp-speed-btn {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: rgba(180, 220, 255, 0.85);
+}
+
+.wmp-speed-btn.active {
+    border-color: rgba(255, 140, 0, 0.5);
+    color: #ffb347;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+        0 0 10px rgba(255, 120, 0, 0.35);
+}

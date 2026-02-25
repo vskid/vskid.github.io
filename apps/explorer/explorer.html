@@ -1,0 +1,33 @@
+<!--
+  apps/explorer/explorer.html
+  Template for a single explorer folder window.
+  Cloned and populated by explorer.js for each folder in config.js.
+  Placeholders replaced by JS:
+    {{windowId}}  ; element id
+    {{icon}}      ; title bar emoji
+    {{title}}     ; folder name
+    {{path}}      ; address bar path
+    {{items}}     ; rendered file item HTML
+-->
+<div class="window glass-panel hidden" id="{{windowId}}">
+  <div class="title-bar">
+    <div class="title-text">
+      <span class="title-icon">{{icon}}</span>
+      {{title}}
+    </div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"   title="Close">×</button>
+    </div>
+  </div>
+  <div class="window-toolbar">
+    <button class="nav-btn">←</button>
+    <button class="nav-btn">→</button>
+    <div class="address-bar">{{path}}</div>
+  </div>
+  <main class="window-content">
+    <div class="file-grid">
+      {{items}}
+    </div>
+  </main>
+</div>

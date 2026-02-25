@@ -1,0 +1,653 @@
+/* ============================================================
+   vskid.github.io ; style.css
+   ============================================================
+   Frutiger Aero aesthetic: glassy panels, blue/green gradients,
+   soft light, translucent everything.
+
+   Sections:
+     1. CSS VARIABLES      ; design tokens (colors, glass values)
+     2. RESET & BASE       ; box-sizing, body, font, overflow
+     3. BACKGROUND         ; sky + grass pseudo-element gradients
+     4. DESKTOP            ; icon grid layout + icon styles
+     5. TASKBAR            ; bottom bar, Start button, system tray
+     6. TASKBAR APP BUTTONS ; per-app icon buttons with drag state
+     7. WINDOW BASE        ; shared window chrome (frame, animation,
+                             title bar, toolbar, file grid)
+     8. START MENU         ; sidebar + app grid panel
+
+                             embed window (title, menu bar, screen,
+                             controls, progress, status bar)
+   ============================================================ */
+
+
+/* ============================================================
+   1. CSS VARIABLES
+   Change these to reskin the whole UI at once.
+   ============================================================ */
+:root {
+    --aero-blue:       #a3d9f5;
+    --aero-green:      #9CE788;
+    --aero-light-blue: #d4f0ff;
+    --aero-dark-blue:  #1b73e8;
+    --glass-bg:        rgba(255, 255, 255, 0.45);
+    --glass-border:    rgba(255, 255, 255, 0.7);
+    --glass-highlight: rgba(255, 255, 255, 0.9);
+    --taskbar-bg:      rgba(0, 0, 0, 0.2);
+    --text-color:      #0f3c5c;
+    --icon-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+
+/* ============================================================
+   2. RESET & BASE
+   ============================================================ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none; /* prevents accidental text selection while dragging */
+}
+
+body {
+    font-family: 'Segoe UI', 'San Francisco', 'Roboto', Tahoma, sans-serif;
+    color: var(--text-color);
+    height: 100vh;
+    overflow: hidden; /* no scrollbars ; everything is inside windows */
+    position: relative;
+    background: linear-gradient(135deg, #aaddf6 0%, #dbf5e2 50%, #85d6b4 100%);
+}
+
+
+/* ============================================================
+   3. BACKGROUND
+   The .background-container sits at z-index:-1 behind everything.
+   ::before = blue sky gradient from the top (60% height)
+   ::after  = green grass gradient from the bottom (40% height)
+   Both use opacity so the base body gradient shows through.
+   ============================================================ */
+.background-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.background-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 60%;
+    background: linear-gradient(to bottom, #4cb8f3 0%, transparent 100%);
+    opacity: 0.6;
+}
+
+.background-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40%;
+    background: linear-gradient(to top, #65c171 0%, transparent 100%);
+    opacity: 0.6;
+}
+
+
+/* ============================================================
+   4. DESKTOP
+   A full-screen flex container that wraps icons in columns
+   (flex-direction: column + flex-wrap: wrap = top-to-bottom,
+   spilling into new columns when the height is exceeded).
+   ============================================================ */
+.desktop {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: calc(100% - 48px); /* leave room for the taskbar */
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+    z-index: 10;
+}
+
+/* Individual desktop icon */
+.desktop-icon {
+    width: 80px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.desktop-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.desktop-icon:active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* The emoji/image part of the icon */
+.icon-img {
+    font-size: 2.5rem;
+    margin-bottom: 0.25rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Label beneath the icon ; clamps to 2 lines */
+.icon-label {
+    color: white;
+    text-shadow: var(--icon-text-shadow);
+    font-size: 0.85rem;
+    text-align: center;
+    word-break: break-all;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   5. TASKBAR
+   Fixed to the bottom of the screen. Uses backdrop-filter
+   for the frosted-glass blur. Three children:
+     .start-btn    ; pill button on the left
+     .taskbar-apps ; flex row of open app buttons (grows to fill)
+     .system-tray  ; clock on the right
+   ============================================================ */
+.taskbar {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%;
+    height: 48px;
+    background: linear-gradient(to bottom,
+        rgba(230, 245, 255, 0.5) 0%,
+        rgba(180, 220, 245, 0.7) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 -2px 10px rgba(0, 50, 100, 0.2);
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    z-index: 100;
+}
+
+/* Start button ; the rounded pill on the left */
+.start-btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: linear-gradient(to bottom, #d4f0ff 0%, #8acfff 50%, #46b7ff 51%, #aee1ff 100%);
+    box-shadow: inset 0 1px 3px rgba(255, 255, 255, 1), 0 2px 5px rgba(0, 0, 0, 0.2);
+    color: #004c8f;
+    font-weight: bold;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.start-btn:hover {
+    background: linear-gradient(to bottom, #eff8ff 0%, #b8e2ff 50%, #75caff 51%, #c9eeff 100%);
+    box-shadow: inset 0 1px 3px rgba(255, 255, 255, 1), 0 0 10px rgba(100, 200, 255, 0.6);
+}
+
+.start-btn:active {
+    background: linear-gradient(to bottom, #aee1ff 0%, #46b7ff 100%);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* The italic "v" logo inside the Start button */
+.start-logo {
+    font-weight: 900;
+    font-size: 1.1rem;
+    font-style: italic;
+    background: linear-gradient(135deg, #1b73e8, #9CE788);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.8));
+}
+
+/* App button strip ; grows to fill remaining taskbar space */
+.taskbar-apps {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 0.5rem; /* NOTE: must match GAP constant in script.js drag logic */
+}
+
+/* System tray ; right side, contains the clock */
+.system-tray {
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    height: 100%;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.05);
+}
+
+.time-widget {
+    font-size: 0.85rem;
+    color: #003b6d;
+    font-weight: 500;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+    padding: 0 0.5rem;
+}
+
+
+/* ============================================================
+   6. TASKBAR APP BUTTONS
+   Created dynamically by JS (updateTaskbarBtn) whenever a
+   window is opened. Icon-only square buttons.
+
+   States:
+     default  ; window is open and in focus
+     .active  ; window is visible (not minimized)
+     .dragging ; currently being dragged to reorder
+   ============================================================ */
+.taskbar-app-btn {
+    height: 36px;
+    width: 36px;
+    padding: 0;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.3) 0%,
+        rgba(180, 220, 245, 0.4) 100%);
+    color: #003b6d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    transition: all 0.15s;
+    max-width: unset;
+}
+
+.taskbar-app-btn:hover {
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(200, 235, 255, 0.6) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 6px rgba(100, 200, 255, 0.4);
+}
+
+/* .active = window is visible (not minimized) ; pressed-in look */
+.taskbar-app-btn.active {
+    background: linear-gradient(to bottom,
+        rgba(180, 220, 245, 0.6) 0%,
+        rgba(255, 255, 255, 0.4) 100%);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    border-color: rgba(100, 180, 240, 0.7);
+}
+
+/* .dragging = being repositioned ; floats above other buttons */
+.taskbar-app-btn.dragging {
+    z-index: 999;
+    cursor: grabbing;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transform: scale(1.12);
+    transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+}
+
+.taskbar-app-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+/* Hidden when label-less; kept for potential future use */
+.taskbar-app-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ============================================================
+   7. WINDOW BASE
+   Shared styles for all <div class="window"> elements.
+
+   .window         ; the outer frame (position, shadow, animation)
+   .window.hidden  ; closed (display:none)
+   .window.minimized ; hidden but taskbar button still exists
+   .glass-panel    ; the frosted glass background (applied to
+                     explorer-style windows; vMedia uses its own)
+   .title-bar      ; draggable top bar with title + controls
+   .window-toolbar ; address bar row below title bar
+   .window-content ; scrollable content area
+   .file-grid      ; flex grid of file icons inside a window
+   .file-item      ; individual file/folder icon
+   ============================================================ */
+
+/* The window frame */
+.window {
+    position: absolute;
+    top: 5%; left: 5%;
+    width: 90%;
+    max-width: 600px;
+    height: auto;
+    min-height: 300px;
+    max-height: 80%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 50;
+    box-shadow:
+        0 8px 32px rgba(0, 50, 100, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.6),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    animation: windowOpen 0.2s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+/* Closed ; removed from layout entirely */
+.window.hidden {
+    display: none;
+}
+
+/* Minimized ; hidden visually but JS still has a reference to it */
+.window.minimized {
+    display: none;
+}
+
+/* Pop-in animation when a window opens */
+@keyframes windowOpen {
+    0%   { opacity: 0; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1);    }
+}
+
+/* Frosted glass fill ; used by explorer windows */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* Title bar ; draggable, contains title text + minimize/close */
+.title-bar {
+    height: 32px;
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.6) 0%,
+        rgba(200, 230, 255, 0.4) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 1px 2px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 0.5rem;
+    cursor: default;
+}
+
+.title-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #003b6d;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Minimize and close buttons */
+.window-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.window-controls button {
+    width: 28px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.8) 0%,
+        rgba(220, 240, 255, 0.6) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 1px 2px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    font-weight: bold;
+    color: #003b6d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.window-controls .close-btn:hover {
+    background: linear-gradient(to bottom, #ff9999 0%, #ff4d4d 100%);
+    color: white;
+    border-color: #cc0000;
+}
+
+/* Address bar row (← : + path display) */
+.window-toolbar {
+    height: 40px;
+    background: rgba(250, 250, 250, 0.7);
+    border-bottom: 1px solid rgba(200, 220, 240, 0.8);
+    display: flex;
+    align-items: center;
+    padding: 0 0.5rem;
+    gap: 0.5rem;
+}
+
+.nav-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(200, 220, 240, 0.8);
+    background: linear-gradient(to bottom, #ffffff 0%, #e6f5ff 100%);
+    color: #005a9e;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.address-bar {
+    flex-grow: 1;
+    height: 24px;
+    background: white;
+    border: 1px solid rgba(200, 220, 240, 0.8);
+    border-radius: 3px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #333;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Scrollable content area inside a window */
+.window-content {
+    flex-grow: 1;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+/* Grid of file/folder icons */
+.file-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* Individual file icon ; hover + active states */
+.file-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    width: 100px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.1s;
+}
+
+.file-item:hover {
+    background: rgba(220, 240, 255, 0.5);
+    border-color: rgba(150, 200, 255, 0.8);
+}
+
+.file-icon {
+    font-size: 3rem;
+    margin-bottom: 0.25rem;
+}
+
+.file-name {
+    font-size: 0.85rem;
+    color: #222;
+    text-align: center;
+    word-break: break-all;
+}
+
+.file-item:hover .file-name {
+    color: #005a9e;
+    text-decoration: underline;
+}
+
+.file-date {
+    font-size: 0.75rem;
+    color: #777;
+    margin-top: 0.2rem;
+}
+
+/* Wrapper <a> tag for project items ; resets link styles */
+.file-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+
+/* ============================================================
+   8. START MENU
+   Slides up from the taskbar bottom-left corner.
+   Two-column layout: dark sidebar (user profile) +
+   light content area (app grid).
+
+   .hidden uses opacity + pointer-events + scale transform
+   so it can animate in/out without display:none jumps.
+   ============================================================ */
+.start-menu {
+    position: absolute;
+    bottom: 50px; left: 0;
+    width: 380px;
+    height: 480px;
+    display: flex;
+    border-radius: 0 8px 8px 0;
+    overflow: hidden;
+    z-index: 90;
+    box-shadow:
+        4px 4px 15px rgba(0, 0, 0, 0.4),
+        inset 1px 1px 0 rgba(255, 255, 255, 0.8);
+    transition: transform 0.2s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 0.2s;
+    transform-origin: bottom left;
+}
+
+/* Hidden state ; fades out and shrinks slightly downward */
+.start-menu.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.95) translateY(10px);
+}
+
+/* Left sidebar ; dark blue, user avatar + name */
+.start-menu-sidebar {
+    width: 120px;
+    background: linear-gradient(to right,
+        rgba(0, 50, 100, 0.8) 0%,
+        rgba(0, 80, 150, 0.6) 100%);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    margin-top: 2rem;
+}
+
+.avatar {
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, #e6f5ff, #aee1ff);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Right content ; light, holds the app grid */
+.start-menu-content {
+    flex-grow: 1;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.start-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    align-content: start;
+}
+
+/* Individual app shortcut in the start menu */
+.menu-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.1s;
+    text-align: center;
+}
+
+.menu-btn:hover {
+    background: linear-gradient(to bottom, #f0f9ff 0%, #cbebff 100%);
+    border-color: rgba(100, 200, 255, 0.8);
+    box-shadow: inset 0 1px 0 white, 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.menu-icon {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+}
+
+.menu-text {
+    font-size: 0.8rem;
+    color: #003b6d;
+    font-weight: 500;
+}

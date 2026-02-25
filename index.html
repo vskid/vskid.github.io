@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+  ============================================================
+  vskid.github.io ; index.html
+  ============================================================
+  Pure HTML/CSS/JS desktop OS. No frameworks, no build step.
+  Uses native ES modules (type="module") ; requires a server
+  (GitHub Pages works fine; locally use: npx serve)
+
+  File structure:
+    index.html              ← shell only (background, desktop, taskbar)
+    core/desktop.css        ← shell styles
+    core/desktop.js         ← window system, taskbar, drag, clock
+    core/main.js            ← entry point, boots all modules
+    core/config.js          ← content data (folders, files)
+    apps/explorer/          ← file explorer (all folders)
+    apps/vmedia/            ← video + audio player
+    apps/vviewer/           ← image viewer
+
+  Adding content:
+    Edit core/config.js ; add items to the relevant folder array.
+
+  Adding a new app:
+    1. Create apps/yourapp/ with yourapp.html, yourapp.css, yourapp.js
+    2. Add one import + one init call in core/main.js
+  ============================================================
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vskid's site</title>
+  <meta name="description" content="vskid's homepage">
+  <link rel="stylesheet" href="core/desktop.css">
+</head>
+
+<body>
+
+  <!-- =====================================================
+       BACKGROUND
+  ====================================================== -->
+  <div class="background-container"></div>
+
+  <!-- =====================================================
+       DESKTOP ICON GRID
+       Icons are defined here; windows are injected by apps.
+  ====================================================== -->
+  <div class="desktop">
+
+    <div class="desktop-icon" id="open-projects" title="Projects">
+      <div class="icon-img">📁</div>
+      <span class="icon-label">Projects</span>
+    </div>
+
+    <div class="desktop-icon" id="open-videos" title="Videos">
+      <div class="icon-img">🎬</div>
+      <span class="icon-label">Videos</span>
+    </div>
+
+    <div class="desktop-icon" id="open-music" title="Music">
+      <div class="icon-img">🎵</div>
+      <span class="icon-label">Music</span>
+    </div>
+
+    <div class="desktop-icon" id="open-pictures" title="Pictures">
+      <div class="icon-img">🖼️</div>
+      <span class="icon-label">Pictures</span>
+    </div>
+
+  </div>
+
+  <!-- =====================================================
+       START MENU
+  ====================================================== -->
+  <div class="start-menu glass-panel hidden" id="start-menu">
+    <div class="start-menu-sidebar">
+      <div class="user-profile">
+        <div class="avatar">👤</div>
+        <span>vskid</span>
+      </div>
+    </div>
+    <div class="start-menu-content">
+      <div class="start-menu-grid">
+        <div class="menu-btn">
+          <span class="menu-icon">📱</span>
+          <span class="menu-text">Applications</span>
+        </div>
+        <div class="menu-btn">
+          <span class="menu-icon">⚙️</span>
+          <span class="menu-text">Settings</span>
+        </div>
+        <div class="menu-btn" id="shutdown-btn">
+          <span class="menu-icon">🛑</span>
+          <span class="menu-text">Shutdown</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       TASKBAR
+  ====================================================== -->
+  <div class="taskbar glass-panel">
+    <button class="start-btn">
+      <span class="start-logo">v</span>
+      Start
+    </button>
+    <div class="taskbar-apps"></div>
+    <div class="system-tray">
+      <div class="time-widget" id="clock">00:00</div>
+    </div>
+  </div>
+
+  <!-- ES module entry point -->
+  <script type="module" src="core/main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!--
+  apps/vmedia/vmedia.html
+  vMedia player window ; injected by vmedia.js on init.
+  Handles YouTube video, HTML5 audio, and SoundCloud embeds.
+-->
+<div class="window hidden" id="media-player-window">
+
+  <div class="title-bar wmp-title-bar">
+    <div class="title-text">
+      <span class="title-icon">🎵</span>
+      vMedia
+    </div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"   title="Close">×</button>
+    </div>
+  </div>
+
+  <!-- Menu bar ; data-menu keys ready for dropdown wiring -->
+  <div class="wmp-menubar">
+    <div class="wmp-menu-item" data-menu="file">File</div>
+    <div class="wmp-menu-item" data-menu="view">View</div>
+    <div class="wmp-menu-item" data-menu="playback">Playback</div>
+    <div class="wmp-menu-item" data-menu="tools">Tools</div>
+    <div class="wmp-menu-item" data-menu="help">Help</div>
+    <span id="wmp-mode-label"></span>
+  </div>
+
+  <div class="wmp-body">
+
+    <!-- Video screen (YouTube / SoundCloud iframe) -->
+    <div class="wmp-screen" id="wmp-screen">
+      <iframe id="wmp-iframe" src="" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    </div>
+
+    <!-- Audio panel ; shown instead of screen in audio mode -->
+    <div id="wmp-audio-wrap">
+      <div id="wmp-album-art">🎵</div>
+    </div>
+
+    <!-- Hidden native audio element -->
+    <audio id="wmp-audio" preload="metadata"></audio>
+
+    <!-- Now playing bar -->
+    <div class="wmp-nowplaying-bar">
+      <span class="wmp-nowplaying-label">NOW PLAYING</span>
+      <span class="wmp-nowplaying-track" id="wmp-track-name">—</span>
+      <button class="wmp-yt-btn" id="wmp-open-yt" style="display:none">▶ YouTube</button>
+    </div>
+
+    <!-- Progress bar ; click to seek -->
+    <div class="wmp-progress-wrap">
+      <div class="wmp-progress-track">
+        <div class="wmp-progress-fill" id="wmp-progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Transport controls -->
+    <div class="wmp-controls-bar">
+      <div class="wmp-transport">
+        <button class="wmp-ctrl-btn" id="wmp-prev"       title="Restart (0:00)">⏮</button>
+        <button class="wmp-ctrl-btn" id="wmp-play-pause" title="Play/Pause">▶</button>
+        <button class="wmp-ctrl-btn wmp-speed-btn" id="wmp-next" title="Speed (1x/2x)">1×</button>
+      </div>
+      <div class="wmp-volume-wrap">
+        <span class="wmp-vol-icon">🔊</span>
+        <input type="range" class="wmp-volume" id="wmp-volume"
+               min="0" max="100" value="80">
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="wmp-statusbar">
+      <span class="wmp-status-dot" id="wmp-status-dot"></span>
+      <span class="wmp-status-text" id="wmp-status">Ready</span>
+    </div>
+
+  </div>
+</div>
