@@ -1,0 +1,75 @@
+<!--
+  apps/vdoc/vdoc.html
+  vDoc — blog / document viewer.
+  Shows a list of blog posts from config.js (BLOG_POSTS).
+  Click a post to read it in a clean paper document view.
+  Owner mode unlocks a simple compose/edit panel.
+
+  Panels:
+    .vdoc-sidebar   — post list (title + date)
+    .vdoc-document  — the reading/writing area (paper sheet)
+    .vdoc-toolbar   — formatting hint bar (read-only for now, ready for editor)
+-->
+<div class="window hidden" id="vdoc-window">
+
+  <div class="title-bar vdoc-title-bar">
+    <div class="title-text">
+      <span class="title-icon">📝</span>
+      vDoc
+    </div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"   title="Close">×</button>
+    </div>
+  </div>
+
+  <!-- Toolbar strip -->
+  <div class="vdoc-toolbar" id="vdoc-toolbar">
+    <span class="vdoc-toolbar-title" id="vdoc-doc-title">Select a post</span>
+    <div class="vdoc-toolbar-spacer"></div>
+    <span class="vdoc-toolbar-date" id="vdoc-doc-date"></span>
+    <button class="vdoc-owner-btn" id="vdoc-owner-btn" title="Owner login">🔒</button>
+  </div>
+
+  <div class="vdoc-body">
+
+    <!-- Sidebar: post list -->
+    <div class="vdoc-sidebar" id="vdoc-sidebar">
+      <div class="vdoc-sidebar-header">Posts</div>
+      <div class="vdoc-post-list" id="vdoc-post-list">
+        <!-- Populated by JS from BLOG_POSTS config -->
+      </div>
+    </div>
+
+    <!-- Document reading area -->
+    <div class="vdoc-document-wrap">
+      <div class="vdoc-document" id="vdoc-document">
+        <div class="vdoc-placeholder" id="vdoc-placeholder">
+          <span>📄</span>
+          <span>Select a post from the sidebar to read it.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Owner password modal -->
+  <div class="vdoc-modal hidden" id="vdoc-owner-modal">
+    <div class="vdoc-modal-box">
+      <div class="vdoc-modal-title">Owner Access</div>
+      <input
+        type="password"
+        class="vdoc-modal-input"
+        id="vdoc-owner-pw"
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+      <div class="vdoc-modal-btns">
+        <button class="vdoc-modal-cancel" id="vdoc-modal-cancel">Cancel</button>
+        <button class="vdoc-modal-submit" id="vdoc-modal-submit">Unlock</button>
+      </div>
+      <div class="vdoc-modal-err hidden" id="vdoc-modal-err">Wrong password</div>
+    </div>
+  </div>
+
+</div>

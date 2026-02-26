@@ -163,8 +163,9 @@ export async function initVMedia({ registerWindow, openWindow }) {
                     setStatus('Playing'); setPlayUI(true);
                     stopProgressTimer();
                     progressTimer = setInterval(() => {
+                        if (isSeeking) return;
                         try { progressFill.style.width = (ytPlayer.getCurrentTime() / duration * 100) + '%'; } catch (_) {}
-                    }, 250);
+                    }, 100);
                 } else if (s === YT.PlayerState.PAUSED) {
                     setStatus('Paused'); setPlayUI(false); stopProgressTimer();
                 } else if (s === YT.PlayerState.ENDED) {
@@ -226,8 +227,9 @@ export async function initVMedia({ registerWindow, openWindow }) {
             setStatus('Playing'); setPlayUI(true);
             stopProgressTimer();
             progressTimer = setInterval(() => {
+                if (isSeeking) return;
                 if (videoEl.duration) progressFill.style.width = (videoEl.currentTime / videoEl.duration * 100) + '%';
-            }, 250);
+            }, 100);
         };
         videoEl.onpause  = () => { setStatus('Paused');  setPlayUI(false); stopProgressTimer(); };
         videoEl.onended  = () => { setStatus('Ended');   setPlayUI(false); stopProgressTimer(); progressFill.style.width = '100%'; };
@@ -272,8 +274,9 @@ export async function initVMedia({ registerWindow, openWindow }) {
         setStatus('Playing'); setPlayUI(true);
         stopProgressTimer();
         progressTimer = setInterval(() => {
+            if (isSeeking) return;
             if (audioEl.duration) progressFill.style.width = (audioEl.currentTime / audioEl.duration * 100) + '%';
-        }, 250);
+        }, 100);
         eq.connectAudioEl();
         if (window.AudioContext && audioEl._audioCtx?.state === 'suspended') audioEl._audioCtx.resume();
     });
@@ -349,14 +352,84 @@ export async function initVMedia({ registerWindow, openWindow }) {
     }
     volumeSlider.addEventListener('input',     applyVolume);
     volumeSlider.addEventListener('change',    applyVolume);
-    volumeSlider.addEventListener('touchmove', applyVolume, { passive: true });
+    // iOS Safari: input fires on touchmove only if touch-action:none is set.
+    // Setting it here avoids needing to touch vmedia.css.
+    volumeSlider.style.touchAction = 'none';
+    volumeSlider.addEventListener('touchstart', applyVolume, { passive: true });
+    volumeSlider.addEventListener('touchmove',  applyVolume, { passive: true });
 
-    progressTrack?.addEventListener('click', e => {
-        const ratio = (e.clientX - progressTrack.getBoundingClientRect().left) / progressTrack.offsetWidth;
-        const _pv   = document.getElementById('wmp-video-el');
-        if      (mode === 'video'       && ytPlayer && duration) { ytPlayer.seekTo(ratio * duration, true); progressFill.style.width = (ratio * 100) + '%'; }
-        else if (mode === 'video-local' && _pv && _pv.duration)  _pv.currentTime = ratio * _pv.duration;
-        else if (mode === 'audio-html5' && audioEl.duration)     audioEl.currentTime = ratio * audioEl.duration;
+    // ── Seek bar — click + drag ───────────────────────────────
+    // Replaces the old click-only handler with full drag support.
+    // While dragging: progress fill tracks the mouse in real time,
+    // the progress timer is suppressed, and we seek on mouseup.
+    // For YouTube we seekTo on every move (it buffers ahead so this
+    // is fine); for HTML5 we set currentTime directly.
+
+    let isSeeking = false;
+
+    function seekRatio(ratio) {
+        ratio = Math.max(0, Math.min(1, ratio));
+        progressFill.style.width = (ratio * 100) + '%';
+        const v = document.getElementById('wmp-video-el');
+        if      (mode === 'video'       && ytPlayer && duration)  ytPlayer.seekTo(ratio * duration, true);
+        else if (mode === 'video-local' && v && v.duration)       v.currentTime = ratio * v.duration;
+        else if (mode === 'audio-html5' && audioEl.duration)      audioEl.currentTime = ratio * audioEl.duration;
+    }
+
+    function getRatio(e, track) {
+        const rect = track.getBoundingClientRect();
+        return (e.clientX - rect.left) / rect.width;
+    }
+
+    progressTrack?.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        isSeeking = true;
+        stopProgressTimer();
+        progressTrack.classList.add('seeking');
+        seekRatio(getRatio(e, progressTrack));
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', e => {
+        if (!isSeeking || !progressTrack) return;
+        seekRatio(getRatio(e, progressTrack));
+    });
+
+    document.addEventListener('mouseup', e => {
+        if (!isSeeking) return;
+        isSeeking = false;
+        progressTrack?.classList.remove('seeking');
+        // Resume the auto-advance timer if we're still playing
+        if (ytPlaying && duration) {
+            stopProgressTimer();
+            progressTimer = setInterval(() => {
+                if (isSeeking) return;
+                const v = document.getElementById('wmp-video-el');
+                try {
+                    if      (mode === 'video'       && ytPlayer)        progressFill.style.width = (ytPlayer.getCurrentTime() / duration * 100) + '%';
+                    else if (mode === 'video-local' && v && v.duration) progressFill.style.width = (v.currentTime / v.duration * 100) + '%';
+                    else if (mode === 'audio-html5' && audioEl.duration) progressFill.style.width = (audioEl.currentTime / audioEl.duration * 100) + '%';
+                } catch (_) {}
+            }, 100);
+        }
+    });
+
+    // Touch seek support
+    progressTrack?.addEventListener('touchstart', e => {
+        isSeeking = true;
+        stopProgressTimer();
+        progressTrack.classList.add('seeking');
+        seekRatio(getRatio(e.touches[0], progressTrack));
+    }, { passive: true });
+
+    progressTrack?.addEventListener('touchmove', e => {
+        if (!isSeeking) return;
+        seekRatio(getRatio(e.touches[0], progressTrack));
+    }, { passive: true });
+
+    progressTrack?.addEventListener('touchend', () => {
+        isSeeking = false;
+        progressTrack?.classList.remove('seeking');
     });
 
     // ── Close ─────────────────────────────────────────────────

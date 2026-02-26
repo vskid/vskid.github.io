@@ -139,14 +139,20 @@ export async function initExplorer({ registerWindow, openWindow }) {
 // ── Item renderers ───────────────────────────────────────────
 // Add new item types here; sidebar and navigation update for free.
 
+// Truncate long file names to fit the 90px icon cell (~14 chars).
+// Keeps the full name in the title attribute for hover tooltip.
+function trunc(name, max = 16) {
+    return name.length > max ? name.slice(0, max - 1) + '…' : name;
+}
+
 function renderItem(item) {
     switch (item.type) {
         case 'project':
             return `
-<a href="${item.href}" class="file-item-link" target="_blank" rel="noopener noreferrer">
+<a href="${item.href}" class="file-item-link" target="_blank" rel="noopener noreferrer" title="${item.name}">
   <div class="file-item">
     <div class="file-icon">${item.icon}</div>
-    <div class="file-name">${item.name}</div>
+    <div class="file-name">${trunc(item.name)}</div>
     <div class="file-date">${item.date}</div>
   </div>
 </a>`;
@@ -154,28 +160,41 @@ function renderItem(item) {
         case 'video':
             return `
 <div class="file-item" data-type="video"
-     data-id="${item.id ?? ''}" data-src="${item.src ?? ''}" data-title="${item.title}">
+     data-id="${item.id ?? ''}" data-src="${item.src ?? ''}" data-title="${item.title}"
+     title="${item.name}">
   <div class="file-icon">${item.icon}</div>
-  <div class="file-name">${item.name}</div>
+  <div class="file-name">${trunc(item.name)}</div>
   <div class="file-date">${item.date}</div>
 </div>`;
 
         case 'audio':
             return `
 <div class="file-item" data-type="audio"
-     data-src="${item.src}" data-title="${item.title}">
+     data-src="${item.src}" data-title="${item.title}"
+     title="${item.name}">
   <div class="file-icon">${item.icon}</div>
-  <div class="file-name">${item.name}</div>
+  <div class="file-name">${trunc(item.name)}</div>
   <div class="file-date">${item.date}</div>
 </div>`;
 
         case 'image':
             return `
 <div class="file-item" data-type="image"
-     data-src="${item.src}" data-title="${item.title}">
+     data-src="${item.src}" data-title="${item.title}"
+     title="${item.name}">
   <div class="file-icon">${item.icon}</div>
-  <div class="file-name">${item.name}</div>
+  <div class="file-name">${trunc(item.name)}</div>
   <div class="file-date">${item.date}</div>
+</div>`;
+
+        case 'doc':
+            return `
+<div class="file-item" data-type="doc"
+     data-id="${item.id ?? ''}" data-title="${item.title}"
+     title="${item.title}">
+  <div class="file-icon">${item.icon ?? '📄'}</div>
+  <div class="file-name">${trunc(item.title ?? item.name ?? 'Document')}</div>
+  <div class="file-date">${item.date ?? ''}</div>
 </div>`;
 
         default:

@@ -430,10 +430,12 @@ body {
     justify-content: center;
 }
 
-.window-controls .close-btn:hover {
-    background: linear-gradient(to bottom, #ff9999 0%, #ff4d4d 100%);
-    color: white;
-    border-color: #cc0000;
+.window-controls .close-btn:hover,
+.window .window-controls .close-btn:hover {
+    background: linear-gradient(to bottom, #ff6060 0%, #cc0000 100%) !important;
+    color: white !important;
+    border-color: #990000 !important;
+    box-shadow: inset 0 1px 0 rgba(255,120,120,0.4), 0 0 6px rgba(200,0,0,0.4) !important;
 }
 
 /* Address bar row (← : + path display) */
@@ -624,19 +626,70 @@ body {
 
 
 /* ============================================================
-   10. MOBILE RESPONSIVE
-   Smaller viewports: windows fill more of the screen.
+   10. MAXIMIZE
+   .maximized overrides position/size to fill viewport minus
+   taskbar, with a small gap all around for the resize handle
+   to remain reachable and the window to feel framed.
+   JS toggles this class; transform is zeroed so cascade offset
+   doesn't shift the maximized window.
+   ============================================================ */
+.window.maximized {
+    /* Gap: 8px sides + top, taskbar(48px) + 8px bottom */
+    position: fixed !important;
+    left:   8px !important;
+    top:    8px !important;
+    width:  calc(100vw - 16px) !important;
+    height: calc(100vh - 48px - 16px) !important;
+    transform: none !important;
+    max-width:  none !important;
+    max-height: none !important;
+    border-radius: 6px;
+    transition: left 0.18s cubic-bezier(0.2,0,0.2,1),
+                top  0.18s cubic-bezier(0.2,0,0.2,1),
+                width  0.18s cubic-bezier(0.2,0,0.2,1),
+                height 0.18s cubic-bezier(0.2,0,0.2,1);
+    z-index: 500 !important;
+}
+
+/* Maximize button — sits between minimize and close */
+.maximize-btn {
+    width: 28px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0.8) 0%,
+        rgba(220, 240, 255, 0.6) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 1px 2px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.7rem;
+    color: #003b6d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.maximize-btn:hover {
+    background: linear-gradient(to bottom, #d4edff 0%, #8acfff 100%);
+    border-color: #66b8ff;
+    color: #002244;
+}
+
+.window.maximized .maximize-btn {
+    /* Show restore symbol when maximized */
+    color: #004488;
+}
+
+
+/* ============================================================
+   11. MOBILE RESPONSIVE
    ============================================================ */
 @media (max-width: 640px) {
-    .window {
-        width: 95% !important;
-        max-width: none !important;
-        left: 2.5% !important;
-        top: 2% !important;
-    }
-
-    /* Allow transform (drag/resize) to override these */
-    .window[style*="transform"] {
-        left: 0 !important;
+    .window:not([style*="width"]) {
+        width: 95%;
+        max-width: none;
+        left: 2.5%;
+        top: 2%;
     }
 }

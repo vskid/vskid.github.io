@@ -1,23 +1,3 @@
-// ============================================================
-// core/config.js
-// ============================================================
-// All content data for the desktop.
-//
-// FOLDERS defines the explorer windows. Each folder has:
-//   iconId    ; desktop icon element ID
-//   windowId  ; ID to give the injected window element
-//   title     ; display name in the title bar
-//   icon      ; emoji for the title bar
-//   path      ; fake address bar path
-//   items     ; array of file items (see types below)
-//
-// Item types:
-//   project : { type:'project', icon, name, date, href }
-//   video   : { type:'video',   icon, name, date, id, title }
-//   audio   : { type:'audio',   icon, name, date, src, title }
-//   image   : { type:'image',   icon, name, date, src, title }
-// ============================================================
-
 export const FOLDERS = [
     {
         iconId:   'open-projects',
@@ -30,10 +10,9 @@ export const FOLDERS = [
                 type:  'project',
                 icon:  '🔗',
                 name:  'Momentum',
-                date:  '21-02-26',
+                date:  '21 - 02 - 2026',
                 href:  'https://github.com/notifications-star/lifeos',
             },
-            // Add projects here
         ],
     },
     {
@@ -47,7 +26,7 @@ export const FOLDERS = [
                 type:  'video',
                 icon:  '🎬',
                 name:  'Important Message!',
-                date:  '25-10-87',
+                date:  '25 - 10 - 1987',
                 id:    'dQw4w9WgXcQ',
                 title: 'Important Message!',
             },
@@ -55,7 +34,7 @@ export const FOLDERS = [
                 type:  'video',
                 icon:  '🎬',
                 name:  'Man Plays Saxophone',
-                date:  '25-10-87',
+                date:  '25 - 10 - 1987',
                 id:    '/videos/Video-by-perrellcpt-_IG_p_Cw4C7cMsL76_-copy.webm',
                 title: 'Man Plays Saxophone',
             },
@@ -63,7 +42,7 @@ export const FOLDERS = [
                 type:  'video',
                 icon:  '🎬',
                 name:  'National Anthem',
-                date:  '27-02-2020',
+                date:  '27 - 02 - 2020',
                 id:    'WyKAZt27A9w',
                 title: 'National Anthem',
             },
@@ -71,11 +50,10 @@ export const FOLDERS = [
                 type:  'video',
                 icon:  '🎬',
                 name:  'Video Taken 2001',
-                date:  '11-09-2001',
+                date:  '11 - 09 - 2001',
                 id:    '/videos/nokiavideotest.webm',
-                title: 'National Anthem',
+                title: 'Video Taken 2001',
             },
-            // Add videos here
         ],
     },
     {
@@ -89,7 +67,7 @@ export const FOLDERS = [
                 type:  'audio',
                 icon:  '🎧',
                 name:  'Sandstorm',
-                date:  '25-02-26',
+                date:  '25 - 02 - 2026',
                 src:   '/music/Darude - Sandstorm.mp3',
                 title: 'Darude - Sandstorm',
             },
@@ -97,7 +75,7 @@ export const FOLDERS = [
                 type:  'audio',
                 icon:  '🎧',
                 name:  'Kalimba (Ninja Tuna)',
-                date:  '25-02-26',
+                date:  '25 - 02 - 2026',
                 src:   '/music/Mr Scruff - Kalimba (Ninja Tuna).mp3',
                 title: 'Mr Scruff - Kalimba (Ninja Tuna)',
             },
@@ -105,23 +83,23 @@ export const FOLDERS = [
                 type:  'audio',
                 icon:  '🎧',
                 name:  'Joan Progression',
-                date:  '25-02-26',
+                date:  '25 - 02 - 2026',
                 src:   '/music/chordtest joanprog.mp3',
                 title: 'Joan Progression',
             },
             {
                 type:  'audio',
                 icon:  '🎧',
-                name:  'McDonalds beat 17-11-24',
-                date:  '17-11-24',
+                name:  'McDonalds beat',
+                date:  '17 - 11 - 2024',
                 src:   '/music/mcd cook 17 11 2024.mp3',
-                title: 'McDonalds beat 17-11-24',
+                title: 'McDonalds beat 17 - 11 - 2024',
             },
             {
                 type:  'audio',
                 icon:  '🎧',
                 name:  'TB-303 test',
-                date:  '25-02-26',
+                date:  '25 - 02 - 2026',
                 src:   '/music/tb303 test.mp3',
                 title: 'TB-303 test',
             },
@@ -129,7 +107,7 @@ export const FOLDERS = [
                 type:  'audio',
                 icon:  '🎧',
                 name:  'Test Project #1',
-                date:  '25-02-26',
+                date:  '25 - 02 - 2026',
                 src:   '/music/Testproj1.mp3',
                 title: 'Test Project #1',
             },
@@ -137,14 +115,10 @@ export const FOLDERS = [
                 type:  'audio',
                 icon:  '🎧',
                 name:  'Test Project #2',
-                date:  '25-02-26',
+                date:  '25 - 02 - 2026',
                 src:   '/music/testproj2.mp3',
                 title: 'Test Project #2',
             },
-            // Add audio here
-            // Self-hosted mp3 example:
-            // { type:'audio', icon:'🎵', name:'Track Name', date:'DD-MM-YY',
-            //   src:'/music/your-track.mp3', title:'Artist - Track Name' },
         ],
     },
     {
@@ -158,7 +132,7 @@ export const FOLDERS = [
                 type:  'image',
                 icon:  '🖼️',
                 name:  'Example',
-                date:  '01-01-25',
+                date:  '01 - 01 - 2025',
                 src:   'https://upload.wikimedia.org/wikipedia/commons/b/b8/Loss.svg',
                 title: 'Example Image',
             },
@@ -166,11 +140,39 @@ export const FOLDERS = [
                 type:  'image',
                 icon:  '🖼️',
                 name:  'Test Image',
-                date:  '01-01-25',
+                date:  '01 - 01 - 2025',
                 src:   'https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png',
                 title: 'Test Image',
             },
-            // Add images here
+        ],
+    },
+    {
+        iconId:   'open-docs',
+        windowId: 'docs-window',
+        title:    'Documents',
+        icon:     '📄',
+        path:     'vskid/Documents',
+        items: [
+            { 
+                type:'doc', 
+                icon:'📄', 
+                name:'Hello World', 
+                date:'25 - 02 - 2025',
+                id:'hello-world', 
+                title:'Hello World' 
+            },
         ],
     },
 ];
+
+export const BLOG_POSTS = [
+     {
+         id:      'hello-world',
+         title:   'Hello World',
+         date:    '01 - 01 - 2025',
+         summary: 'My first post.',
+         file:    'posts/hello-world.md',
+     },
+];
+
+export const WALL_PASSWORD = 'John 3:16';

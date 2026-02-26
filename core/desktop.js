@@ -39,7 +39,10 @@ function initClock() {
 
 function initWindowSystem() {
     const registry = [];
-    let highestZ   = 50;
+    let highestZ        = 50;
+    let cascadeCount    = 0;  // increments each time a window is opened
+    const CASCADE_STEP  = 28; // px offset per open
+    const CASCADE_RESET = 8;  // reset after this many opens to avoid going off-screen
 
     function bringToFront(el) {
         el.style.zIndex = ++highestZ;
@@ -65,9 +68,22 @@ function initWindowSystem() {
             ?.addEventListener('click', () => closeWindow(entry));
         windowEl.querySelector('.minimize-btn')
             ?.addEventListener('click', () => minimizeWindow(entry));
+
+        // Inject maximize button between minimize and close
+        const controls = windowEl.querySelector('.window-controls');
+        if (controls && !controls.querySelector('.maximize-btn')) {
+            const maxBtn = document.createElement('button');
+            maxBtn.className = 'maximize-btn';
+            maxBtn.title     = 'Maximize';
+            maxBtn.textContent = '□';
+            maxBtn.addEventListener('click', () => toggleMaximize(entry));
+            const closeBtn = controls.querySelector('.close-btn');
+            closeBtn ? controls.insertBefore(maxBtn, closeBtn) : controls.appendChild(maxBtn);
+        }
+
         windowEl.addEventListener('mousedown', () => bringToFront(windowEl));
 
-        // Make the title bar draggable + edges/corners resizable
+        // Make the title bar draggable and the window resizable
         makeDraggable(windowEl, bringToFront);
         makeResizable(windowEl);
 
@@ -75,29 +91,97 @@ function initWindowSystem() {
     }
 
     function openWindow(entry) {
+        const firstOpen = entry.el.classList.contains('hidden') &&
+                          !entry.taskbarBtn;
         entry.el.classList.remove('hidden', 'minimized');
         // Force animation restart
         entry.el.style.animation = 'none';
         void entry.el.offsetWidth;
         entry.el.style.animation = '';
         bringToFront(entry.el);
+
+        // Cascade: nudge position each time a new window is opened so they
+        // don't perfectly overlap. Only applies on the very first open (not
+        // restore-from-minimise) and only if the user hasn't already dragged it.
+        if (firstOpen && !entry._cascaded) {
+            entry._cascaded = true;
+            const step = (cascadeCount % CASCADE_RESET) * CASCADE_STEP;
+            cascadeCount++;
+            // Only offset if the window hasn't been manually dragged yet
+            // (transform is still the CSS default 'none' or empty)
+            const t = entry.el.style.transform;
+            if (!t || t === 'none') {
+                entry.el.style.transform = `translate3d(${step}px, ${step}px, 0)`;
+            }
+        }
+
         updateTaskbarBtn(entry, true);
     }
 
+    // ── Maximize / restore ────────────────────────────────────
+    // Saves the window's current inline position/size before
+    // maximizing so restore brings it back exactly.
+
+    function toggleMaximize(entry) {
+        const el = entry.el;
+        const maxBtn = el.querySelector('.maximize-btn');
+
+        if (el.classList.contains('maximized')) {
+            // Restore
+            el.classList.remove('maximized');
+            // Restore saved inline styles
+            const s = entry._preMaximize || {};
+            el.style.transform = s.transform ?? '';
+            el.style.width     = s.width     ?? '';
+            el.style.height    = s.height    ?? '';
+            el.style.left      = s.left      ?? '';
+            el.style.top       = s.top       ?? '';
+            el.style.position  = s.position  ?? '';
+            if (maxBtn) { maxBtn.textContent = '□'; maxBtn.title = 'Maximize'; }
+        } else {
+            // Save current inline styles before overriding
+            entry._preMaximize = {
+                transform: el.style.transform,
+                width:     el.style.width,
+                height:    el.style.height,
+                left:      el.style.left,
+                top:       el.style.top,
+                position:  el.style.position,
+            };
+            // Clear position/size so .maximized CSS takes full effect
+            el.style.transform = '';
+            el.style.width     = '';
+            el.style.height    = '';
+            el.style.left      = '';
+            el.style.top       = '';
+            el.style.position  = '';
+            el.classList.add('maximized');
+            bringToFront(el);
+            if (maxBtn) { maxBtn.textContent = '❐'; maxBtn.title = 'Restore'; }
+        }
+    }
+
     function closeWindow(entry) {
+        entry.el.classList.remove('hidden', 'minimized', 'maximized');
         entry.el.classList.add('hidden');
-        entry.el.classList.remove('minimized');
         entry.taskbarBtn?.remove();
         entry.taskbarBtn = null;
-        // Reset any inline styles set by drag or resize so the window
-        // returns to its original CSS-defined size and position.
-        const el = entry.el;
-        el.style.width     = '';
-        el.style.height    = '';
-        el.style.maxWidth  = '';
-        el.style.maxHeight = '';
-        el.style.transform = '';
-        el.style.animation = '';
+        entry._preMaximize = null;
+        // Reset maximize button symbol
+        const maxBtn = entry.el.querySelector('.maximize-btn');
+        if (maxBtn) { maxBtn.textContent = '□'; maxBtn.title = 'Maximize'; }
+        // Reset any inline styles from drag/resize so the window reopens
+        // at its CSS-defined size and position, not stuck at last session's state.
+        entry.el.style.transform = '';
+        entry.el.style.width     = '';
+        entry.el.style.height    = '';
+        entry.el.style.maxWidth  = '';
+        entry.el.style.maxHeight = '';
+        entry.el.style.left      = '';
+        entry.el.style.top       = '';
+        entry.el.style.position  = '';
+        // Reset cascade flag so it gets a fresh position on next open
+        entry._cascaded = false;
     }
 
     function minimizeWindow(entry) {
@@ -138,22 +222,32 @@ function makeDraggable(windowEl, bringToFront) {
     let active = false;
     let startX, startY, ox = 0, oy = 0, cx, cy;
 
+    // Read the current translate3d offset from inline style so that
+    // the first drag after a cascade-open or re-open starts from the
+    // correct position rather than snapping back to (0, 0).
+    function readCurrentOffset() {
+        const t = windowEl.style.transform;
+        if (!t || t === 'none') { ox = 0; oy = 0; return; }
+        const m = t.match(/translate3d\(\s*([-\d.]+)px,\s*([-\d.]+)px/);
+        if (m) { ox = parseFloat(m[1]); oy = parseFloat(m[2]); }
+    }
+
     function down(e) {
         if (e.target.closest('.window-controls')) return;
+        if (e.target !== titleBar && !e.target.closest('.title-text')) return;
+        // Don't allow dragging a maximized window — must restore first
+        if (windowEl.classList.contains('maximized')) return;
+        e.preventDefault();
+        readCurrentOffset();
         const px = e.touches ? e.touches[0].clientX : e.clientX;
         const py = e.touches ? e.touches[0].clientY : e.clientY;
         startX = px - ox;
         startY = py - oy;
-        if (e.target === titleBar || e.target.closest('.title-text')) {
-            active = true;
-            bringToFront(windowEl);
-        }
+        active = true;
+        bringToFront(windowEl);
     }
 
-    function up() {
-        startX = cx; startY = cy;
-        active = false;
-    }
+    function up() { active = false; }
 
     function move(e) {
         if (!active) return;
@@ -161,7 +255,7 @@ function makeDraggable(windowEl, bringToFront) {
         const px = e.touches ? e.touches[0].clientX : e.clientX;
         const py = e.touches ? e.touches[0].clientY : e.clientY;
         cx = px - startX;
-        cy = Math.max(0, py - startY); // clamp top edge
+        cy = py - startY;
         ox = cx; oy = cy;
         windowEl.style.transform = `translate3d(${cx}px, ${cy}px, 0)`;
         windowEl.style.animation = 'none';
@@ -173,77 +267,6 @@ function makeDraggable(windowEl, bringToFront) {
     document.addEventListener('touchend',   up);
     document.addEventListener('mousemove',  move);
     document.addEventListener('touchmove',  move, { passive: false });
-}
-
-
-// ── WINDOW RESIZING ──────────────────────────────────────────
-// Injects 8 resize handles (corners + edges) into every window.
-// Dragging a handle resizes the window by adjusting inline
-// width/height directly. Min size: 240×160px.
-// On mobile, only right/bottom/corner handles are shown to
-// avoid conflicting with scroll gestures.
-
-function makeResizable(windowEl) {
-    const MIN_W = 240, MIN_H = 160;
-
-    // SE corner only — simplest resize: just drag bottom-right corner.
-    const handle = document.createElement('div');
-    handle.className    = 'resize-handle resize-se';
-    handle.style.cursor = 'se-resize';
-    windowEl.appendChild(handle);
-
-    let active = false, startX, startY, startW, startH;
-
-    handle.addEventListener('mousedown', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        active  = true;
-        startX  = e.clientX;
-        startY  = e.clientY;
-        const r = windowEl.getBoundingClientRect();
-        startW  = r.width;
-        startH  = r.height;
-        document.body.style.cursor     = 'se-resize';
-        document.body.style.userSelect = 'none';
-    });
-
-    // Touch support for mobile
-    handle.addEventListener('touchstart', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        active  = true;
-        startX  = e.touches[0].clientX;
-        startY  = e.touches[0].clientY;
-        const r = windowEl.getBoundingClientRect();
-        startW  = r.width;
-        startH  = r.height;
-    }, { passive: false });
-
-    document.addEventListener('mousemove', e => {
-        if (!active) return;
-        windowEl.style.width     = Math.max(MIN_W, startW + e.clientX - startX) + 'px';
-        windowEl.style.height    = Math.max(MIN_H, startH + e.clientY - startY) + 'px';
-        windowEl.style.maxHeight = 'none';
-        windowEl.style.maxWidth  = 'none';
-        windowEl.style.animation = 'none';
-    });
-
-    document.addEventListener('touchmove', e => {
-        if (!active) return;
-        windowEl.style.width     = Math.max(MIN_W, startW + e.touches[0].clientX - startX) + 'px';
-        windowEl.style.height    = Math.max(MIN_H, startH + e.touches[0].clientY - startY) + 'px';
-        windowEl.style.maxHeight = 'none';
-        windowEl.style.maxWidth  = 'none';
-        windowEl.style.animation = 'none';
-    }, { passive: true });
-
-    document.addEventListener('mouseup',  () => {
-        if (!active) return;
-        active = false;
-        document.body.style.cursor     = '';
-        document.body.style.userSelect = '';
-    });
-    document.addEventListener('touchend', () => { active = false; });
 }
 
 
@@ -359,6 +382,70 @@ function initTaskbarBtnDrag(btn, entry, toggleWindow) {
 
     btn.addEventListener('mousedown', down);
     btn.addEventListener('touchstart', down, { passive: false });
+}
+
+
+// ── WINDOW RESIZE (SE corner handle) ─────────────────────────
+// Injects a single bottom-right drag handle into every window.
+// Works with mouse and touch. Respects any CSS min-width/height.
+// Because windows use translate3d for position we must NOT use
+// offsetLeft/offsetTop — we only change width/height, never position.
+
+function makeResizable(windowEl) {
+    const handle = document.createElement('div');
+    handle.className = 'resize-handle resize-se';
+    windowEl.appendChild(handle);
+
+    let active = false;
+    let startX, startY, startW, startH;
+
+    function onDown(e) {
+        // Don't resize a maximized window
+        if (windowEl.classList.contains('maximized')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const px = e.touches ? e.touches[0].clientX : e.clientX;
+        const py = e.touches ? e.touches[0].clientY : e.clientY;
+        const r  = windowEl.getBoundingClientRect();
+        startX = px;
+        startY = py;
+        startW = r.width;
+        startH = r.height;
+        active = true;
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup',   onUp);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend',  onUp);
+    }
+
+    function onMove(e) {
+        if (!active) return;
+        e.preventDefault();
+        const px = e.touches ? e.touches[0].clientX : e.clientX;
+        const py = e.touches ? e.touches[0].clientY : e.clientY;
+
+        // Compute desired size from drag delta
+        const newW = Math.max(260, startW + (px - startX));
+        const newH = Math.max(180, startH + (py - startY));
+
+        windowEl.style.width  = newW + 'px';
+        windowEl.style.height = newH + 'px';
+        // Override any max constraints set by CSS
+        windowEl.style.maxWidth  = 'none';
+        windowEl.style.maxHeight = 'none';
+    }
+
+    function onUp() {
+        active = false;
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup',   onUp);
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend',  onUp);
+    }
+
+    handle.addEventListener('mousedown',  onDown);
+    handle.addEventListener('touchstart', onDown, { passive: false });
 }
 
 
