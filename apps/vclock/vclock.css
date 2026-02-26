@@ -1,0 +1,293 @@
+/* ============================================================
+   apps/vclock/vclock.css
+   vClock — World Clock
+   
+   Digital mode:  green LCD (Casio/calculator style)
+                  pale greenish-yellow panel, dark segments
+   Analog mode:   realistic desk clock — cream dial, applied
+                  brass indices, lume-tipped hands
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700&display=swap');
+
+/* ── Window ──────────────────────────────────────────────── */
+
+#vclock-window {
+    width: 560px;
+    height: auto;
+    min-height: unset;
+    max-height: 90vh;
+    top: 5%;
+    left: calc(50% - 280px);
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    overflow: hidden;
+}
+
+#vclock-window.hidden,
+#vclock-window.minimized { display: none; }
+
+/* ── Title bar ───────────────────────────────────────────── */
+
+.vclock-title-bar {
+    background: linear-gradient(to bottom, #3a3a3a, #252525);
+    border-bottom: 1px solid #555;
+}
+
+.vclock-title-bar .title-text {
+    color: #ddd;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+#vclock-window .window-controls .minimize-btn,
+#vclock-window .window-controls .close-btn {
+    color: #bbb;
+    border-color: #555;
+}
+
+#vclock-window .window-controls .minimize-btn:hover,
+#vclock-window .window-controls .close-btn:hover {
+    background: #666;
+    color: #fff;
+}
+
+/* ── Body ────────────────────────────────────────────────── */
+
+.vclock-body {
+    background: #2c2c2c;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #3a3a3a;
+    border-top: none;
+    overflow-y: auto;
+    max-height: calc(90vh - 32px);
+}
+
+/* ── Top bar ─────────────────────────────────────────────── */
+
+.vclock-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    background: #272727;
+    border-bottom: 1px solid #3d3d3d;
+    flex-shrink: 0;
+}
+
+.vclock-title-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    color: #555;
+    text-transform: uppercase;
+}
+
+/* ── Mode toggle ─────────────────────────────────────────── */
+
+.vclock-mode-toggle {
+    display: flex;
+    background: #1c1c1c;
+    border: 1px solid #444;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.vclock-mode-btn {
+    padding: 4px 14px;
+    border: none;
+    border-right: 1px solid #444;
+    background: transparent;
+    color: #666;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-transform: uppercase;
+}
+.vclock-mode-btn:last-child { border-right: none; }
+.vclock-mode-btn:hover { color: #ccc; background: #2a2a2a; }
+.vclock-mode-btn.active {
+    background: #3c3c3c;
+    color: #eee;
+}
+
+/* ── Clock grid ──────────────────────────────────────────── */
+
+.vclock-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px;
+    background: #2c2c2c;
+}
+
+/* ── Clock card — device housing ────────────────────────── */
+
+.vclock-card {
+    background: #383838;
+    border: 1px solid #464646;
+    border-bottom: 2px solid #1a1a1a;
+    border-right: 2px solid #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 8px 6px;
+    gap: 5px;
+    position: relative;
+    border-radius: 3px;
+    min-width: 0;
+    transition: background 0.1s, border-color 0.1s;
+}
+
+/* Every card highlights on hover — consistent UX regardless
+   of whether it has a writeup attached yet */
+.vclock-card:hover {
+    background: #424242;
+    border-color: #606060;
+}
+
+/* City name */
+.vclock-city {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: #888;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GREEN LCD DIGITAL DISPLAY
+   Real Casio/calculator look:
+     - pale green-yellow backlit panel
+     - dark near-black segments on light background
+     - inset bezel, no glow
+     - canvas renders at native pixel size (no CSS distortion)
+   ═══════════════════════════════════════════════════════════ */
+
+.vclock-digital {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 6px 4px;
+    border-radius: 2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Casio greenish-yellow LCD panel */
+    background: #b8c87a;
+    box-shadow:
+        inset 0 1px 4px rgba(0,0,0,0.45),
+        inset 0 0 0 1px rgba(0,0,0,0.25);
+}
+
+.vclock-seg-canvas {
+    display: block;
+    /* Render at native pixel size — no CSS width/height override.
+       This is critical: letting CSS scale a canvas squishes segments. */
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANALOG CLOCK FACE
+   Drawn entirely on canvas in JS — see drawAnalogClock().
+   CSS just provides sizing + drop shadow.
+   ═══════════════════════════════════════════════════════════ */
+
+.vclock-analog {
+    width: 100%;
+    aspect-ratio: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vclock-analog-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
+}
+
+/* ── Date + timezone ─────────────────────────────────────── */
+
+.vclock-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    width: 100%;
+}
+
+.vclock-date {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.48rem;
+    color: #666;
+    letter-spacing: 0.08em;
+}
+
+.vclock-tz {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.42rem;
+    color: #4a4a4a;
+    letter-spacing: 0.05em;
+}
+
+/* ── Linked card (has a vDoc writeup) ────────────────────── */
+
+.vclock-card--linked {
+    cursor: pointer;
+}
+
+/* Linked cards get a warmer, more inviting hover on top of the base */
+.vclock-card--linked:hover {
+    background: #464038;
+    border-color: #7a6e50;
+}
+
+.vclock-card--linked:active {
+    background: #333;
+    border-color: #aaa;
+}
+
+/* Persistent small badge — top-right corner.
+   Always visible so user knows the card is clickable.
+   Styled neutral/muted; it's informational, not decorative. */
+.vclock-badge {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    font-size: 0.45rem;
+    color: #666;
+    font-family: 'Share Tech Mono', monospace;
+    line-height: 1;
+    pointer-events: none; /* card handles the click */
+}
+
+.vclock-card--linked:hover .vclock-badge {
+    color: #bbb;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+
+.vclock-body::-webkit-scrollbar { width: 4px; }
+.vclock-body::-webkit-scrollbar-track { background: #222; }
+.vclock-body::-webkit-scrollbar-thumb { background: #444; }
+.vclock-body::-webkit-scrollbar-thumb:hover { background: #666; }

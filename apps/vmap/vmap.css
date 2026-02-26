@@ -1,0 +1,206 @@
+/* ============================================================
+   apps/vmap/vmap.css
+   vMap — Transit Fantasy / Travel Map
+   ============================================================ */
+
+/* ── Window ──────────────────────────────────────────────── */
+
+#vmap-window {
+    width: 700px;
+    height: 520px;
+    top: 6%;
+    left: calc(50% - 350px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+}
+
+#vmap-window.hidden,
+#vmap-window.minimized { display: none; }
+
+/* ── Title bar ───────────────────────────────────────────── */
+
+.vmap-title-bar {
+    background: linear-gradient(to bottom, #2a2e2a, #1c201c);
+    border-bottom: 1px solid #3a4a3a;
+    flex-shrink: 0;
+}
+
+.vmap-title-bar .title-text {
+    color: #a8c8a0;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+#vmap-window .window-controls .minimize-btn,
+#vmap-window .window-controls .close-btn {
+    color: #8aaa80;
+    border-color: #3a4a3a;
+}
+
+#vmap-window .window-controls .minimize-btn:hover,
+#vmap-window .window-controls .close-btn:hover {
+    background: #3a5a3a;
+    color: #fff;
+}
+
+/* ── Body — the map fills it entirely ───────────────────── */
+
+.vmap-body {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #1a2020;
+    min-height: 0;
+}
+
+#vmap-leaflet {
+    position: absolute;
+    inset: 0;
+}
+
+/* ── Override Leaflet chrome to match the desktop theme ──── */
+
+.leaflet-container {
+    background: #1a2028 !important;
+    font-family: 'Barlow Condensed', sans-serif !important;
+}
+
+/* Attribution — keep it but make it unobtrusive */
+.leaflet-control-attribution {
+    background: rgba(0,0,0,0.55) !important;
+    color: #555 !important;
+    font-size: 0.55rem !important;
+    padding: 1px 5px !important;
+}
+
+.leaflet-control-attribution a { color: #667 !important; }
+
+/* Zoom buttons */
+.leaflet-control-zoom a {
+    background: #1e2420 !important;
+    color: #8ab890 !important;
+    border-color: #2e3e2e !important;
+    font-size: 1rem !important;
+    line-height: 26px !important;
+}
+
+.leaflet-control-zoom a:hover {
+    background: #2a3a2a !important;
+    color: #b0d8a8 !important;
+}
+
+/* ── LoD City markers ────────────────────────────────────── */
+
+/* Base dot — visible at all zoom levels */
+.vmap-marker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+    cursor: pointer;
+}
+
+.vmap-dot {
+    border-radius: 50%;
+    background: #7ab870;
+    border: 1.5px solid #b0d8a8;
+    box-shadow: 0 0 4px rgba(120,200,100,0.4);
+    transition: transform 0.15s, background 0.15s;
+    flex-shrink: 0;
+}
+
+.vmap-marker:hover .vmap-dot {
+    background: #a0e890;
+    transform: scale(1.5);
+    box-shadow: 0 0 8px rgba(140,240,110,0.6);
+}
+
+/* Label — shown at mid/high zoom via JS class toggling */
+.vmap-label {
+    position: absolute;
+    left: calc(100% + 4px);
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #b0c8a8;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.8);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.vmap-marker.lod-label  .vmap-label { opacity: 1; font-size: 0.6rem; }
+.vmap-marker.lod-detail .vmap-label { opacity: 1; font-size: 0.72rem; color: #d0e8c8; }
+
+/* Dot sizing per LoD */
+.vmap-marker.lod-dot    .vmap-dot { width: 5px;  height: 5px;  }
+.vmap-marker.lod-label  .vmap-dot { width: 7px;  height: 7px;  }
+.vmap-marker.lod-detail .vmap-dot { width: 9px;  height: 9px;  border-width: 2px; }
+
+/* ── Popup ───────────────────────────────────────────────── */
+
+.leaflet-popup-content-wrapper {
+    background: #1c2820 !important;
+    border: 1px solid #3a5a3a !important;
+    border-radius: 3px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6) !important;
+    color: #b0c8a8 !important;
+    font-family: 'Barlow Condensed', sans-serif !important;
+    padding: 0 !important;
+}
+
+.leaflet-popup-tip {
+    background: #1c2820 !important;
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    padding: 10px 14px !important;
+}
+
+.vmap-popup-city {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #c8e8c0;
+    margin-bottom: 3px;
+}
+
+.vmap-popup-tz {
+    font-size: 0.6rem;
+    color: #607858;
+    letter-spacing: 0.08em;
+}
+
+.vmap-popup-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: #90b888;
+    margin-top: 4px;
+}
+
+.vmap-popup-link {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #7ab870;
+    cursor: pointer;
+    border-bottom: 1px solid #3a5a3a;
+    padding-bottom: 1px;
+}
+
+.vmap-popup-link:hover { color: #a0d898; border-color: #6a9860; }

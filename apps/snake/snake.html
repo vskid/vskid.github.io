@@ -1,0 +1,66 @@
+<!--
+  apps/snake/snake.html
+  vSnake — Nokia 3310 edition.
+  No emojis. No gradients. Two colours.
+-->
+<div class="window hidden" id="snake-window">
+
+  <div class="title-bar snake-title-bar">
+    <div class="title-text">vSNAKE</div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"    title="Close">x</button>
+    </div>
+  </div>
+
+  <div class="snake-body">
+
+    <!-- HUD strip -->
+    <div class="snake-hud">
+      <div class="snake-hud-item">
+        <span class="snake-hud-label">SCORE</span>
+        <span class="snake-hud-val" id="snake-score">0</span>
+      </div>
+      <div class="snake-hud-item">
+        <span class="snake-hud-label">BEST</span>
+        <span class="snake-hud-val" id="snake-best">0</span>
+      </div>
+      <div class="snake-hud-item">
+        <span class="snake-hud-label">LEVEL</span>
+        <span class="snake-hud-val" id="snake-level">1</span>
+      </div>
+    </div>
+
+    <!-- LCD screen -->
+    <div class="snake-screen-bezel">
+      <canvas id="snake-canvas"></canvas>
+      <div class="snake-overlay" id="snake-overlay">
+        <div class="snake-overlay-title" id="snake-overlay-title">SNAKE II</div>
+        <div class="snake-overlay-sub"   id="snake-overlay-sub">USE DPAD OR WASD</div>
+        <button class="snake-start-btn"  id="snake-start-btn">[ START ]</button>
+      </div>
+    </div>
+
+    <!-- Nokia D-pad -->
+    <div class="snake-dpad">
+      <div class="dpad-row">
+        <button class="dpad-btn dpad-up"    id="dpad-up"   >&#x25B2;</button>
+      </div>
+      <div class="dpad-row dpad-mid">
+        <button class="dpad-btn dpad-left"  id="dpad-left" >&#x25C4;</button>
+        <div    class="dpad-center"></div>
+        <button class="dpad-btn dpad-right" id="dpad-right">&#x25BA;</button>
+      </div>
+      <div class="dpad-row">
+        <button class="dpad-btn dpad-down"  id="dpad-down" >&#x25BC;</button>
+      </div>
+    </div>
+
+    <!-- Soft key row -->
+    <div class="snake-softkeys">
+      <button class="softkey-btn" id="snake-pause-btn">PAUSE</button>
+      <button class="softkey-btn" id="snake-restart-btn">RESTART</button>
+    </div>
+
+  </div>
+</div>

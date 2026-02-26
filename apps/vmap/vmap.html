@@ -1,0 +1,24 @@
+<!--
+  apps/vmap/vmap.html
+  vMap — Transit Fantasy / Travel Map
+  Leaflet + OSM. World-bounded, no infinite tiling.
+  LoD marker system: dots → labels → detail per zoom level.
+-->
+<div class="window hidden" id="vmap-window">
+
+  <div class="title-bar vmap-title-bar">
+    <div class="title-text">
+      <span class="title-icon">🗺</span>
+      vMap
+    </div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"    title="Close">×</button>
+    </div>
+  </div>
+
+  <div class="vmap-body">
+    <div id="vmap-leaflet"></div>
+  </div>
+
+</div>

@@ -1,0 +1,39 @@
+<!--
+  apps/vclock/vclock.html
+  vClock — World Clock
+  Nostalgia travel showcase. Two clock modes: 7-segment LED + analog.
+  Each city card links to a vDoc travel writeup.
+-->
+<div class="window hidden" id="vclock-window">
+
+  <div class="title-bar vclock-title-bar">
+    <div class="title-text">
+      <span class="title-icon">🕐</span>
+      vClock
+    </div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"    title="Close">×</button>
+    </div>
+  </div>
+
+  <div class="vclock-body">
+
+    <!-- Top bar: mode toggle + timezone label -->
+    <div class="vclock-topbar">
+      <div class="vclock-mode-toggle">
+        <button class="vclock-mode-btn active" id="vclock-btn-digital" data-mode="digital">
+          <span class="vclock-mode-icon">▤</span> LED
+        </button>
+        <button class="vclock-mode-btn" id="vclock-btn-analog" data-mode="analog">
+          <span class="vclock-mode-icon">◎</span> ANA
+        </button>
+      </div>
+      <div class="vclock-title-label">WORLD CLOCK</div>
+    </div>
+
+    <!-- Clock grid — populated by JS -->
+    <div class="vclock-grid" id="vclock-grid"></div>
+
+  </div>
+</div>

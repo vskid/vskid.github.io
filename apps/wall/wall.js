@@ -1,35 +1,120 @@
 // ============================================================
 // apps/wall/wall.js
 // ============================================================
-// The Wall — public guestbook.
+// The Wall — public guestbook backed by Supabase.
 //
-// Storage: window.storage (persistent cross-session key-value).
-//   'wall:entries'  → JSON array of entry objects
+// Table: wall-posts
+//   id         uuid        (auto)
+//   created_at timestamptz (auto)
+//   user       text
+//   post       text
+//   pin        bool        (default false)
 //
-// Entry shape:
-//   { id, name, message, timestamp, pinned }
+// ── WHY TWO KEYS ─────────────────────────────────────────────
+// Supabase RLS blocks UPDATE/DELETE for the anon key by default.
+// PATCH (pin) and DELETE silently affect 0 rows unless either:
+//   A) You add an RLS UPDATE/DELETE policy in the Supabase dashboard, OR
+//   B) You use the service_role key for those operations (bypasses RLS).
 //
-// Owner mode: hardcoded password from config.js (WALL_PASSWORD).
-//   When unlocked, pin/delete buttons appear on each entry.
-//   Owner state is session-only (never persisted).
+// This file uses approach B for owner actions (pin, delete).
+// The service_role key is only sent when owner mode is unlocked.
 //
-// All mutations go through saveEntries() which writes back to
-// window.storage and re-renders the list.
+// To get your service_role key:
+//   Supabase dashboard → Settings → API → "service_role" (secret)
+//   Paste it into SUPABASE_SERVICE_KEY below.
+//
+// If you prefer approach A (RLS policy), run this SQL in your Supabase
+// SQL editor instead and leave SUPABASE_SERVICE_KEY empty:
+//   CREATE POLICY "owner update" ON "wall-posts"
+//     FOR UPDATE USING (true) WITH CHECK (true);
+//   CREATE POLICY "owner delete" ON "wall-posts"
+//     FOR DELETE USING (true);
 // ============================================================
 
 import { WALL_PASSWORD } from '../../core/config.js';
 
-const STORAGE_KEY = 'wall:entries';
+// ── Supabase config ───────────────────────────────────────────
+const SUPABASE_URL = 'https://emfvqpgrdqukyioiqxhl.supabase.co';
+
+// Public anon key — safe to expose, used for SELECT + INSERT
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtZnZxcGdyZHF1a3lpb2lxeGhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwOTk0OTUsImV4cCI6MjA4NzY3NTQ5NX0.D0LVlwsaMB3BEvtQdnCclXfA7-fdtUJjps1iuQihn_g';
+
+// Service role key — bypasses RLS, used ONLY for owner pin/delete.
+// Get from: Supabase dashboard → Settings → API → service_role (secret)
+// WARNING: This is a static site so this key is visible in source.
+// That is acceptable here because: (a) the table has no sensitive data,
+// (b) the key only touches one table, (c) owner actions require a password
+// before this key is ever used client-side.
+const SUPABASE_SERVICE_KEY = '';   // ← paste your service_role key here
+
+const TABLE = 'wall-posts';
+
+function makeHeaders(useServiceKey) {
+    const key = (useServiceKey && SUPABASE_SERVICE_KEY) ? SUPABASE_SERVICE_KEY : SUPABASE_ANON_KEY;
+    return {
+        'Content-Type':  'application/json',
+        'apikey':        key,
+        'Authorization': 'Bearer ' + key,
+    };
+}
+
+// ── Supabase REST helpers ─────────────────────────────────────
+
+async function sbFetch(path, opts, useServiceKey) {
+    opts = opts || {};
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+        ...opts,
+        headers: { ...makeHeaders(useServiceKey), ...(opts.headers || {}) },
+    });
+    if (!res.ok) {
+        const err = await res.text();
+        throw new Error('Supabase ' + res.status + ': ' + err);
+    }
+    return res.status === 204 ? null : res.json();
+}
+
+// Public: SELECT — anon key
+async function fetchPosts() {
+    return sbFetch(
+        TABLE + '?select=id,created_at,user,post,pin&order=pin.desc,created_at.desc',
+        {}, false
+    );
+}
+
+// Public: INSERT — anon key
+async function insertPost(user, post) {
+    return sbFetch(TABLE, {
+        method:  'POST',
+        headers: { 'Prefer': 'return=representation' },
+        body:    JSON.stringify({ user: user, post: post }),
+    }, false);
+}
+
+// Owner: PATCH pin — service_role key (bypasses RLS UPDATE block)
+async function patchPin(id, pinned) {
+    return sbFetch(TABLE + '?id=eq.' + id, {
+        method:  'PATCH',
+        headers: { 'Prefer': 'return=representation' },
+        body:    JSON.stringify({ pin: pinned }),
+    }, true);
+}
+
+// Owner: DELETE — service_role key (bypasses RLS DELETE block)
+async function deletePost(id) {
+    return sbFetch(TABLE + '?id=eq.' + id, { method: 'DELETE' }, true);
+}
+
+// ── App ───────────────────────────────────────────────────────
 
 export async function initWall({ registerWindow, openWindow }) {
 
-    // ── Inject CSS ───────────────────────────────────────────
+    // ── CSS ───────────────────────────────────────────────────
     const link = document.createElement('link');
     link.rel  = 'stylesheet';
     link.href = new URL('wall.css', import.meta.url).href;
     document.head.appendChild(link);
 
-    // ── Fetch + inject HTML ──────────────────────────────────
+    // ── HTML ──────────────────────────────────────────────────
     try {
         const res  = await fetch(new URL('wall.html', import.meta.url).href);
         const html = await res.text();
@@ -43,11 +128,10 @@ export async function initWall({ registerWindow, openWindow }) {
     if (!windowEl) return;
     const entry = registerWindow(windowEl, { icon: '📖' });
 
-    // ── Wire desktop icon ────────────────────────────────────
-    const iconEl = document.getElementById('open-wall');
-    iconEl?.addEventListener('dblclick', () => openWindow(entry));
+    document.getElementById('open-wall')
+        ?.addEventListener('dblclick', () => openWindow(entry));
 
-    // ── DOM refs ─────────────────────────────────────────────
+    // ── DOM refs ──────────────────────────────────────────────
     const entriesEl   = document.getElementById('wall-entries');
     const emptyEl     = document.getElementById('wall-empty');
     const countEl     = document.getElementById('wall-count');
@@ -63,107 +147,106 @@ export async function initWall({ registerWindow, openWindow }) {
     const modalErr    = document.getElementById('wall-modal-err');
 
     // ── State ─────────────────────────────────────────────────
-    let entries      = [];   // array of entry objects, loaded from storage
+    let posts         = [];
     let ownerUnlocked = false;
 
-    // ── Storage helpers ───────────────────────────────────────
+    // ── Load & render ─────────────────────────────────────────
 
-    async function loadEntries() {
+    async function reload(flashId) {
+        setStatus('loading');
         try {
-            const result = await window.storage.get(STORAGE_KEY);
-            entries = result ? JSON.parse(result.value) : [];
-        } catch {
-            entries = [];
-        }
-    }
-
-    async function saveEntries() {
-        try {
-            await window.storage.set(STORAGE_KEY, JSON.stringify(entries));
+            posts = await fetchPosts();
         } catch (err) {
-            console.error('[wall] Failed to save entries', err);
+            console.error('[wall] fetchPosts failed:', err);
+            setStatus('error');
+            return;
         }
-        renderEntries();
+        setStatus('ok');
+        render(flashId);
     }
 
-    // ── Render ────────────────────────────────────────────────
+    function setStatus(s) {
+        postBtn.disabled = (s === 'loading') || msgInput.value.trim() === '';
+        countEl.textContent = s === 'loading' ? 'loading…'
+                            : s === 'error'   ? 'connection error'
+                            : posts.length === 1 ? '1 entry'
+                            : posts.length + ' entries';
+    }
 
-    function renderEntries() {
-        // Remove all existing entry cards (keep the empty state element)
-        Array.from(entriesEl.querySelectorAll('.wall-entry')).forEach(el => el.remove());
+    function render(flashId) {
+        Array.from(entriesEl.querySelectorAll('.wall-entry'))
+            .forEach(function(el) { el.remove(); });
 
-        // Sort: pinned first, then by timestamp descending (newest on top)
-        const sorted = [...entries].sort((a, b) => {
-            if (a.pinned && !b.pinned) return -1;
-            if (!a.pinned && b.pinned) return 1;
-            return b.timestamp - a.timestamp;
-        });
+        emptyEl.style.display = posts.length ? 'none' : '';
 
-        emptyEl.style.display = sorted.length ? 'none' : '';
-        countEl.textContent   = sorted.length === 1
-            ? '1 entry' : `${sorted.length} entries`;
-
-        sorted.forEach(e => {
-            const card = buildCard(e);
+        posts.forEach(function(p) {
+            const card = buildCard(p);
             entriesEl.appendChild(card);
+
+            if (p.id === flashId) {
+                requestAnimationFrame(function() {
+                    card.classList.add('flash');
+                    card.addEventListener('animationend',
+                        function() { card.classList.remove('flash'); },
+                        { once: true }
+                    );
+                });
+            }
         });
 
-        // Apply owner class so CSS shows action buttons
         entriesEl.classList.toggle('owner-unlocked', ownerUnlocked);
     }
 
-    function buildCard(e) {
-        const card = document.createElement('div');
-        card.className  = 'wall-entry' + (e.pinned ? ' pinned' : '');
-        card.dataset.id = e.id;
+    function buildCard(p) {
+        const pinned = !!p.pin;
 
-        // Pin badge
-        if (e.pinned) {
+        const card = document.createElement('div');
+        card.className  = 'wall-entry' + (pinned ? ' pinned' : '');
+        card.dataset.id = p.id;
+
+        if (pinned) {
             const badge = document.createElement('span');
             badge.className   = 'wall-pin-badge';
             badge.textContent = '📌 pinned';
             card.appendChild(badge);
         }
 
-        // Header: name ── rule ── timestamp
         const header = document.createElement('div');
         header.className = 'wall-entry-header';
 
-        const name = document.createElement('span');
-        name.className   = 'wall-entry-name';
-        name.textContent = e.name || 'anonymous';
+        const nameEl = document.createElement('span');
+        nameEl.className   = 'wall-entry-name';
+        nameEl.textContent = p.user || 'anonymous';
 
         const rule = document.createElement('span');
         rule.className = 'wall-entry-rule';
 
-        const time = document.createElement('span');
-        time.className   = 'wall-entry-time';
-        time.textContent = formatDate(e.timestamp);
+        const timeEl = document.createElement('span');
+        timeEl.className   = 'wall-entry-time';
+        timeEl.textContent = formatDate(p.created_at);
 
-        header.appendChild(name);
+        header.appendChild(nameEl);
         header.appendChild(rule);
-        header.appendChild(time);
+        header.appendChild(timeEl);
         card.appendChild(header);
 
-        // Message
-        const msg = document.createElement('div');
-        msg.className   = 'wall-entry-msg';
-        msg.textContent = e.message;
-        card.appendChild(msg);
+        const msgEl = document.createElement('div');
+        msgEl.className   = 'wall-entry-msg';
+        msgEl.textContent = p.post;
+        card.appendChild(msgEl);
 
-        // Owner action buttons
         const actions = document.createElement('div');
         actions.className = 'wall-entry-actions';
 
         const pinBtn = document.createElement('button');
-        pinBtn.className   = 'wall-action-btn pin-btn' + (e.pinned ? ' active' : '');
-        pinBtn.textContent = e.pinned ? 'unpin' : 'pin';
-        pinBtn.addEventListener('click', () => togglePin(e.id));
+        pinBtn.className   = 'wall-action-btn pin-btn' + (pinned ? ' active' : '');
+        pinBtn.textContent = pinned ? 'unpin' : 'pin';
+        pinBtn.addEventListener('click', function() { togglePin(p.id); });
 
         const delBtn = document.createElement('button');
         delBtn.className   = 'wall-action-btn delete-btn';
         delBtn.textContent = 'delete';
-        delBtn.addEventListener('click', () => deleteEntry(e.id));
+        delBtn.addEventListener('click', function() { confirmDelete(p.id); });
 
         actions.appendChild(pinBtn);
         actions.appendChild(delBtn);
@@ -172,88 +255,117 @@ export async function initWall({ registerWindow, openWindow }) {
         return card;
     }
 
-    function formatDate(ts) {
-        const d = new Date(ts);
-        const pad = n => String(n).padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} `
-             + `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    function formatDate(iso) {
+        const d   = new Date(iso);
+        const pad = function(n) { return String(n).padStart(2, '0'); };
+        return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+             + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
     }
 
-    // ── Post new entry ────────────────────────────────────────
+    // ── Submit new post ───────────────────────────────────────
 
-    function submitEntry() {
-        const name    = nameInput.value.trim() || 'anonymous';
-        const message = msgInput.value.trim();
-        if (!message) return;
+    async function submitEntry() {
+        const user = nameInput.value.trim() || 'anonymous';
+        const post = msgInput.value.trim();
+        if (!post) return;
 
-        const newEntry = {
-            id:        crypto.randomUUID(),
-            name,
-            message,
-            timestamp: Date.now(),
-            pinned:    false,
-        };
+        postBtn.disabled    = true;
+        postBtn.textContent = 'Posting…';
 
-        entries.unshift(newEntry);
-        saveEntries();
+        try {
+            const rows     = await insertPost(user, post);
+            const inserted = Array.isArray(rows) ? rows[0] : rows;
 
-        // Flash the new card
-        requestAnimationFrame(() => {
-            const card = entriesEl.querySelector(`[data-id="${newEntry.id}"]`);
-            if (card) {
-                card.classList.add('flash');
-                card.addEventListener('animationend', () => card.classList.remove('flash'), { once: true });
-            }
+            msgInput.value       = '';
+            nameInput.value      = '';
+            msgCount.textContent = '0/280';
+            msgCount.classList.remove('warn');
+            postBtn.textContent  = 'Post ↵';
+
+            await reload(inserted ? inserted.id : null);
+        } catch (err) {
+            console.error('[wall] insertPost failed:', err);
+            postBtn.textContent = 'Post ↵';
+            postBtn.disabled    = false;
+        }
+    }
+
+    // ── Pin / unpin ───────────────────────────────────────────
+
+    async function togglePin(id) {
+        const p = posts.find(function(x) { return x.id === id; });
+        if (!p) return;
+
+        const newPin = !p.pin;
+
+        // Optimistic local update
+        p.pin = newPin;
+        posts.sort(function(a, b) {
+            if (a.pin && !b.pin) return -1;
+            if (!a.pin && b.pin) return  1;
+            return 0;
         });
+        render();
 
-        // Clear compose fields
-        msgInput.value    = '';
-        nameInput.value   = '';
-        msgCount.textContent = '0/280';
-        msgCount.classList.remove('warn');
-        postBtn.disabled  = true;
+        try {
+            await patchPin(id, newPin);
+        } catch (err) {
+            console.error('[wall] patchPin failed:', err);
+            // Roll back
+            p.pin = !newPin;
+            posts.sort(function(a, b) {
+                if (a.pin && !b.pin) return -1;
+                if (!a.pin && b.pin) return  1;
+                return 0;
+            });
+            render();
+        }
     }
 
-    // ── Owner actions ─────────────────────────────────────────
+    // ── Delete ────────────────────────────────────────────────
 
-    function togglePin(id) {
-        const e = entries.find(e => e.id === id);
-        if (e) { e.pinned = !e.pinned; saveEntries(); }
-    }
-
-    function deleteEntry(id) {
-        entries = entries.filter(e => e.id !== id);
-        saveEntries();
+    async function confirmDelete(id) {
+        if (!window.confirm('Delete this post?')) return;
+        try {
+            await deletePost(id);
+            posts = posts.filter(function(p) { return p.id !== id; });
+            render();
+            countEl.textContent = posts.length === 1
+                ? '1 entry' : posts.length + ' entries';
+        } catch (err) {
+            console.error('[wall] deletePost failed:', err);
+        }
     }
 
     // ── Owner login ───────────────────────────────────────────
 
     function unlockOwner() {
-        ownerUnlocked   = true;
+        ownerUnlocked = true;
         ownerBtn.textContent = '🔓';
         ownerBtn.classList.add('unlocked');
-        ownerBtn.title  = 'Owner mode active (click to lock)';
+        ownerBtn.title = 'Owner mode (click to lock)';
         entriesEl.classList.add('owner-unlocked');
     }
 
     function lockOwner() {
-        ownerUnlocked   = false;
+        ownerUnlocked = false;
         ownerBtn.textContent = '🔒';
         ownerBtn.classList.remove('unlocked');
-        ownerBtn.title  = 'Owner login';
+        ownerBtn.title = 'Owner login';
         entriesEl.classList.remove('owner-unlocked');
     }
 
-    ownerBtn.addEventListener('click', () => {
+    ownerBtn.addEventListener('click', function() {
         if (ownerUnlocked) { lockOwner(); return; }
         modal.classList.remove('hidden');
         modalPw.value = '';
         modalErr.classList.add('hidden');
-        requestAnimationFrame(() => modalPw.focus());
+        requestAnimationFrame(function() { modalPw.focus(); });
     });
 
-    modalCancel.addEventListener('click', () => {
-        modal.classList.add('hidden');
+    modalCancel.addEventListener('click', function() { modal.classList.add('hidden'); });
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.classList.add('hidden');
     });
 
     function attemptLogin() {
@@ -268,31 +380,23 @@ export async function initWall({ registerWindow, openWindow }) {
     }
 
     modalSubmit.addEventListener('click', attemptLogin);
-    modalPw.addEventListener('keydown', e => {
-        if (e.key === 'Enter') attemptLogin();
+    modalPw.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter')  attemptLogin();
         if (e.key === 'Escape') modal.classList.add('hidden');
     });
 
-    // Click outside modal box closes it
-    modal.addEventListener('click', e => {
-        if (e.target === modal) modal.classList.add('hidden');
-    });
+    // ── Compose wiring ────────────────────────────────────────
 
-    // ── Compose field wiring ──────────────────────────────────
-
-    msgInput.addEventListener('input', () => {
+    msgInput.addEventListener('input', function() {
         const len = msgInput.value.length;
-        msgCount.textContent = `${len}/280`;
+        msgCount.textContent = len + '/280';
         msgCount.classList.toggle('warn', len > 240);
         postBtn.disabled = len === 0;
     });
 
     postBtn.disabled = true;
-
     postBtn.addEventListener('click', submitEntry);
-
-    // Ctrl+Enter or Cmd+Enter posts
-    msgInput.addEventListener('keydown', e => {
+    msgInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
             submitEntry();
@@ -300,7 +404,5 @@ export async function initWall({ registerWindow, openWindow }) {
     });
 
     // ── Boot ──────────────────────────────────────────────────
-
-    await loadEntries();
-    renderEntries();
+    await reload();
 }

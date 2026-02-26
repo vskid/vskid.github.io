@@ -1,0 +1,335 @@
+/* ============================================================
+   apps/snake/snake.css  —  Nokia 3310 edition
+   Palette: exactly two LCD colours + phone body grey.
+   No gradients. No glow. No border-radius. No emojis.
+   All text in monospace/pixel font only.
+   ============================================================
+
+   Nokia 3310 hardware colours (eyedropped from real photos):
+     Phone body:    #8c8c8c  (light grey plastic)
+     Body shadow:   #555555  (darker grey for depth)
+     Button face:   #707070
+     Button press:  #4a4a4a
+     LCD bg:        #a8b89a  (greenish off-white)
+     LCD ink:       #1a2410  (very dark green-black)
+     LCD dim:       #7a9068  (faint grid lines)
+     Bezel:         #3c3c3c
+   ============================================================ */
+
+/* ── Google Fonts import for pixel-style mono ────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+/* ── Pixel font stack ────────────────────────────────────── */
+.snake-body,
+.snake-hud,
+.snake-dpad,
+.snake-softkeys,
+.snake-overlay {
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+}
+
+/* ── Window shell ────────────────────────────────────────── */
+
+#snake-window {
+    width: 260px;
+    height: auto;
+    min-height: unset;
+    max-height: unset;
+    top: 6%;
+    left: calc(50% + 80px);
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    overflow: hidden;
+    /* Hard pixel shadow — no blur */
+    box-shadow: 3px 3px 0 #1a1a1a, 5px 5px 0 #333;
+}
+
+#snake-window.hidden,
+#snake-window.minimized { display: none; }
+
+/* ── Title bar ───────────────────────────────────────────── */
+
+.snake-title-bar {
+    background: #3c3c3c;
+    border-bottom: 2px solid #1a1a1a;
+}
+
+.snake-title-bar .title-text {
+    color: #a8b89a;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    text-shadow: none;
+}
+
+#snake-window .window-controls .minimize-btn,
+#snake-window .window-controls .close-btn {
+    color: #a8b89a;
+    border-color: #555;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+}
+
+#snake-window .window-controls .minimize-btn:hover,
+#snake-window .window-controls .close-btn:hover {
+    background: #1a2410;
+    color: #a8b89a;
+}
+
+/* ── Phone body ──────────────────────────────────────────── */
+
+.snake-body {
+    background: #8c8c8c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 10px 12px;
+    gap: 7px;
+    /* Left/right/bottom border = phone edge */
+    border: 2px solid #1a1a1a;
+    border-top: none;
+    /* Subtle inner highlight on phone body */
+    box-shadow: inset 1px 0 0 #b0b0b0, inset -1px 0 0 #666;
+}
+
+/* ── HUD strip ───────────────────────────────────────────── */
+
+.snake-hud {
+    display: flex;
+    width: 100%;
+    background: #a8b89a;
+    border: 2px solid #1a2410;
+}
+
+.snake-hud-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2px 0;
+    border-right: 1px solid #1a2410;
+}
+
+.snake-hud-item:last-child { border-right: none; }
+
+.snake-hud-label {
+    font-size: 0.45rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #3a4e2e;
+}
+
+.snake-hud-val {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1a2410;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Screen bezel ────────────────────────────────────────── */
+
+.snake-screen-bezel {
+    position: relative;
+    /* Outer bezel - dark plastic */
+    border: 3px solid #3c3c3c;
+    /* Inner chamfer effect */
+    box-shadow:
+        inset 2px 2px 0 #555,
+        inset -2px -2px 0 #222,
+        2px 2px 0 #222;
+    background: #a8b89a;
+    display: block;
+}
+
+#snake-canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* ── Overlay (on the LCD itself) ─────────────────────────── */
+
+.snake-overlay {
+    position: absolute;
+    inset: 0;
+    background: #a8b89a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.snake-overlay.hidden { display: none; }
+
+.snake-overlay-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a2410;
+    letter-spacing: 0.12em;
+}
+
+.snake-overlay-sub {
+    font-size: 0.52rem;
+    color: #3a4e2e;
+    letter-spacing: 0.05em;
+    text-align: center;
+    padding: 0 6px;
+    line-height: 1.5;
+}
+
+.snake-start-btn {
+    margin-top: 3px;
+    padding: 3px 10px;
+    background: #1a2410;
+    color: #a8b89a;
+    border: 2px solid #1a2410;
+    border-radius: 0;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    /* Hard pixel shadow */
+    box-shadow: 2px 2px 0 #0a0f08;
+    transition: none;
+}
+
+.snake-start-btn:hover {
+    background: #2e4020;
+    color: #c8d8b0;
+}
+
+.snake-start-btn:active {
+    box-shadow: none;
+    transform: translate(2px, 2px);
+}
+
+/* ── Nokia D-pad ─────────────────────────────────────────── */
+/*
+   Reproduces the Nokia 3310 navigation cluster:
+   A centre circle flanked by four directional keys.
+   The whole cluster sits in a 3x3 grid arrangement.
+*/
+
+.snake-dpad {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    /* Slightly recessed area on phone body */
+    background: #7a7a7a;
+    border: 2px solid #555;
+    padding: 5px;
+    box-shadow: inset 0 2px 0 #999, inset 0 -2px 0 #444;
+}
+
+.dpad-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dpad-mid {
+    gap: 0;
+}
+
+/* Individual directional buttons */
+.dpad-btn {
+    width: 38px;
+    height: 22px;
+    background: #707070;
+    color: #d0d0d0;
+    border: 1px solid #3a3a3a;
+    border-radius: 0;
+    font-size: 0.65rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    font-weight: 700;
+    user-select: none;
+    -webkit-user-select: none;
+    /* Bevel: highlight top/left, shadow bottom/right */
+    box-shadow:
+        inset 1px 1px 0 #999,
+        inset -1px -1px 0 #444;
+    transition: none;
+    /* Prevent text selection on rapid taps */
+    touch-action: manipulation;
+}
+
+.dpad-up, .dpad-down {
+    width: 38px;
+    height: 20px;
+    border-radius: 0;
+}
+
+.dpad-left, .dpad-right {
+    width: 22px;
+    height: 28px;
+}
+
+.dpad-btn:active,
+.dpad-btn.pressed {
+    background: #4a4a4a;
+    color: #b0b0b0;
+    box-shadow:
+        inset -1px -1px 0 #888,
+        inset 1px 1px 0 #333;
+    transform: none;
+}
+
+/* Centre circle/oval between the four buttons */
+.dpad-center {
+    width: 28px;
+    height: 28px;
+    background: radial-gradient(ellipse at 40% 35%, #888 0%, #606060 60%, #444 100%);
+    border: 2px solid #3a3a3a;
+    border-radius: 50%;
+    box-shadow:
+        inset 1px 1px 0 #aaa,
+        inset -1px -1px 0 #333;
+    flex-shrink: 0;
+}
+
+/* ── Soft key row ────────────────────────────────────────── */
+
+.snake-softkeys {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+}
+
+.softkey-btn {
+    flex: 1;
+    max-width: 90px;
+    padding: 4px 0;
+    background: #707070;
+    color: #d0d0d0;
+    border: 1px solid #3a3a3a;
+    border-radius: 0;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    box-shadow:
+        inset 1px 1px 0 #999,
+        inset -1px -1px 0 #444;
+    touch-action: manipulation;
+    transition: none;
+}
+
+.softkey-btn:active {
+    background: #4a4a4a;
+    color: #b0b0b0;
+    box-shadow:
+        inset -1px -1px 0 #888,
+        inset 1px 1px 0 #333;
+}

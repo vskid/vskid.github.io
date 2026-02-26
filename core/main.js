@@ -17,6 +17,9 @@ import { initVMedia }          from '../apps/vmedia/vmedia.js';
 import { initVviewer }         from '../apps/vviewer/vviewer.js';
 import { initWall }            from '../apps/wall/wall.js';
 import { initVDoc }            from '../apps/vdoc/vdoc.js';
+import { initSnake }           from '../apps/snake/snake.js';
+import { initVClock }          from '../apps/vclock/vclock.js';
+import { initVMap }            from '../apps/vmap/vmap.js';
 
 const desktop = initDesktop();
 
@@ -25,3 +28,6 @@ await initVMedia(desktop);
 await initVviewer(desktop);
 await initWall(desktop);
 await initVDoc(desktop);
+await initSnake(desktop);
+await initVClock(desktop);
+await initVMap(desktop);
