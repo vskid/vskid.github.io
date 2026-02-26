@@ -693,3 +693,30 @@ body {
         top: 2%;
     }
 }
+/* ── Mobile: fix icon grid + taskbar overflow ────────────────── */
+@media (max-width: 640px) {
+    /* Default is flex-direction:column + wrap, which lets icons spill into
+       full-height columns — the last icon can dip under the 48px taskbar.
+       Switch to row-wrap so icons fill left→right and the container height
+       (already calc(100% - 48px)) naturally stops them above the taskbar. */
+    .desktop {
+        flex-direction: row;
+        align-content: flex-start;
+        align-items: flex-start;
+        padding: 0.75rem;
+        gap: 0.6rem;
+    }
+
+    .desktop-icon {
+        width: 70px;
+        height: 80px;
+    }
+
+    .icon-img {
+        font-size: 2rem;
+    }
+
+    .icon-label {
+        font-size: 0.72rem;
+    }
+}

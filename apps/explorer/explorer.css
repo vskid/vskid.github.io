@@ -143,18 +143,62 @@
     cursor: default;
 }
 
-/* ── Mobile: hide sidebar to save space, show file grid full width ── */
+/* ── Mobile ──────────────────────────────────────────────────── */
 @media (max-width: 500px) {
+
+    /* Sidebar collapses to a 40px icon-only strip.
+       Strategy: font-size:0 on the button hides the raw text node.
+       The icon span gets its size restored via a max-specificity rule
+       that beats everything else. Using px (not rem/em) so it never
+       inherits from the zeroed parent. */
     .explorer-sidebar {
+        width: 40px;
+        min-width: 40px;
+        padding: 6px 0;
+    }
+
+    .sidebar-section-label {
         display: none;
     }
+
+    .sidebar-item {
+        padding: 8px 0;
+        justify-content: center;
+        gap: 0;
+        font-size: 0;        /* collapses the text node */
+        line-height: 0;      /* belt-and-suspenders */
+    }
+
+    /* Restore icon — px value is immune to parent font-size:0 inheritance */
+    @media (max-width: 500px) {
+        .explorer-sidebar .sidebar-item .sidebar-item-icon {
+            display: inline-block;
+            font-size: 20px;
+            line-height: 1;
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    /* File area */
     .window-content {
         padding: 0.5rem;
     }
+
     .file-item {
         width: 72px;
     }
+
     .file-icon {
         font-size: 2rem;
+    }
+
+    /* Clamp file names to 1 line */
+    .file-name {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        word-break: normal;
+        max-width: 100%;
     }
 }
