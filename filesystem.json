@@ -1,12 +1,9 @@
 {
   "name": "vskid",
   "children": [
-
     {
       "name": "Projects",
       "icon": "📁",
-      "iconId": "open-projects",
-      "windowId": "projects-window",
       "children": [
         {
           "type": "project",
@@ -15,59 +12,145 @@
           "date": "21 - 02 - 2026",
           "href": "https://github.com/notifications-star/lifeos"
         }
-      ]
+      ],
+      "desktopIcon": "open-projects",
+      "type": "folder"
     },
-
     {
       "name": "Videos",
       "icon": "🎬",
-      "iconId": "open-videos",
-      "windowId": "videos-window",
       "children": [
-        { "type": "video", "icon": "🎬", "name": "Important Message!", "date": "25 - 10 - 1987", "id": "dQw4w9WgXcQ", "title": "Important Message!" },
-        { "type": "video", "icon": "🎬", "name": "Man Plays Saxophone", "date": "25 - 10 - 1987", "id": "/videos/Video-by-perrellcpt-_IG_p_Cw4C7cMsL76_-copy.webm", "title": "Man Plays Saxophone" },
-        { "type": "video", "icon": "🎬", "name": "National Anthem", "date": "27 - 02 - 2020", "id": "WyKAZt27A9w", "title": "National Anthem" },
-        { "type": "video", "icon": "🎬", "name": "Video Taken 2001", "date": "11 - 09 - 2001", "id": "/videos/nokiavideotest.webm", "title": "Video Taken 2001" }
-      ]
+        {
+          "type": "video",
+          "icon": "🎬",
+          "name": "Important Message!",
+          "date": "25 - 10 - 1987",
+          "id": "dQw4w9WgXcQ",
+          "title": "Important Message!"
+        },
+        {
+          "type": "video",
+          "icon": "🎬",
+          "name": "Man Plays Saxophone",
+          "date": "25 - 10 - 1987",
+          "id": "/videos/Video-by-perrellcpt-_IG_p_Cw4C7cMsL76_-copy.webm",
+          "title": "Man Plays Saxophone"
+        },
+        {
+          "type": "video",
+          "icon": "🎬",
+          "name": "National Anthem",
+          "date": "27 - 02 - 2020",
+          "id": "WyKAZt27A9w",
+          "title": "National Anthem"
+        },
+        {
+          "type": "video",
+          "icon": "🎬",
+          "name": "Video Taken 2001",
+          "date": "11 - 09 - 2001",
+          "id": "/videos/nokiavideotest.webm",
+          "title": "Video Taken 2001"
+        }
+      ],
+      "desktopIcon": "open-videos",
+      "type": "folder"
     },
-
     {
       "name": "Music",
       "icon": "🎵",
-      "iconId": "open-music",
-      "windowId": "music-window",
       "children": [
-        { "type": "audio", "icon": "🎧", "name": "Sandstorm",        "date": "25 - 02 - 2026", "src": "/music/Darude - Sandstorm.mp3",                    "title": "Darude - Sandstorm" },
-        { "type": "audio", "icon": "🎧", "name": "Kalimba",          "date": "25 - 02 - 2026", "src": "/music/Mr Scruff - Kalimba (Ninja Tuna).mp3",       "title": "Mr Scruff - Kalimba (Ninja Tuna)" },
-        { "type": "audio", "icon": "🎧", "name": "Joan Progression", "date": "25 - 02 - 2026", "src": "/music/chordtest joanprog.mp3",                     "title": "Joan Progression" },
-        { "type": "audio", "icon": "🎧", "name": "McDonalds beat",   "date": "17 - 11 - 2024", "src": "/music/mcd cook 17 11 2024.mp3",                    "title": "McDonalds beat 17 - 11 - 2024" },
-        { "type": "audio", "icon": "🎧", "name": "TB-303 test",      "date": "25 - 02 - 2026", "src": "/music/tb303 test.mp3",                             "title": "TB-303 test" },
-        { "type": "audio", "icon": "🎧", "name": "Test Project #1",  "date": "25 - 02 - 2026", "src": "/music/Testproj1.mp3",                              "title": "Test Project #1" },
-        { "type": "audio", "icon": "🎧", "name": "Test Project #2",  "date": "25 - 02 - 2026", "src": "/music/testproj2.mp3",                              "title": "Test Project #2" }
-      ]
+        {
+          "type": "audio",
+          "icon": "🎧",
+          "name": "Sandstorm",
+          "date": "25 - 02 - 2026",
+          "src": "/music/Darude - Sandstorm.mp3",
+          "title": "Darude - Sandstorm"
+        },
+        {
+          "type": "audio",
+          "icon": "🎧",
+          "name": "Kalimba",
+          "date": "25 - 02 - 2026",
+          "src": "/music/Mr Scruff - Kalimba (Ninja Tuna).mp3",
+          "title": "Mr Scruff - Kalimba (Ninja Tuna)"
+        },
+        {
+          "type": "audio",
+          "icon": "🎧",
+          "name": "Joan Progression",
+          "date": "25 - 02 - 2026",
+          "src": "/music/chordtest joanprog.mp3",
+          "title": "Joan Progression"
+        },
+        {
+          "type": "audio",
+          "icon": "🎧",
+          "name": "McDonalds beat",
+          "date": "17 - 11 - 2024",
+          "src": "/music/mcd cook 17 11 2024.mp3",
+          "title": "McDonalds beat 17 - 11 - 2024"
+        },
+        {
+          "type": "audio",
+          "icon": "🎧",
+          "name": "TB-303 test",
+          "date": "25 - 02 - 2026",
+          "src": "/music/tb303 test.mp3",
+          "title": "TB-303 test"
+        },
+        {
+          "type": "audio",
+          "icon": "🎧",
+          "name": "Test Project #1",
+          "date": "25 - 02 - 2026",
+          "src": "/music/Testproj1.mp3",
+          "title": "Test Project #1"
+        },
+        {
+          "type": "audio",
+          "icon": "🎧",
+          "name": "Test Project #2",
+          "date": "25 - 02 - 2026",
+          "src": "/music/testproj2.mp3",
+          "title": "Test Project #2"
+        }
+      ],
+      "desktopIcon": "open-music",
+      "type": "folder"
     },
-
     {
       "name": "Pictures",
       "icon": "🖼️",
-      "iconId": "open-pictures",
-      "windowId": "pictures-window",
       "children": [
-        { "type": "image", "icon": "🖼️", "name": "Example",    "date": "01 - 01 - 2025", "src": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Loss.svg",          "title": "Example Image" },
-        { "type": "image", "icon": "🖼️", "name": "Test Image", "date": "01 - 01 - 2025", "src": "https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png",           "title": "Test Image" }
-      ]
+        {
+          "type": "image",
+          "icon": "🖼️",
+          "name": "Example",
+          "date": "01 - 01 - 2025",
+          "src": "https://upload.wikimedia.org/wikipedia/commons/b/b8/Loss.svg",
+          "title": "Example Image"
+        },
+        {
+          "type": "image",
+          "icon": "🖼️",
+          "name": "Test Image",
+          "date": "01 - 01 - 2025",
+          "src": "https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png",
+          "title": "Test Image"
+        }
+      ],
+      "desktopIcon": "open-pictures",
+      "type": "folder"
     },
-
     {
       "name": "Documents",
       "icon": "📄",
-      "iconId": "open-docs",
-      "windowId": "docs-window",
       "children": [
-
         {
           "name": "Blog",
-          "icon": "✍📁",
+          "icon": "✍️",
           "children": [
             {
               "type": "doc",
@@ -78,9 +161,9 @@
               "title": "Hello World",
               "file": "posts/hello-world.md"
             }
-          ]
+          ],
+          "type": "folder"
         },
-
         {
           "name": "Cities",
           "icon": "📁",
@@ -94,11 +177,13 @@
               "title": "Jakarta",
               "file": "posts/cities/jakarta.md"
             }
-          ]
+          ],
+          "type": "folder"
         }
-
-      ]
+      ],
+      "desktopIcon": "open-docs",
+      "type": "folder"
     }
-
-  ]
+  ],
+  "type": "folder"
 }

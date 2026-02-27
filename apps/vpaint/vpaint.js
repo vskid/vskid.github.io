@@ -16,9 +16,9 @@ import { WALL_PASSWORD } from '../../core/config.js';
 import { initVPaintMenus } from './vpaint-menus.js';
 
 // ── Supabase ──────────────────────────────────────────────────
-const SB_URL       = 'https://YOURPROJECT.supabase.co';   // ← replace
-const SB_ANON_KEY  = 'YOUR_ANON_KEY';                      // ← replace
-const SB_ADMIN_KEY = 'YOUR_SERVICE_ROLE_KEY';               // ← replace (never public)
+const SB_URL       = 'https://emfvqpgrdqukyioiqxhl.supabase.co';
+const SB_ANON_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVtZnZxcGdyZHF1a3lpb2lxeGhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwOTk0OTUsImV4cCI6MjA4NzY3NTQ5NX0.D0LVlwsaMB3BEvtQdnCclXfA7-fdtUJjps1iuQihn_g';
+const SB_ADMIN_KEY = '';
 const TABLE        = 'vpaint-works';
 
 function sbHeaders(admin = false) {
@@ -183,7 +183,7 @@ export async function initVPaint(desktop) {
     const ov = overlayCanvas.getContext('2d');
 
     // ── State ─────────────────────────────────────────────────
-    let tool     = 'ellipse-fill';
+    let tool     = 'ellipse';
     let size     = 1;
     let fgColor  = '#000000';
     let bgColor  = '#ffffff';
@@ -205,6 +205,10 @@ export async function initVPaint(desktop) {
     let selMoving   = false; // user is dragging floating sel
     let selMoveBaseX = 0, selMoveBaseY = 0; // cursor at drag start
     let selMoveSelX  = 0, selMoveSelY  = 0; // sel.x/y at drag start
+
+    // Lasso select state
+    let lassoPoints  = [];   // [{x,y}] raw path while drawing
+    let lassoActive  = false;
 
     // Text tool
     let textPos   = null;
@@ -247,7 +251,7 @@ export async function initVPaint(desktop) {
     });
 
     function activateTool(t) {
-        if (t !== 'select-rect') commitSelection();
+        if (t !== 'select-rect' && t !== 'select-lasso') commitSelection();
         win.querySelectorAll('.vp-tool').forEach(b =>
             b.classList.toggle('active', b.dataset.tool === t));
         tool = t;
@@ -259,9 +263,10 @@ export async function initVPaint(desktop) {
             'line': 'Line', 'rect': 'Rectangle', 'rect-fill': 'Filled rect',
             'ellipse': 'Ellipse', 'ellipse-fill': 'Filled ellipse',
             'roundrect': 'Rounded rect', 'triangle': 'Triangle',
+            'select-lasso': 'Free Select',
         };
         sTool.textContent = names[t] || t;
-        selOptsEl.style.display = (t === 'select-rect') ? '' : 'none';
+        selOptsEl.style.display = (t === 'select-rect' || t === 'select-lasso') ? '' : 'none';
     }
 
     // ── Size buttons ──────────────────────────────────────────
@@ -295,7 +300,7 @@ export async function initVPaint(desktop) {
         if (e.key === 'Escape' && sel) { commitSelection(); return; }
 
         const map = {
-            s: 'select-rect', p: 'pencil', b: 'brush', f: 'fill',
+            s: 'select-rect', q: 'select-lasso', p: 'pencil', b: 'brush', f: 'fill',
             e: 'eraser', l: 'line', r: 'rect', o: 'ellipse',
             i: 'picker', t: 'text',
         };
@@ -780,10 +785,24 @@ export async function initVPaint(desktop) {
         if (tool === 'fill')   { pushUndo(); floodFill(x, y, color); return; }
         if (tool === 'text')   { startTextInput(x, y); return; }
 
+        // ── Rect select ───────────────────────────────────────
         if (tool === 'select-rect') {
-            // If inside floating sel — start moving
-            if (sel?.floating && x >= sel.x && x <= sel.x+sel.w && y >= sel.y && y <= sel.y+sel.h) {
-                selMoving = true;
+            const inside = sel && sel.w > 0 && sel.h > 0
+                && x >= sel.x && x <= sel.x + sel.w
+                && y >= sel.y && y <= sel.y + sel.h;
+            if (inside) {
+                // Lift non-floating selection immediately
+                if (!sel.floating) {
+                    const fc = document.createElement('canvas');
+                    fc.width = sel.w; fc.height = sel.h;
+                    fc.getContext('2d').drawImage(canvas, sel.x, sel.y, sel.w, sel.h, 0, 0, sel.w, sel.h);
+                    pushUndo();
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(sel.x, sel.y, sel.w, sel.h);
+                    sel.floatCanvas = fc;
+                    sel.floating    = true;
+                }
+                selMoving    = true;
                 selMoveBaseX = x; selMoveBaseY = y;
                 selMoveSelX  = sel.x; selMoveSelY = sel.y;
             } else {
@@ -795,12 +814,68 @@ export async function initVPaint(desktop) {
             return;
         }
 
+        // ── Lasso select ──────────────────────────────────────
+        if (tool === 'select-lasso') {
+            const inside = sel && sel.w > 0 && sel.h > 0
+                && x >= sel.x && x <= sel.x + sel.w
+                && y >= sel.y && y <= sel.y + sel.h;
+            if (inside) {
+                // Move existing lasso selection same as rect
+                if (!sel.floating) {
+                    const fc = document.createElement('canvas');
+                    fc.width = sel.w; fc.height = sel.h;
+                    fc.getContext('2d').drawImage(canvas, sel.x, sel.y, sel.w, sel.h, 0, 0, sel.w, sel.h);
+                    pushUndo();
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(sel.x, sel.y, sel.w, sel.h);
+                    sel.floatCanvas = fc;
+                    sel.floating    = true;
+                }
+                selMoving    = true;
+                selMoveBaseX = x; selMoveBaseY = y;
+                selMoveSelX  = sel.x; selMoveSelY = sel.y;
+            } else {
+                commitSelection();
+                lassoActive = true;
+                lassoPoints = [{ x, y }];
+            }
+            return;
+        }
+
         painting = true;
         lastX = x; lastY = y; snapX = x; snapY = y;
         if (SHAPE_TOOLS.has(tool)) return;
 
-        setupCtx(tool === 'eraser' ? bgColor : color,
-                 tool === 'brush' ? size * 2.5 : size);
+        // ── Eraser: use destination-out composite for true erase ──
+        if (tool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = 'rgba(0,0,0,1)';
+            ctx.lineWidth   = size * 4;
+            ctx.lineCap     = 'square';
+            ctx.lineJoin    = 'square';
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(x, y); ctx.lineTo(x + 0.001, y); ctx.stroke();
+            pushUndo();
+            return;
+        }
+
+        // ── Brush: wider, soft round strokes ─────────────────────
+        if (tool === 'brush') {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.globalAlpha = 0.65;
+            setupCtx(color, size * 5);
+            ctx.beginPath();
+            ctx.moveTo(x, y); ctx.lineTo(x + 0.001, y); ctx.stroke();
+            pushUndo();
+            return;
+        }
+
+        // ── Pencil and all others ─────────────────────────────────
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+        setupCtx(color, size);
         ctx.beginPath();
         ctx.moveTo(x, y); ctx.lineTo(x + 0.001, y); ctx.stroke();
         pushUndo();
@@ -814,9 +889,9 @@ export async function initVPaint(desktop) {
         const { x, y } = getPos(e);
         sPos.textContent = x + ', ' + y;
 
-        // Keep shiftDown in sync from the move event too (belt-and-suspenders)
         if (typeof e.shiftKey === 'boolean') shiftDown = e.shiftKey;
 
+        // ── Rect select move/draw ─────────────────────────────
         if (tool === 'select-rect') {
             if (selDrawing) {
                 const r = normRect(snapX, snapY, x, y);
@@ -824,8 +899,21 @@ export async function initVPaint(desktop) {
                 drawMarquee(r.x, r.y, r.w, r.h);
                 setSelStatus();
             } else if (selMoving && sel) {
-                sel.x = Math.max(0, Math.min(W-sel.w, selMoveSelX + (x - selMoveBaseX)));
-                sel.y = Math.max(0, Math.min(H-sel.h, selMoveSelY + (y - selMoveBaseY)));
+                sel.x = Math.max(0, Math.min(W - sel.w, selMoveSelX + (x - selMoveBaseX)));
+                sel.y = Math.max(0, Math.min(H - sel.h, selMoveSelY + (y - selMoveBaseY)));
+                drawMarquee(sel.x, sel.y, sel.w, sel.h);
+            }
+            return;
+        }
+
+        // ── Lasso draw / move ─────────────────────────────────
+        if (tool === 'select-lasso') {
+            if (lassoActive) {
+                lassoPoints.push({ x, y });
+                drawLassoOverlay(lassoPoints);
+            } else if (selMoving && sel) {
+                sel.x = Math.max(0, Math.min(W - sel.w, selMoveSelX + (x - selMoveBaseX)));
+                sel.y = Math.max(0, Math.min(H - sel.h, selMoveSelY + (y - selMoveBaseY)));
                 drawMarquee(sel.x, sel.y, sel.w, sel.h);
             }
             return;
@@ -833,7 +921,27 @@ export async function initVPaint(desktop) {
 
         if (!painting) return;
 
-        if (tool === 'pencil' || tool === 'brush' || tool === 'eraser') {
+        // ── Eraser ────────────────────────────────────────────
+        if (tool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.globalAlpha = 1;
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
+            lastX = x; lastY = y;
+            return;
+        }
+
+        // ── Brush ─────────────────────────────────────────────
+        if (tool === 'brush') {
+            ctx.globalAlpha = 0.65;
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
+            lastX = x; lastY = y;
+            return;
+        }
+
+        // ── Pencil ────────────────────────────────────────────
+        if (tool === 'pencil') {
+            ctx.globalAlpha = 1;
+            ctx.globalCompositeOperation = 'source-over';
             ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
             lastX = x; lastY = y;
             return;
@@ -851,26 +959,33 @@ export async function initVPaint(desktop) {
     document.addEventListener('mouseup',  onEnd);
 
     function onEnd() {
+        // Always restore composite op
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+
+        // ── Rect select ───────────────────────────────────────
         if (tool === 'select-rect') {
             if (selDrawing) {
                 selDrawing = false;
                 if (sel && sel.w > 2 && sel.h > 2) {
-                    // Capture pixels into floatCanvas (but don't erase yet — wait for first move)
                     const fc = document.createElement('canvas');
                     fc.width = sel.w; fc.height = sel.h;
                     fc.getContext('2d').drawImage(canvas, sel.x, sel.y, sel.w, sel.h, 0, 0, sel.w, sel.h);
                     sel.floatCanvas = fc;
                 }
             }
-            if (selMoving) {
-                selMoving = false;
-                if (sel && !sel.floating && sel.floatCanvas) {
-                    pushUndo();
-                    ctx.fillStyle = bgColor;
-                    ctx.fillRect(selMoveSelX, selMoveSelY, sel.w, sel.h);
-                    sel.floating = true;
-                }
+            if (selMoving) { selMoving = false; }
+            return;
+        }
+
+        // ── Lasso select ──────────────────────────────────────
+        if (tool === 'select-lasso') {
+            if (lassoActive && lassoPoints.length > 4) {
+                commitLasso(lassoPoints);
+            } else if (lassoActive) {
+                lassoPoints = []; lassoActive = false; clearOverlay();
             }
+            if (selMoving) { selMoving = false; }
             return;
         }
 
@@ -882,7 +997,7 @@ export async function initVPaint(desktop) {
 
     canvas.addEventListener('contextmenu', e => {
         e.preventDefault();
-        if (tool === 'select-rect') commitSelection();
+        if (tool === 'select-rect' || tool === 'select-lasso') commitSelection();
     });
 
     canvasArea.addEventListener('mousedown', e => {
