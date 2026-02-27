@@ -1,0 +1,253 @@
+<!--
+  apps/vpaint/vpaint.html  —  vPaint
+  Y2K/futuristic aesthetic: dark chassis, cyan accents, sharp corners, mono font.
+  Ribbon: Tools · Size · Style · (Selection when active) · Actions
+  Clipboard + Image ops live in the menu bar only.
+-->
+<div class="window hidden" id="vpaint-window">
+
+  <div class="title-bar vp-title-bar">
+    <div class="title-text"><span class="title-icon">🎨</span> vPaint</div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"    title="Close">×</button>
+    </div>
+  </div>
+
+  <!-- ── Menu bar ── -->
+  <div class="vp-menubar">
+    <div class="vp-menu-item" data-menu="file">FILE</div>
+    <div class="vp-menu-item" data-menu="edit">EDIT</div>
+    <div class="vp-menu-item" data-menu="image">IMAGE</div>
+    <div class="vp-menu-item" data-menu="gallery">GALLERY</div>
+  </div>
+
+  <!-- ── Tab strip ── -->
+  <div class="vp-tabstrip">
+    <button class="vp-tab active" data-tab="paint">PAINT</button>
+    <button class="vp-tab"        data-tab="gallery">GALLERY</button>
+    <button class="vp-tab hidden" id="vp-tab-admin" data-tab="admin">ADMIN</button>
+    <div style="flex:1"></div>
+    <button class="vp-lockbtn" id="vp-lock" title="Owner login">🔒</button>
+  </div>
+
+  <!-- ══ PAINT PANEL ══ -->
+  <div class="vp-panel" id="vp-panel-paint">
+
+    <!-- ── RIBBON ── -->
+    <div class="vp-ribbon">
+
+      <!-- Tools: 2×7 grid -->
+      <div class="vp-rg">
+        <div class="vp-rg-body">
+          <div class="vp-toolsgrid">
+            <button class="vp-tool"        data-tool="select-rect"  title="Select (S)">⬚</button>
+            <button class="vp-tool"        data-tool="pencil"       title="Pencil (P)">✏️</button>
+            <button class="vp-tool"        data-tool="brush"        title="Brush (B)">🖌️</button>
+            <button class="vp-tool"        data-tool="fill"         title="Fill (F)">🪣</button>
+            <button class="vp-tool"        data-tool="text"         title="Text (T)"><b>A</b></button>
+            <button class="vp-tool"        data-tool="eraser"       title="Eraser (E)">🧹</button>
+            <button class="vp-tool"        data-tool="picker"       title="Pick colour (I)">💉</button>
+            <button class="vp-tool"        data-tool="line"         title="Line (L)">╱</button>
+            <button class="vp-tool"        data-tool="rect"         title="Rectangle (R)">▭</button>
+            <button class="vp-tool"        data-tool="rect-fill"    title="Filled rect">▬</button>
+            <button class="vp-tool"        data-tool="ellipse"      title="Ellipse (O)">◯</button>
+            <button class="vp-tool active" data-tool="ellipse-fill" title="Filled ellipse">⬤</button>
+            <button class="vp-tool"        data-tool="roundrect"    title="Rounded rect">▢</button>
+            <button class="vp-tool"        data-tool="triangle"     title="Triangle">△</button>
+          </div>
+        </div>
+        <div class="vp-rg-lbl">TOOLS</div>
+      </div>
+      <div class="vp-sep"></div>
+
+      <!-- Size -->
+      <div class="vp-rg">
+        <div class="vp-rg-body">
+          <div class="vp-sizecol">
+            <button class="vp-szbtn active" data-size="1"  title="1px"><span class="vp-szline" style="height:1px"></span></button>
+            <button class="vp-szbtn"        data-size="3"  title="3px"><span class="vp-szline" style="height:3px"></span></button>
+            <button class="vp-szbtn"        data-size="6"  title="6px"><span class="vp-szline" style="height:6px"></span></button>
+            <button class="vp-szbtn"        data-size="12" title="12px"><span class="vp-szline" style="height:9px"></span></button>
+          </div>
+        </div>
+        <div class="vp-rg-lbl">SIZE</div>
+      </div>
+      <div class="vp-sep"></div>
+
+      <!-- Style -->
+      <div class="vp-rg">
+        <div class="vp-rg-body">
+          <div class="vp-col2">
+            <select class="vp-drop" id="vp-outline-style" title="Outline">
+              <option value="solid">─ SOLID</option>
+              <option value="dash">- DASH</option>
+              <option value="none">NONE</option>
+            </select>
+            <select class="vp-drop" id="vp-fill-style" title="Fill">
+              <option value="none">NO FILL</option>
+              <option value="fg">FG</option>
+              <option value="bg">BG</option>
+            </select>
+          </div>
+        </div>
+        <div class="vp-rg-lbl">STYLE</div>
+      </div>
+
+      <!-- Selection ops — only shown when select-rect active -->
+      <div class="vp-rg" id="vp-sel-opts" style="display:none">
+        <div class="vp-sep" style="margin:0 6px 0 0"></div>
+        <div class="vp-rg-body">
+          <div class="vp-col2">
+            <button class="vp-btn-sm" id="vp-sel-rot90"  title="Rotate sel 90°">↻</button>
+            <button class="vp-btn-sm" id="vp-sel-fliph"  title="Flip sel H">⇆</button>
+          </div>
+          <div class="vp-col2">
+            <button class="vp-btn-sm" id="vp-sel-flipv"  title="Flip sel V">⇅</button>
+            <button class="vp-btn-sm" id="vp-sel-invert" title="Invert sel colours">⊠</button>
+          </div>
+          <label class="vp-chklbl" title="Transparent background">
+            <input type="checkbox" id="vp-sel-transparent">TRANSP
+          </label>
+        </div>
+        <div class="vp-rg-lbl">SELECTION</div>
+      </div>
+
+      <div style="flex:1"></div>
+      <div class="vp-sep"></div>
+
+      <!-- Actions: Undo · Crop · Save · Clear -->
+      <div class="vp-rg">
+        <div class="vp-rg-body">
+          <div class="vp-col2">
+            <button class="vp-btn-sm" id="vp-undo"  title="Undo (Ctrl+Z)">↩ UNDO</button>
+            <button class="vp-btn-sm" id="vp-crop"  title="Crop to selection">⊡ CROP</button>
+          </div>
+          <div class="vp-col2">
+            <button class="vp-btn-sm" id="vp-save"  title="Save PNG">💾 SAVE</button>
+            <button class="vp-btn-sm" id="vp-clear" title="Clear canvas">🗑 CLEAR</button>
+          </div>
+        </div>
+        <div class="vp-rg-lbl">ACTIONS</div>
+      </div>
+
+    </div><!-- /ribbon -->
+
+    <!-- Colour bar -->
+    <div class="vp-colbar">
+      <div class="vp-swatches" title="Click FG to swap | Right-click swatch = BG">
+        <div class="vp-sw-bg" id="vp-sw-bg"></div>
+        <div class="vp-sw-fg" id="vp-sw-fg"></div>
+      </div>
+      <div class="vp-palette" id="vp-palette"></div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="vp-canvas-wrap" id="vp-canvas-area">
+      <canvas id="vp-canvas"></canvas>
+    </div>
+
+    <!-- Status bar -->
+    <div class="vp-statusbar">
+      <span id="vp-s-tool">ELLIPSE FILL</span>
+      <span class="vp-pipe">|</span>
+      <span id="vp-s-pos">0, 0</span>
+      <span class="vp-pipe">|</span>
+      <span id="vp-s-dim">640 × 480</span>
+      <span class="vp-pipe" id="vp-s-selpipe" style="display:none">|</span>
+      <span id="vp-s-sel"></span>
+      <span class="vp-pipe" id="vp-s-snappipe" style="display:none">|</span>
+      <span id="vp-s-snap" style="display:none"></span>
+    </div>
+
+  </div><!-- /paint panel -->
+
+  <!-- ══ GALLERY PANEL ══ -->
+  <div class="vp-panel hidden" id="vp-panel-gallery">
+    <div class="vp-gallbar">
+      <span class="vp-galltitle">// COMMUNITY GALLERY</span>
+      <span class="vp-gallcount" id="vp-gallery-count"></span>
+      <div style="flex:1"></div>
+      <button class="vp-btn-sm" id="vp-gallery-refresh">↻ REFRESH</button>
+    </div>
+    <div class="vp-grid" id="vp-gallery-grid">
+      <p class="vp-gridmsg" id="vp-gallery-msg">LOADING…</p>
+    </div>
+  </div>
+
+  <!-- ══ ADMIN PANEL ══ -->
+  <div class="vp-panel hidden" id="vp-panel-admin">
+    <div class="vp-gallbar">
+      <span class="vp-galltitle">// ADMIN</span>
+      <div style="flex:1"></div>
+      <button class="vp-btn-sm" id="vp-admin-refresh">↻ REFRESH</button>
+    </div>
+    <div class="vp-grid" id="vp-admin-grid">
+      <p class="vp-gridmsg">LOADING…</p>
+    </div>
+  </div>
+
+  <!-- ══ Resize/Skew dialog ══ -->
+  <div class="vp-overlay hidden" id="vp-resize-dialog">
+    <div class="vp-dlg">
+      <div class="vp-dlg-title">// RESIZE + SKEW</div>
+      <div class="vp-dlg-sec">RESIZE</div>
+      <div class="vp-dlg-row">
+        <label><input type="radio" name="resize-unit" value="pct" checked> %</label>
+        <label><input type="radio" name="resize-unit" value="px"> PX</label>
+      </div>
+      <div class="vp-dlg-row">
+        <label>W <input type="number" id="vp-rs-w" value="100" min="1" max="9999" class="vp-dlg-num"></label>
+        <label>H <input type="number" id="vp-rs-h" value="100" min="1" max="9999" class="vp-dlg-num"></label>
+      </div>
+      <div class="vp-dlg-row">
+        <label><input type="checkbox" id="vp-rs-maintain" checked> LOCK RATIO</label>
+      </div>
+      <div class="vp-dlg-sec">SKEW (DEG)</div>
+      <div class="vp-dlg-row">
+        <label>H <input type="number" id="vp-skew-h" value="0" min="-89" max="89" class="vp-dlg-num"></label>
+        <label>V <input type="number" id="vp-skew-v" value="0" min="-89" max="89" class="vp-dlg-num"></label>
+      </div>
+      <div class="vp-dlg-btns">
+        <button id="vp-rs-cancel">CANCEL</button>
+        <button id="vp-rs-ok" class="vp-dlg-ok">APPLY</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Post to Gallery dialog ══ -->
+  <div class="vp-overlay hidden" id="vp-post-dialog">
+    <div class="vp-dlg" style="width:220px">
+      <div class="vp-dlg-title">// POST TO GALLERY</div>
+      <div class="vp-dlg-sub">HANDLE (OPTIONAL)</div>
+      <input type="text" id="vp-name" class="vp-dlg-input" placeholder="anonymous" maxlength="32">
+      <div class="vp-dlg-btns">
+        <button id="vp-post-cancel">CANCEL</button>
+        <button id="vp-post" class="vp-dlg-ok">TRANSMIT</button>
+      </div>
+      <div class="vp-dlg-err hidden" id="vp-post-err"></div>
+    </div>
+  </div>
+
+  <!-- ══ Owner password modal ══ -->
+  <div class="vp-overlay hidden" id="vp-modal">
+    <div class="vp-dlg" style="width:210px">
+      <div class="vp-dlg-title">// OWNER ACCESS</div>
+      <input type="password" id="vp-modal-pw" class="vp-dlg-input" placeholder="PASSPHRASE">
+      <div class="vp-dlg-btns">
+        <button id="vp-modal-cancel">CANCEL</button>
+        <button id="vp-modal-submit" class="vp-dlg-ok">UNLOCK</button>
+      </div>
+      <div class="vp-dlg-err hidden" id="vp-modal-err">ACCESS DENIED</div>
+    </div>
+  </div>
+
+  <!-- ══ Lightbox ══ -->
+  <div class="vp-lightbox hidden" id="vp-lightbox">
+    <img id="vp-lightbox-img" src="" alt="">
+  </div>
+
+  <!-- ══ Toast ══ -->
+  <div class="vp-toast hidden" id="vp-toast"></div>
+
+</div>

@@ -1,19 +1,15 @@
 // ============================================================
 // apps/vdoc/vdoc.js — vDoc blog/document viewer
 // ============================================================
-// Posts defined in BLOG_POSTS (config.js).
-// Each post can have either:
-//   body: '<p>inline HTML</p>'      ← inline content
-//   file: 'posts/my-post.md'        ← path to a .md file (fetched at open time)
-//
-// Opened by:
-//   - Double-clicking the "Documents" desktop icon (open-docs)
-//   - Clicking a doc item in the explorer (file-open event, type:'doc')
+// Reads all doc nodes from /filesystem.json (walks the tree).
+// Posts can use:
+//   file: 'posts/my-post.md'   ← fetched and rendered as markdown
+//   body: '<p>inline HTML</p>' ← used as-is
 // ============================================================
 
-import { BLOG_POSTS, WALL_PASSWORD } from '../../core/config.js';
+import { WALL_PASSWORD } from '../../core/config.js';
 
-// ── Minimal markdown → HTML ───────────────────────────────────
+// ── Markdown renderer ─────────────────────────────────────────
 function mdToHtml(md) {
     const lines = md.replace(/\r\n/g, '\n').split('\n');
     const out = [];
@@ -43,9 +39,8 @@ function mdToHtml(md) {
 
         const hm = raw.match(/^(#{1,3})\s+(.*)/);
         if (hm) { flushList(); out.push(`<h${hm[1].length}>${inl(hm[2])}</h${hm[1].length}>`); continue; }
-
         if (/^---+$/.test(raw.trim())) { flushList(); out.push('<hr>'); continue; }
-        if (/^>\s?/.test(raw))         { flushList(); out.push(`<blockquote>${inl(raw.replace(/^>\s?/,''))}</blockquote>`); continue; }
+        if (/^>\s?/.test(raw)) { flushList(); out.push(`<blockquote>${inl(raw.replace(/^>\s?/,''))}</blockquote>`); continue; }
 
         const ulm = raw.match(/^[-*]\s+(.*)/);
         if (ulm) {
@@ -57,7 +52,6 @@ function mdToHtml(md) {
             if (!inList || listType !== 'ol') { flushList(); out.push('<ol>'); inList = true; listType = 'ol'; }
             out.push(`<li>${inl(olm[1])}</li>`); continue;
         }
-
         if (raw.trim() === '') { flushList(); out.push(''); continue; }
         flushList();
         out.push(`<p>${inl(raw)}</p>`);
@@ -77,7 +71,25 @@ function inl(s) {
         .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
 }
 
-// ── App init ──────────────────────────────────────────────────
+// ── Walk filesystem.json and collect all doc nodes ────────────
+async function loadDocs() {
+    try {
+        const res = await fetch('/filesystem.json');
+        const fs  = await res.json();
+        const docs = [];
+        function walk(node) {
+            if (node.type === 'doc') { docs.push(node); return; }
+            for (const child of node.children || []) walk(child);
+        }
+        walk(fs);
+        return docs;
+    } catch (err) {
+        console.error('[vdoc] Failed to load filesystem.json', err);
+        return [];
+    }
+}
+
+// ── App ───────────────────────────────────────────────────────
 export async function initVDoc({ registerWindow, openWindow }) {
 
     const link = document.createElement('link');
@@ -98,11 +110,6 @@ export async function initVDoc({ registerWindow, openWindow }) {
     if (!windowEl) return;
     const entry = registerWindow(windowEl, { icon: '📝' });
 
-    // Desktop icon: open-docs (Documents folder on desktop)
-    document.getElementById('open-docs')
-        ?.addEventListener('dblclick', () => openWindow(entry));
-
-    // Explorer file-open event: type:'doc', id: post id
     document.addEventListener('file-open', e => {
         if (e.detail?.type !== 'doc') return;
         openWindow(entry);
@@ -110,6 +117,8 @@ export async function initVDoc({ registerWindow, openWindow }) {
     });
 
     // ── DOM refs ──────────────────────────────────────────────
+    const sidebar      = document.getElementById('vdoc-sidebar');
+    const sidebarToggle = document.getElementById('vdoc-sidebar-toggle');
     const postList     = document.getElementById('vdoc-post-list');
     const docEl        = document.getElementById('vdoc-document');
     const placeholder  = document.getElementById('vdoc-placeholder');
@@ -123,13 +132,21 @@ export async function initVDoc({ registerWindow, openWindow }) {
     const modalErr     = document.getElementById('vdoc-modal-err');
 
     let ownerUnlocked = false;
-    const posts = Array.isArray(BLOG_POSTS) ? BLOG_POSTS : [];
 
-    // ── Build sidebar ─────────────────────────────────────────
+    // ── Sidebar toggle ────────────────────────────────────────
+    sidebarToggle?.addEventListener('click', () => {
+        const collapsed = sidebar.classList.toggle('collapsed');
+        sidebarToggle.textContent = collapsed ? '›' : '‹';
+        sidebarToggle.title = collapsed ? 'Show sidebar' : 'Hide sidebar';
+    });
+
+    // ── Load posts ────────────────────────────────────────────
+    const posts = await loadDocs();
+
     if (posts.length === 0) {
         const empty = document.createElement('div');
         empty.style.cssText = 'padding:14px;font-size:0.78rem;color:rgba(200,222,255,0.3);font-style:italic;font-family:Georgia,serif;';
-        empty.textContent = 'No posts yet.';
+        empty.textContent = 'No documents yet.';
         postList.appendChild(empty);
     }
 
@@ -140,7 +157,7 @@ export async function initVDoc({ registerWindow, openWindow }) {
 
         const title = document.createElement('div');
         title.className   = 'vdoc-post-item-title';
-        title.textContent = post.title;
+        title.textContent = post.title || post.name;
 
         const date = document.createElement('div');
         date.className   = 'vdoc-post-item-date';
@@ -157,25 +174,22 @@ export async function initVDoc({ registerWindow, openWindow }) {
         const post = posts.find(p => p.id === id);
         if (!post) return;
 
-        postList.querySelectorAll('.vdoc-post-item').forEach(el => {
-            el.classList.toggle('active', el.dataset.id === id);
-        });
+        postList.querySelectorAll('.vdoc-post-item').forEach(el =>
+            el.classList.toggle('active', el.dataset.id === id));
 
-        toolbarTitle.textContent = post.title;
-        toolbarDate.textContent  = post.date ?? '';
+        toolbarTitle.textContent  = post.title || post.name;
+        toolbarDate.textContent   = post.date ?? '';
         placeholder.style.display = 'none';
 
         docEl.querySelectorAll('.vdoc-doc-header, .vdoc-doc-body, .vdoc-loading')
             .forEach(el => el.remove());
 
-        // Loading indicator while fetching .md files
         const loading = document.createElement('div');
         loading.className = 'vdoc-loading';
         loading.style.cssText = 'padding:40px;text-align:center;color:#a0b0c0;font-style:italic;font-size:0.88rem;font-family:Georgia,serif;';
         loading.textContent = 'Loading…';
         docEl.appendChild(loading);
 
-        // Resolve body: inline HTML > fetch .md file > fallback
         let bodyHtml = '';
         if (post.body) {
             bodyHtml = post.body;
@@ -183,10 +197,9 @@ export async function initVDoc({ registerWindow, openWindow }) {
             try {
                 const r = await fetch(post.file);
                 if (!r.ok) throw new Error(r.status);
-                const md = await r.text();
-                bodyHtml = mdToHtml(md);
-            } catch (err) {
-                bodyHtml = `<p><em>Could not load file: ${post.file}</em></p>`;
+                bodyHtml = mdToHtml(await r.text());
+            } catch {
+                bodyHtml = `<p><em>Could not load: ${post.file}</em></p>`;
             }
         } else {
             bodyHtml = '<p><em>No content.</em></p>';
@@ -199,7 +212,7 @@ export async function initVDoc({ registerWindow, openWindow }) {
 
         const titleEl = document.createElement('h1');
         titleEl.className   = 'vdoc-doc-title';
-        titleEl.textContent = post.title;
+        titleEl.textContent = post.title || post.name;
 
         const meta = document.createElement('div');
         meta.className   = 'vdoc-doc-meta';
@@ -250,7 +263,7 @@ export async function initVDoc({ registerWindow, openWindow }) {
         ownerUnlocked = true;
         ownerBtn.textContent = '🔓';
         ownerBtn.classList.add('unlocked');
-        ownerBtn.title = 'Owner mode active (click to lock)';
+        ownerBtn.title = 'Owner mode active';
     }
 
     function lockOwner() {
@@ -260,6 +273,5 @@ export async function initVDoc({ registerWindow, openWindow }) {
         ownerBtn.title = 'Owner login';
     }
 
-    // Open first post by default
     if (posts.length > 0) openPost(posts[0].id);
 }

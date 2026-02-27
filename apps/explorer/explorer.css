@@ -202,3 +202,33 @@
         max-width: 100%;
     }
 }
+
+/* ── Collapsible sidebar tree ──────────────────────────────── */
+
+.sidebar-tree-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-children {
+    /* children shown/hidden via style.display in JS */
+}
+
+.sidebar-arrow {
+    display: inline-block;
+    min-width: 8px;
+    margin-right: 3px;
+    font-size: 0.45rem;
+    opacity: 0.45;
+    transition: transform 0.15s ease;
+    vertical-align: middle;
+}
+
+.sidebar-arrow.expanded {
+    transform: rotate(90deg);
+}
+
+.sidebar-item:hover .sidebar-arrow,
+.sidebar-item.active .sidebar-arrow {
+    opacity: 0.9;
+}

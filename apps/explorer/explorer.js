@@ -1,28 +1,29 @@
 // ============================================================
 // apps/explorer/explorer.js
 // ============================================================
-// Generic file explorer. Handles all folder windows.
+// ALL sidebar navigation is in-place — clicking any folder
+// (including siblings) navigates within the same window.
+// No cross-window opening from sidebar clicks.
 //
-// Each folder gets its own window (opened from desktop icon).
-// Inside each window, the sidebar lists ALL folders ; clicking
-// one navigates in-place (updates content, address bar, title).
-// Back/forward buttons maintain per-window history.
-//
-// Adding a new folder: just add it to FOLDERS in config.js.
-// The sidebar and navigation update automatically.
+// Sidebar is a collapsible tree. Subfolder icons always 📁.
 // ============================================================
-
-import { FOLDERS } from '../../core/config.js';
 
 export async function initExplorer({ registerWindow, openWindow }) {
 
-    // ── Inject CSS ───────────────────────────────────────────
     const link = document.createElement('link');
     link.rel  = 'stylesheet';
     link.href = new URL('explorer.css', import.meta.url).href;
     document.head.appendChild(link);
 
-    // ── Fetch HTML template ──────────────────────────────────
+    let fs;
+    try {
+        const res = await fetch('/filesystem.json');
+        fs = await res.json();
+    } catch (err) {
+        console.error('[explorer] Failed to load filesystem.json', err);
+        return;
+    }
+
     let template;
     try {
         const res = await fetch(new URL('explorer.html', import.meta.url).href);
@@ -32,171 +33,240 @@ export async function initExplorer({ registerWindow, openWindow }) {
         return;
     }
 
-    // ── Build + register each folder window ─────────────────
-    FOLDERS.forEach((folder, startIndex) => {
-        const iconEl = document.getElementById(folder.iconId);
+    const topFolders = (fs.children || []).filter(n => n.iconId && n.windowId);
+
+    topFolders.forEach(rootFolder => {
+        const iconEl = document.getElementById(rootFolder.iconId);
         if (!iconEl) return;
 
         const html = template
-            .replaceAll('{{windowId}}', folder.windowId)
-            .replaceAll('{{icon}}',     folder.icon)
-            .replaceAll('{{title}}',    folder.title)
-            .replaceAll('{{path}}',     folder.path)
-            .replaceAll('{{items}}',    folder.items.map(renderItem).join('\n'));
+            .replaceAll('{{windowId}}', rootFolder.windowId)
+            .replaceAll('{{icon}}',     rootFolder.icon)
+            .replaceAll('{{title}}',    rootFolder.name)
+            .replaceAll('{{path}}',     `${fs.name}/${rootFolder.name}`)
+            .replaceAll('{{items}}',    '');
 
         document.body.insertAdjacentHTML('beforeend', html);
-        const windowEl = document.getElementById(folder.windowId);
-        // Title bar always shows "📁 Explorer" regardless of which folder is open
-        const titleTextEl = windowEl.querySelector('.title-text');
-        if (titleTextEl) titleTextEl.innerHTML = '<span class="title-icon">📁</span> Explorer';
+
+        const windowEl = document.getElementById(rootFolder.windowId);
+        windowEl.querySelector('.title-text').innerHTML =
+            '<span class="title-icon">📁</span> Explorer';
 
         const entry = registerWindow(windowEl, { icon: '📁' });
         iconEl.addEventListener('dblclick', () => openWindow(entry));
 
-        // ── DOM refs ─────────────────────────────────────────
         const backBtn    = windowEl.querySelectorAll('.nav-btn')[0];
         const fwdBtn     = windowEl.querySelectorAll('.nav-btn')[1];
-        backBtn.title = 'Back (navigate via sidebar first)';
-        fwdBtn.title  = 'Forward';
         const addressBar = windowEl.querySelector('.address-bar');
         const fileGrid   = windowEl.querySelector('.file-grid');
         const sidebar    = windowEl.querySelector('.explorer-sidebar');
 
-        // ── Per-window nav history ────────────────────────────
-        const navHistory = [startIndex];
-        let cursor = 0;
+        // ── Path builder ──────────────────────────────────────
+        function buildPath(target) {
+            function search(node, acc) {
+                const here = [...acc, node.name];
+                if (node === target) return here;
+                for (const c of node.children || []) {
+                    const found = search(c, here);
+                    if (found) return found;
+                }
+                return null;
+            }
+            return search(fs, []) || [target.name];
+        }
 
-        // ── Sidebar ───────────────────────────────────────────
-        // One section label + one button per folder.
-        // Adding folders to config.js automatically adds sidebar items.
-        const sectionLabel = document.createElement('div');
-        sectionLabel.className   = 'sidebar-section-label';
-        sectionLabel.textContent = 'Folders';
-        sidebar.appendChild(sectionLabel);
+        // ── History ───────────────────────────────────────────
+        const hist = [{ node: rootFolder, path: [fs.name, rootFolder.name] }];
+        let cur = 0;
 
-        const sidebarBtns = FOLDERS.map((f, idx) => {
-            const btn = document.createElement('button');
-            btn.className = 'sidebar-item' + (idx === startIndex ? ' active' : '');
-            btn.innerHTML = `<span class="sidebar-item-icon">${f.icon}</span>${f.title}`;
-            btn.title     = f.path;
-            btn.addEventListener('click', () => navigateTo(idx));
-            sidebar.appendChild(btn);
-            return btn;
-        });
-
-        // ── Navigation ────────────────────────────────────────
-        function navigateTo(folderIndex, push = true) {
-            const target = FOLDERS[folderIndex];
-            if (!target) return;
-
+        // ── Navigate ──────────────────────────────────────────
+        function navigateTo(folderNode, path, push = true) {
             if (push) {
-                navHistory.splice(cursor + 1);
-                navHistory.push(folderIndex);
-                cursor = navHistory.length - 1;
+                hist.splice(cur + 1);
+                hist.push({ node: folderNode, path });
+                cur = hist.length - 1;
             }
 
-            // Update toolbar
-            addressBar.textContent = target.path;
-            backBtn.disabled = cursor <= 0;
-            fwdBtn.disabled  = cursor >= navHistory.length - 1;
+            addressBar.textContent = path.join('/');
+            backBtn.disabled = cur <= 0;
+            fwdBtn.disabled  = cur >= hist.length - 1;
 
-            // Update content
-            fileGrid.innerHTML = target.items.map(renderItem).join('\n');
+            // Render content grid
+            fileGrid.innerHTML = '';
+            for (const child of folderNode.children || []) {
+                if (child.children) {
+                    const el = document.createElement('div');
+                    el.className = 'file-item';
+                    el.innerHTML = `
+                        <div class="file-icon">${child.icon || '📁'}</div>
+                        <div class="file-name">${trunc(child.name)}</div>
+                        <div class="file-date"></div>`;
+                    el.addEventListener('click', () =>
+                        navigateTo(child, buildPath(child)));
+                    fileGrid.appendChild(el);
+                } else {
+                    fileGrid.insertAdjacentHTML('beforeend', renderItem(child));
+                }
+            }
 
-            // Update sidebar active state
-            sidebarBtns.forEach((btn, i) => btn.classList.toggle('active', i === folderIndex));
+            // Sync sidebar active state
+            sidebar.querySelectorAll('.sidebar-item').forEach(btn => {
+                btn.classList.toggle('active', btn._node === folderNode);
+            });
         }
 
         backBtn.addEventListener('click', () => {
-            if (cursor <= 0) return;
-            cursor--;
-            navigateTo(navHistory[cursor], false);
+            if (cur <= 0) return;
+            cur--;
+            navigateTo(hist[cur].node, hist[cur].path, false);
         });
-
         fwdBtn.addEventListener('click', () => {
-            if (cursor >= navHistory.length - 1) return;
-            cursor++;
-            navigateTo(navHistory[cursor], false);
+            if (cur >= hist.length - 1) return;
+            cur++;
+            navigateTo(hist[cur].node, hist[cur].path, false);
         });
 
-        // ── File item clicks ──────────────────────────────────
+        // File item click → dispatch file-open event
         windowEl.addEventListener('click', e => {
             const item = e.target.closest('.file-item[data-type]');
             if (!item) return;
             document.dispatchEvent(new CustomEvent('file-open', {
                 detail: {
                     type:           item.dataset.type,
-                    id:             item.dataset.id    ?? null,
+                    id:             item.dataset.id   ?? null,
                     title:          item.dataset.title ?? 'Untitled',
                     src:            item.dataset.src   ?? null,
-                    sourceWindowId: folder.windowId,
+                    sourceWindowId: rootFolder.windowId,
                 }
             }));
         });
+
+        // ── Sidebar collapsible tree ───────────────────────────
+        // Every click navigates in-place. No window spawning ever.
+        // Subfolders (depth > 0) always show 📁.
+
+        const label = document.createElement('div');
+        label.className   = 'sidebar-section-label';
+        label.textContent = 'Folders';
+        sidebar.appendChild(label);
+
+        function buildTreeNode(node, depth) {
+            const kids = (node.children || []).filter(c => c.children);
+
+            const wrap = document.createElement('div');
+            wrap.className = 'sidebar-tree-row';
+
+            const btn = document.createElement('button');
+            btn.className = 'sidebar-item' +
+                (depth === 0 ? ' sidebar-item-toplevel' : ' sidebar-item-sub');
+            btn.style.paddingLeft = `${12 + depth * 12}px`;
+            btn._node = node;  // direct reference for active-state sync
+
+            // Arrow — only when there are sub-folders
+            const arrow = document.createElement('span');
+            arrow.className = 'sidebar-arrow';
+            arrow.textContent = kids.length ? '▶' : '';
+
+            // Icon: top-level keeps its configured icon; sub-folders always 📁
+            const ico = document.createElement('span');
+            ico.className   = 'sidebar-item-icon';
+            ico.textContent = node.icon || '📁';
+
+            btn.appendChild(arrow);
+            btn.appendChild(ico);
+            btn.appendChild(document.createTextNode(node.name));
+            wrap.appendChild(btn);
+
+            // Children container
+            let childDiv  = null;
+            let expanded  = depth === 0;   // top-level open; sub-folders closed
+
+            if (kids.length) {
+                childDiv = document.createElement('div');
+                childDiv.className    = 'sidebar-children';
+                childDiv.style.display = expanded ? '' : 'none';
+                if (expanded) arrow.classList.add('expanded');
+                for (const k of kids) childDiv.appendChild(buildTreeNode(k, depth + 1));
+                wrap.appendChild(childDiv);
+            }
+
+            btn.addEventListener('click', () => {
+                // Always navigate in-place — never open another window
+                navigateTo(node, buildPath(node));
+
+                if (childDiv) {
+                    expanded = !expanded;
+                    childDiv.style.display = expanded ? '' : 'none';
+                    arrow.classList.toggle('expanded', expanded);
+                }
+            });
+
+            return wrap;
+        }
+
+        // Show the full filesystem tree in every window's sidebar
+        for (const top of fs.children || []) {
+            if (top.children) sidebar.appendChild(buildTreeNode(top, 0));
+        }
+
+        // Boot: show rootFolder's contents on first open
+        navigateTo(rootFolder, [fs.name, rootFolder.name], false);
     });
 }
 
-// ── Item renderers ───────────────────────────────────────────
-// Add new item types here; sidebar and navigation update for free.
-
-// Truncate long file names to fit the 90px icon cell (~14 chars).
-// Keeps the full name in the title attribute for hover tooltip.
-function trunc(name, max = 16) {
-    return name.length > max ? name.slice(0, max - 1) + '…' : name;
+// ── Helpers ───────────────────────────────────────────────────
+function trunc(s, max = 16) {
+    return s.length > max ? s.slice(0, max - 1) + '…' : s;
 }
 
 function renderItem(item) {
+    const icon  = item.icon  || '📄';
+    const name  = item.name  || item.title || 'Untitled';
+    const date  = item.date  || '';
+    const title = item.title || name;
+
     switch (item.type) {
         case 'project':
             return `
-<a href="${item.href}" class="file-item-link" target="_blank" rel="noopener noreferrer" title="${item.name}">
+<a href="${item.href}" class="file-item-link" target="_blank" rel="noopener noreferrer" title="${name}">
   <div class="file-item">
-    <div class="file-icon">${item.icon}</div>
-    <div class="file-name">${trunc(item.name)}</div>
-    <div class="file-date">${item.date}</div>
+    <div class="file-icon">${icon}</div>
+    <div class="file-name">${trunc(name)}</div>
+    <div class="file-date">${date}</div>
   </div>
 </a>`;
-
         case 'video':
             return `
 <div class="file-item" data-type="video"
-     data-id="${item.id ?? ''}" data-src="${item.src ?? ''}" data-title="${item.title}"
-     title="${item.name}">
-  <div class="file-icon">${item.icon}</div>
-  <div class="file-name">${trunc(item.name)}</div>
-  <div class="file-date">${item.date}</div>
+     data-id="${item.id ?? ''}" data-src="${item.src ?? ''}" data-title="${title}" title="${name}">
+  <div class="file-icon">${icon}</div>
+  <div class="file-name">${trunc(name)}</div>
+  <div class="file-date">${date}</div>
 </div>`;
-
         case 'audio':
             return `
 <div class="file-item" data-type="audio"
-     data-src="${item.src}" data-title="${item.title}"
-     title="${item.name}">
-  <div class="file-icon">${item.icon}</div>
-  <div class="file-name">${trunc(item.name)}</div>
-  <div class="file-date">${item.date}</div>
+     data-src="${item.src ?? ''}" data-title="${title}" title="${name}">
+  <div class="file-icon">${icon}</div>
+  <div class="file-name">${trunc(name)}</div>
+  <div class="file-date">${date}</div>
 </div>`;
-
         case 'image':
             return `
 <div class="file-item" data-type="image"
-     data-src="${item.src}" data-title="${item.title}"
-     title="${item.name}">
-  <div class="file-icon">${item.icon}</div>
-  <div class="file-name">${trunc(item.name)}</div>
-  <div class="file-date">${item.date}</div>
+     data-src="${item.src ?? ''}" data-title="${title}" title="${name}">
+  <div class="file-icon">${icon}</div>
+  <div class="file-name">${trunc(name)}</div>
+  <div class="file-date">${date}</div>
 </div>`;
-
         case 'doc':
             return `
 <div class="file-item" data-type="doc"
-     data-id="${item.id ?? ''}" data-title="${item.title}"
-     title="${item.title}">
-  <div class="file-icon">${item.icon ?? '📄'}</div>
-  <div class="file-name">${trunc(item.title ?? item.name ?? 'Document')}</div>
-  <div class="file-date">${item.date ?? ''}</div>
+     data-id="${item.id ?? ''}" data-title="${title}" title="${title}">
+  <div class="file-icon">${icon}</div>
+  <div class="file-name">${trunc(title)}</div>
+  <div class="file-date">${date}</div>
 </div>`;
-
         default:
             return '';
     }

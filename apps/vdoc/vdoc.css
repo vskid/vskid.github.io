@@ -437,3 +437,71 @@
 }
 
 .vdoc-modal-err.hidden { display: none; }
+/* ── Sidebar toggle button ───────────────────────────────── */
+
+.vdoc-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vdoc-sidebar-toggle {
+    background: transparent;
+    border: 1px solid rgba(200, 222, 255, 0.15);
+    border-radius: 3px;
+    color: rgba(200, 222, 255, 0.5);
+    font-size: 1rem;
+    line-height: 1;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    padding: 0;
+}
+
+.vdoc-sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(200, 222, 255, 0.9);
+    border-color: rgba(200, 222, 255, 0.35);
+}
+
+/* ── Collapsed sidebar ───────────────────────────────────── */
+
+.vdoc-sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    border-right: none;
+}
+
+/* Keep the toggle button visible even when sidebar collapses —
+   it floats at the left edge of the document area */
+.vdoc-sidebar.collapsed .vdoc-sidebar-header {
+    position: absolute;
+    left: 0;
+    top: 36px; /* below toolbar */
+    z-index: 10;
+    padding: 4px;
+    background: linear-gradient(to bottom, #1a2e50, #122240);
+    border-radius: 0 4px 4px 0;
+    border: 1px solid rgba(200, 222, 255, 0.15);
+    border-left: none;
+}
+
+.vdoc-sidebar.collapsed .vdoc-sidebar-header .vdoc-sidebar-header-label {
+    display: none;
+}
+
+.vdoc-sidebar.collapsed .vdoc-post-list {
+    display: none;
+}
+
+/* Transition */
+.vdoc-sidebar {
+    transition: width 0.2s ease;
+    position: relative;
+}
