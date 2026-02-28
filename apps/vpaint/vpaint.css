@@ -282,10 +282,7 @@
     cursor: inherit; touch-action: none;
     position: relative; z-index: 1;
 }
-#vp-sel-canvas {
-    position: absolute; top: 10px; left: 10px;
-    pointer-events: none; z-index: 2;
-}
+/* vp-sel-canvas is positioned by JS (absolute, top:0, left:0 inside canvasWrap) */
 
 /* ══ STATUS BAR ══════════════════════════════════════════════ */
 .vp-statusbar {
@@ -338,6 +335,40 @@
 .vp-card-meta { padding: 3px 6px 4px; background: var(--win-face); }
 .vp-card-author { font-family: var(--mono); font-size: 10px; font-weight: 700; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .vp-card-date   { font-family: var(--mono); font-size: 9px; color: var(--win-shadow); margin-top: 1px; }
+.vp-card-pinned {
+    outline: 2px solid #0a246a;
+    outline-offset: -1px;
+}
+.vp-pin-badge {
+    position: absolute;
+    top: 2px; right: 3px;
+    font-size: 11px;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 3;
+}
+.vp-card { position: relative; }
+.vp-card-actions {
+    display: flex;
+    gap: 1px;
+    border-top: 1px solid var(--win-shadow);
+}
+.vp-card-action-btn {
+    flex: 1;
+    padding: 2px 3px;
+    background: var(--win-face);
+    border: none;
+    border-right: 1px solid var(--win-shadow);
+    font-family: var(--mono);
+    font-size: 9px;
+    color: #000;
+    cursor: default;
+    white-space: nowrap;
+    text-align: center;
+}
+.vp-card-action-btn:last-child { border-right: none; }
+.vp-card-action-btn:hover { background: #dde8ff; color: var(--win-sel); }
+.vp-card-delete-btn:hover { background: #ffd8d8 !important; color: #800000 !important; }
 .vp-card-delete {
     display: block; width: 100%; padding: 3px;
     background: var(--win-face); border: none;

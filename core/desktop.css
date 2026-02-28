@@ -116,6 +116,7 @@ body {
 .desktop-icon {
     width: 80px;
     height: 90px;
+    pointer-events: all;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -141,11 +142,13 @@ body {
 .icon-img {
     font-size: 2.5rem;
     margin-bottom: 0.25rem;
+    pointer-events: none;  /* let dblclick reach parent icon */
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* Label beneath the icon ; clamps to 2 lines */
 .icon-label {
+    pointer-events: none;  /* let dblclick reach parent icon */
     color: white;
     text-shadow: var(--icon-text-shadow);
     font-size: 0.85rem;
@@ -719,4 +722,228 @@ body {
     .icon-label {
         font-size: 0.72rem;
     }
+}
+
+/* ============================================================
+   11. WIN98 APP LAUNCHER
+   A floating "My Computer"-style window that opens when the
+   user clicks Applications in the Start menu.
+   Full Win98 aesthetic: grey #d4d0c8, beveled chrome, toolbar,
+   status bar, icon grid.
+   ============================================================ */
+
+#app-launcher {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    max-width: calc(100vw - 32px);
+    z-index: 200;
+    background: #d4d0c8;
+    /* Win98 window border: white top/left, dark bottom/right */
+    border-top:    2px solid #ffffff;
+    border-left:   2px solid #ffffff;
+    border-right:  2px solid #404040;
+    border-bottom: 2px solid #404040;
+    box-shadow:    1px 1px 0 #808080;
+    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
+    font-size: 11px;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    animation: launcher-pop 0.12s ease-out both;
+}
+#app-launcher.launcher-hidden {
+    display: none;
+}
+@keyframes launcher-pop {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Title bar */
+#launcher-titlebar {
+    height: 20px;
+    background: linear-gradient(to right, #000080 0%, #1084d0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 3px 0 5px;
+    cursor: default;
+    flex-shrink: 0;
+}
+#launcher-title-text {
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+#launcher-controls {
+    display: flex;
+    gap: 2px;
+}
+#launcher-close {
+    width: 16px;
+    height: 14px;
+    background: #d4d0c8;
+    border-top:    1px solid #ffffff;
+    border-left:   1px solid #ffffff;
+    border-right:  1px solid #404040;
+    border-bottom: 1px solid #404040;
+    color: #000;
+    font-size: 9px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-family: 'Marlett', Arial, sans-serif;
+    line-height: 1;
+}
+#launcher-close:active {
+    border-top:    1px solid #404040;
+    border-left:   1px solid #404040;
+    border-right:  1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+    padding: 1px 0 0 1px;
+}
+
+/* Menu bar strip (decorative — no dropdowns needed) */
+#launcher-menubar {
+    height: 20px;
+    background: #d4d0c8;
+    border-bottom: 1px solid #808080;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    gap: 2px;
+    flex-shrink: 0;
+}
+.launcher-menuitem {
+    padding: 1px 6px;
+    font-size: 11px;
+    cursor: default;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+}
+.launcher-menuitem:hover {
+    background: #000080;
+    color: #fff;
+}
+
+/* Toolbar — looks like Win98 Explorer toolbar */
+#launcher-toolbar {
+    height: 26px;
+    background: #d4d0c8;
+    border-bottom: 1px solid #808080;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 6px;
+    flex-shrink: 0;
+    box-shadow: inset 0 -1px 0 #dfdfdf;
+}
+#launcher-path {
+    font-size: 11px;
+    color: #000;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+}
+
+/* Icon grid — the content area */
+#launcher-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 0;
+    padding: 8px;
+    background: #ffffff;
+    border-top:    1px solid #808080;
+    border-bottom: 1px solid #808080;
+    min-height: 220px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Individual icon tile */
+.launcher-item {
+    width: 88px;
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 4px;
+    cursor: default;
+    border: 1px solid transparent;
+    border-radius: 0;
+    text-align: center;
+}
+.launcher-item:hover {
+    background: rgba(0, 0, 128, 0.08);
+    border-color: rgba(0, 0, 128, 0.25);
+}
+.launcher-item.launcher-selected {
+    background: #000080;
+    border-color: #000080;
+}
+.launcher-item.launcher-selected .launcher-item-label {
+    color: #ffffff;
+    background: #000080;
+}
+
+.launcher-item-icon {
+    font-size: 2.4rem;
+    line-height: 1;
+    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.2));
+    pointer-events: none;
+}
+.launcher-item-label {
+    font-size: 11px;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    color: #000;
+    word-break: break-word;
+    line-height: 1.2;
+    max-width: 80px;
+    pointer-events: none;
+}
+
+/* Status bar at bottom */
+#launcher-statusbar {
+    height: 20px;
+    background: #d4d0c8;
+    border-top: 1px solid #dfdfdf;
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    flex-shrink: 0;
+    gap: 4px;
+}
+#launcher-statusbar span {
+    font-size: 11px;
+    color: #000;
+    border-top:    1px solid #808080;
+    border-left:   1px solid #808080;
+    border-right:  1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+    padding: 1px 8px;
+    min-width: 80px;
+}
+
+/* Hint text below grid */
+#launcher-hint {
+    padding: 3px 8px 4px;
+    font-size: 10px;
+    color: #444;
+    background: #d4d0c8;
+    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    border-top: 1px solid #fff;
+    flex-shrink: 0;
+    text-align: center;
+    font-style: italic;
 }

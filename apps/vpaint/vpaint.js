@@ -44,7 +44,7 @@ async function sbFetch(path, opts = {}, admin = false) {
 
 async function fetchWorks(includeHidden = false) {
     const filter = includeHidden ? '' : '&hidden=eq.false';
-    return sbFetch(TABLE + '?select=id,created_at,author,thumb_data,image_data' + filter + '&order=created_at.desc');
+    return sbFetch(TABLE + '?select=id,created_at,author,thumb_data,image_data,pinned,hidden' + filter + '&order=pinned.desc,created_at.desc');
 }
 
 async function insertWork(author, imageData, thumbData) {
@@ -62,7 +62,24 @@ async function insertWork(author, imageData, thumbData) {
 }
 
 async function deleteWork(id) {
-    return sbFetch(TABLE + '?id=eq.' + id, { method: 'DELETE' }, true);
+    // Use anon key — owner verified client-side
+    return sbFetch(TABLE + '?id=eq.' + id, { method: 'DELETE' }, false);
+}
+
+async function togglePin(id, pinned) {
+    return sbFetch(TABLE + '?id=eq.' + id, {
+        method:  'PATCH',
+        headers: { 'Prefer': 'return=representation' },
+        body:    JSON.stringify({ pinned }),
+    }, false);
+}
+
+async function toggleHideWork(id, hidden) {
+    return sbFetch(TABLE + '?id=eq.' + id, {
+        method:  'PATCH',
+        headers: { 'Prefer': 'return=representation' },
+        body:    JSON.stringify({ hidden }),
+    }, false);
 }
 
 // Compress canvas → JPEG data URL
@@ -174,12 +191,20 @@ export async function initVPaint(desktop) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
 
-    // Selection marquee overlay
+    // Wrap canvas + overlay in a single relative container so they scroll together.
+    // The canvasArea (vp-canvas-wrap) is the scrollable box; canvasWrap sits inside it.
+    const canvasWrap = document.createElement('div');
+    canvasWrap.style.cssText = 'position:relative;display:inline-block;line-height:0;';
+    canvas.parentNode.insertBefore(canvasWrap, canvas);
+    canvasWrap.appendChild(canvas);
+
     const overlayCanvas = document.createElement('canvas');
     overlayCanvas.id     = 'vp-sel-canvas';
     overlayCanvas.width  = W;
     overlayCanvas.height = H;
-    canvasArea.appendChild(overlayCanvas);
+    overlayCanvas.style.cssText =
+        'position:absolute;top:0;left:0;pointer-events:none;z-index:2;';
+    canvasWrap.appendChild(overlayCanvas);
     const ov = overlayCanvas.getContext('2d');
 
     // ── State ─────────────────────────────────────────────────
@@ -191,7 +216,8 @@ export async function initVPaint(desktop) {
     let lastX = 0, lastY = 0;
     let snapX = 0, snapY = 0;
     let ownerMode = false;
-    let shiftDown = false;  // tracks Shift for line-angle snap + 1:1 shape snap
+    let shiftDown  = false;  // Shift: angle snap + 1:1 shapes
+    let centerMode = true;   // Default: shapes grow from center. Alt toggles to corner mode.
 
     const undoStack = [];
     const MAX_UNDO  = 30;
@@ -311,16 +337,12 @@ export async function initVPaint(desktop) {
     // We track shiftDown ourselves so previewShape can read it
     // without needing the event object passed through.
     document.addEventListener('keydown', e => {
-        if (e.key === 'Shift') {
-            shiftDown = true;
-            updateSnapStatus();
-        }
+        if (e.key === 'Shift') { shiftDown = true;  updateSnapStatus(); }
+        if (e.key === 'Alt')   { centerMode = false; e.preventDefault(); }
     });
     document.addEventListener('keyup', e => {
-        if (e.key === 'Shift') {
-            shiftDown = false;
-            updateSnapStatus();
-        }
+        if (e.key === 'Shift') { shiftDown = false; updateSnapStatus(); }
+        if (e.key === 'Alt')   { centerMode = true; }
     });
 
     function updateSnapStatus() {
@@ -460,6 +482,64 @@ export async function initVPaint(desktop) {
         }
     }
 
+
+    // ── Lasso overlay helpers ──────────────────────────────────────
+    function drawLassoOverlay(pts) {
+        clearOverlay();
+        if (pts.length < 2) return;
+        ov.save();
+        ov.lineWidth = 1;
+        ov.setLineDash([4, 4]);
+        ov.beginPath();
+        ov.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) ov.lineTo(pts[i].x, pts[i].y);
+        ov.strokeStyle = '#000'; ov.lineDashOffset = 0; ov.stroke();
+        ov.strokeStyle = '#fff'; ov.lineDashOffset = 4; ov.stroke();
+        ov.restore();
+        if (sel?.floating && sel.floatCanvas) ov.drawImage(sel.floatCanvas, sel.x, sel.y);
+    }
+
+    function commitLasso(pts) {
+        if (pts.length < 3) { lassoPoints = []; lassoActive = false; return; }
+        const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+        const bx  = Math.max(0, Math.floor(Math.min(...xs)));
+        const by  = Math.max(0, Math.floor(Math.min(...ys)));
+        const bx2 = Math.min(W, Math.ceil(Math.max(...xs)));
+        const by2 = Math.min(H, Math.ceil(Math.max(...ys)));
+        const bw = bx2 - bx, bh = by2 - by;
+        if (bw < 2 || bh < 2) { lassoPoints = []; lassoActive = false; return; }
+
+        const mask = document.createElement('canvas');
+        mask.width = W; mask.height = H;
+        const mc = mask.getContext('2d');
+        mc.beginPath();
+        mc.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) mc.lineTo(pts[i].x, pts[i].y);
+        mc.closePath();
+        mc.fillStyle = '#000';
+        mc.fill();
+        const maskData = mc.getImageData(bx, by, bw, bh);
+        const srcData  = ctx.getImageData(bx, by, bw, bh);
+
+        const fc = document.createElement('canvas');
+        fc.width = bw; fc.height = bh;
+        const fc2 = fc.getContext('2d');
+        const outData = fc2.createImageData(bw, bh);
+        for (let i = 0; i < outData.data.length; i += 4) {
+            if (maskData.data[i + 3] > 0) {
+                outData.data[i]     = srcData.data[i];
+                outData.data[i + 1] = srcData.data[i + 1];
+                outData.data[i + 2] = srcData.data[i + 2];
+                outData.data[i + 3] = srcData.data[i + 3];
+            }
+        }
+        fc2.putImageData(outData, 0, 0);
+        lassoPoints = []; lassoActive = false;
+        sel = { x: bx, y: by, w: bw, h: bh, floatCanvas: fc, floating: true };
+        setSelStatus();
+        drawMarquee(bx, by, bw, bh);
+    }
+
     // ── Shape preview ─────────────────────────────────────────
     function previewShape(rawX, rawY) {
         clearOverlay();
@@ -489,7 +569,14 @@ export async function initVPaint(desktop) {
             y = snapY + Math.sign(dy) * dim;
         }
 
-        const w = x - snapX, h = y - snapY;
+        // Center mode (Alt key): click point becomes center of shape
+        let ox = snapX, oy = snapY;
+        if (centerMode && tool !== 'line') {
+            const dx = x - snapX, dy = y - snapY;
+            ox = snapX - dx;
+            oy = snapY - dy;
+        }
+        const w = x - ox, h = y - oy;
 
         ov.save();
         ov.lineWidth  = size;
@@ -505,26 +592,30 @@ export async function initVPaint(desktop) {
             ov.beginPath(); ov.moveTo(snapX, snapY); ov.lineTo(x, y); ov.stroke();
 
         } else if (tool === 'rect' || tool === 'rect-fill') {
-            ov.beginPath(); ov.rect(snapX, snapY, w, h);
+            ov.beginPath(); ov.rect(ox, oy, w, h);
             applyFill(); applyStroke();
 
         } else if (tool === 'roundrect') {
             const r = Math.min(12, Math.abs(w)/4, Math.abs(h)/4);
             ov.beginPath();
-            if (ov.roundRect) ov.roundRect(snapX, snapY, w, h, r);
-            else               ov.rect(snapX, snapY, w, h);
+            if (ov.roundRect) ov.roundRect(ox, oy, w, h, r);
+            else               ov.rect(ox, oy, w, h);
             applyFill(); applyStroke();
 
         } else if (tool === 'ellipse' || tool === 'ellipse-fill') {
+            const ex = centerMode ? snapX : (ox+x)/2;
+            const ey = centerMode ? snapY : (oy+y)/2;
+            const erx = centerMode ? Math.abs(x-snapX) : Math.abs(w)/2;
+            const ery = centerMode ? Math.abs(y-snapY) : Math.abs(h)/2;
             ov.beginPath();
-            ov.ellipse((snapX+x)/2, (snapY+y)/2, Math.abs(w)/2, Math.abs(h)/2, 0, 0, Math.PI*2);
+            ov.ellipse(ex, ey, erx, ery, 0, 0, Math.PI*2);
             applyFill(); applyStroke();
 
         } else if (tool === 'triangle') {
             ov.beginPath();
-            ov.moveTo(snapX + w/2, snapY);
-            ov.lineTo(snapX + w, snapY + h);
-            ov.lineTo(snapX, snapY + h);
+            ov.moveTo(ox + w/2, oy);
+            ov.lineTo(ox + w, oy + h);
+            ov.lineTo(ox, oy + h);
             ov.closePath();
             applyFill(); applyStroke();
         }
@@ -556,9 +647,13 @@ export async function initVPaint(desktop) {
     // Commit floating pixels back onto canvas
     function commitSelection(draw = true) {
         if (!sel) return;
-        if (sel.floating && sel.floatCanvas && draw) {
+        const hasContent = sel.floatCanvas && draw && sel.w > 0 && sel.h > 0;
+        if (hasContent) {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.globalAlpha = 1;
             if (selTransp.checked) {
-                // Mask out bg-coloured pixels before drawing
+                // TRANSPARENT mode: stamp with bg-coloured pixels masked to alpha=0
+                // so the destination canvas shows through those pixels.
                 const tmp = document.createElement('canvas');
                 tmp.width = sel.w; tmp.height = sel.h;
                 const tc = tmp.getContext('2d');
@@ -566,12 +661,13 @@ export async function initVPaint(desktop) {
                 const id = tc.getImageData(0, 0, sel.w, sel.h);
                 const [br, bg2, bb] = hexToRgb(bgColor);
                 for (let i = 0; i < id.data.length; i += 4) {
-                    if (id.data[i]===br && id.data[i+1]===bg2 && id.data[i+2]===bb)
+                    if (id.data[i] === br && id.data[i+1] === bg2 && id.data[i+2] === bb)
                         id.data[i+3] = 0;
                 }
                 tc.putImageData(id, 0, 0);
                 ctx.drawImage(tmp, sel.x, sel.y);
             } else {
+                // OPAQUE mode: stamp floatCanvas directly (origin was already erased on lift)
                 ctx.drawImage(sel.floatCanvas, sel.x, sel.y);
             }
         }
@@ -625,15 +721,20 @@ export async function initVPaint(desktop) {
 
     function pasteSelection() {
         if (!clipboard) return;
+        // Commit any existing floating selection before pasting
         commitSelection();
         activateTool('select-rect');
         const fc = document.createElement('canvas');
         fc.width  = clipboard.width;
         fc.height = clipboard.height;
         fc.getContext('2d').putImageData(clipboard, 0, 0);
-        sel = { x:10, y:10, w:clipboard.width, h:clipboard.height, floatCanvas:fc, floating:true };
-        drawMarquee(sel.x, sel.y, sel.w, sel.h);
+        // Paste at (0,0) — top-left of canvas, with selection already active on the copy.
+        // floating=true so the pasted content is the floatCanvas and can be moved immediately.
+        sel = { x: 0, y: 0, w: clipboard.width, h: clipboard.height,
+                floatCanvas: fc, floating: true };
+        drawMarquee(0, 0, sel.w, sel.h);
         setSelStatus();
+        showToast('Pasted — drag to reposition');
     }
 
     // ── Transform: operates on selection or whole canvas ──────
@@ -846,17 +947,12 @@ export async function initVPaint(desktop) {
         lastX = x; lastY = y; snapX = x; snapY = y;
         if (SHAPE_TOOLS.has(tool)) return;
 
-        // ── Eraser: use destination-out composite for true erase ──
+        // ── Eraser: true clear (destination-out then fill white) ───────────
         if (tool === 'eraser') {
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.globalAlpha = 1;
-            ctx.strokeStyle = 'rgba(0,0,0,1)';
-            ctx.lineWidth   = size * 4;
-            ctx.lineCap     = 'square';
-            ctx.lineJoin    = 'square';
-            ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.moveTo(x, y); ctx.lineTo(x + 0.001, y); ctx.stroke();
+            const ew = Math.max(8, size * 6);
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x - ew/2, y - ew/2, ew, ew);
             pushUndo();
             return;
         }
@@ -923,9 +1019,17 @@ export async function initVPaint(desktop) {
 
         // ── Eraser ────────────────────────────────────────────
         if (tool === 'eraser') {
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.globalAlpha = 1;
-            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(x, y); ctx.stroke();
+            const ew = Math.max(8, size * 6);
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = '#ffffff';
+            // Fill every point along the stroke path to avoid gaps
+            const steps = Math.ceil(Math.hypot(x - lastX, y - lastY) / (ew / 2)) + 1;
+            for (let i = 0; i <= steps; i++) {
+                const t = steps > 0 ? i / steps : 0;
+                const ix = lastX + (x - lastX) * t;
+                const iy = lastY + (y - lastY) * t;
+                ctx.fillRect(ix - ew/2, iy - ew/2, ew, ew);
+            }
             lastX = x; lastY = y;
             return;
         }
@@ -980,7 +1084,7 @@ export async function initVPaint(desktop) {
 
         // ── Lasso select ──────────────────────────────────────
         if (tool === 'select-lasso') {
-            if (lassoActive && lassoPoints.length > 4) {
+            if (lassoActive && lassoPoints.length > 2) {
                 commitLasso(lassoPoints);
             } else if (lassoActive) {
                 lassoPoints = []; lassoActive = false; clearOverlay();
@@ -1091,6 +1195,16 @@ export async function initVPaint(desktop) {
     function buildCard(work, isAdmin) {
         const card = document.createElement('div');
         card.className = 'vp-card';
+        if (work.pinned) card.classList.add('vp-card-pinned');
+
+        // Pin badge
+        if (work.pinned) {
+            const badge = document.createElement('div');
+            badge.className   = 'vp-pin-badge';
+            badge.textContent = '📌';
+            badge.title       = 'Pinned';
+            card.appendChild(badge);
+        }
 
         const img = document.createElement('img');
         img.className = 'vp-card-thumb';
@@ -1113,17 +1227,65 @@ export async function initVPaint(desktop) {
         meta.append(author, date);
         card.appendChild(meta);
 
-        if (isAdmin) {
-            const del = document.createElement('button');
-            del.className   = 'vp-card-delete';
-            del.textContent = '🗑 Delete';
-            del.addEventListener('click', async () => {
-                if (!confirm('Delete permanently?')) return;
-                try   { await deleteWork(work.id); card.remove(); showToast('Deleted.'); }
-                catch (err) { showToast('Delete failed.', true); }
+        // Owner action row — shown in gallery when ownerMode, always in admin
+        if (isAdmin || ownerMode) {
+            const row = document.createElement('div');
+            row.className = 'vp-card-actions';
+
+            // Pin/unpin
+            const pinBtn = document.createElement('button');
+            pinBtn.className   = 'vp-card-action-btn';
+            pinBtn.textContent = work.pinned ? '📌 UNPIN' : '📌 PIN';
+            pinBtn.title       = work.pinned ? 'Unpin from top' : 'Pin to top of gallery';
+            pinBtn.addEventListener('click', async () => {
+                const newPinned = !work.pinned;
+                try {
+                    await togglePin(work.id, newPinned);
+                    work.pinned        = newPinned;
+                    pinBtn.textContent = newPinned ? '📌 UNPIN' : '📌 PIN';
+                    card.classList.toggle('vp-card-pinned', newPinned);
+                    showToast(newPinned ? 'Pinned to top.' : 'Unpinned.');
+                } catch (err) { showToast('Pin failed: ' + err.message, true); }
             });
-            card.appendChild(del);
+            row.appendChild(pinBtn);
+
+            if (isAdmin) {
+                // Hide/show toggle (admin only)
+                const hideBtn = document.createElement('button');
+                hideBtn.className   = 'vp-card-action-btn';
+                hideBtn.textContent = work.hidden ? '👁 SHOW' : '🙈 HIDE';
+                hideBtn.title       = work.hidden ? 'Show in gallery' : 'Hide from gallery';
+                hideBtn.addEventListener('click', async () => {
+                    const newHidden = !work.hidden;
+                    try {
+                        await toggleHideWork(work.id, newHidden);
+                        work.hidden        = newHidden;
+                        hideBtn.textContent = newHidden ? '👁 SHOW' : '🙈 HIDE';
+                        card.style.opacity  = newHidden ? '0.45' : '1';
+                        showToast(newHidden ? 'Hidden.' : 'Visible.');
+                    } catch (err) { showToast('Failed: ' + err.message, true); }
+                });
+                row.appendChild(hideBtn);
+            }
+
+            // Delete (admin only)
+            if (isAdmin) {
+                const del = document.createElement('button');
+                del.className   = 'vp-card-action-btn vp-card-delete-btn';
+                del.textContent = '🗑 DEL';
+                del.title       = 'Delete permanently';
+                del.addEventListener('click', async () => {
+                    if (!confirm('Delete permanently?')) return;
+                    try   { await deleteWork(work.id); card.remove(); showToast('Deleted.'); }
+                    catch (err) { showToast('Delete failed: ' + err.message, true); }
+                });
+                row.appendChild(del);
+            }
+
+            card.appendChild(row);
         }
+
+        if (work.hidden && isAdmin) card.style.opacity = '0.45';
         return card;
     }
 
@@ -1240,6 +1402,9 @@ export async function initVPaint(desktop) {
         lockBtn.textContent = '🔓';
         lockBtn.classList.add('unlocked');
         adminTab.classList.remove('hidden');
+        // Refresh gallery so owner action buttons appear on cards
+        if (!document.getElementById('vp-panel-gallery').classList.contains('hidden'))
+            loadGallery();
     }
 
     function lockOwner() {
@@ -1249,5 +1414,8 @@ export async function initVPaint(desktop) {
         adminTab.classList.add('hidden');
         if (!document.getElementById('vp-panel-admin').classList.contains('hidden'))
             win.querySelector('.vp-tab[data-tab="paint"]').click();
+        // Refresh gallery to hide owner action buttons
+        if (!document.getElementById('vp-panel-gallery').classList.contains('hidden'))
+            loadGallery();
     }
 }

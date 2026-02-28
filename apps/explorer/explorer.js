@@ -33,14 +33,22 @@ export async function initExplorer({ registerWindow, openWindow }) {
         return;
     }
 
-    const topFolders = (fs.children || []).filter(n => n.iconId && n.windowId);
+    const topFolders = (fs.children || []).filter(n => n.desktopIcon || n.iconId);
 
     topFolders.forEach(rootFolder => {
-        const iconEl = document.getElementById(rootFolder.iconId);
+        // Support both old iconId and current desktopIcon field names
+        const iconId   = rootFolder.iconId   || rootFolder.desktopIcon;
+        // Auto-generate a stable windowId from the folder name if not set
+        const windowId = rootFolder.windowId ||
+            'explorer-window-' + rootFolder.name.toLowerCase().replace(/\s+/g, '-');
+        rootFolder._iconId   = iconId;
+        rootFolder._windowId = windowId;
+
+        const iconEl = document.getElementById(iconId);
         if (!iconEl) return;
 
         const html = template
-            .replaceAll('{{windowId}}', rootFolder.windowId)
+            .replaceAll('{{windowId}}', windowId)
             .replaceAll('{{icon}}',     rootFolder.icon)
             .replaceAll('{{title}}',    rootFolder.name)
             .replaceAll('{{path}}',     `${fs.name}/${rootFolder.name}`)
@@ -48,7 +56,7 @@ export async function initExplorer({ registerWindow, openWindow }) {
 
         document.body.insertAdjacentHTML('beforeend', html);
 
-        const windowEl = document.getElementById(rootFolder.windowId);
+        const windowEl = document.getElementById(windowId);
         windowEl.querySelector('.title-text').innerHTML =
             '<span class="title-icon">📁</span> Explorer';
 
@@ -136,7 +144,7 @@ export async function initExplorer({ registerWindow, openWindow }) {
                     id:             item.dataset.id   ?? null,
                     title:          item.dataset.title ?? 'Untitled',
                     src:            item.dataset.src   ?? null,
-                    sourceWindowId: rootFolder.windowId,
+                    sourceWindowId: windowId,
                 }
             }));
         });

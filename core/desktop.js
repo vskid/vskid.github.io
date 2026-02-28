@@ -453,6 +453,132 @@ function makeResizable(windowEl) {
 // Toggle on Start click. Outside click closes.
 // Shutdown: tries window.close(), falls back to terminal egg.
 
+// ── APP LAUNCHER ─────────────────────────────────────────────
+// Win98 "Programs" grid overlay. Opens when user clicks
+// Applications in the Start menu.
+// App list is kept in sync with desktop icons manually —
+// it's a static manifest, not auto-discovered.
+
+const LAUNCHER_APPS = [
+    { icon: '📁', label: 'Projects',   id: 'open-projects'  },
+    { icon: '🎬', label: 'Videos',     id: 'open-videos'    },
+    { icon: '🎵', label: 'Music',      id: 'open-music'     },
+    { icon: '🖼️', label: 'Pictures',   id: 'open-pictures'  },
+    { icon: '📄', label: 'Documents',  id: 'open-docs'      },
+    { icon: '📖', label: 'The Wall',   id: 'open-wall'      },
+    { icon: '🐍', label: 'vSnake',     id: 'open-snake'     },
+    { icon: '🕓', label: 'vClock',     id: 'open-vclock'    },
+    { icon: '🗺',  label: 'vMap',       id: 'open-vmap'      },
+    { icon: '🎨', label: 'vPaint',     id: 'open-vpaint'    },
+];
+
+let launcherEl = null;
+
+function buildLauncher() {
+    const el = document.createElement('div');
+    el.id = 'app-launcher';
+    el.innerHTML = `
+        <div id="launcher-titlebar">
+            <span id="launcher-title-text">📱 Programs</span>
+            <div id="launcher-controls">
+                <button id="launcher-close" title="Close">✕</button>
+            </div>
+        </div>
+        <div id="launcher-menubar">
+            <span class="launcher-menuitem"><u>F</u>ile</span>
+            <span class="launcher-menuitem"><u>E</u>dit</span>
+            <span class="launcher-menuitem"><u>V</u>iew</span>
+            <span class="launcher-menuitem"><u>H</u>elp</span>
+        </div>
+        <div id="launcher-toolbar">
+            <span id="launcher-path">My Computer &gt; Programs</span>
+        </div>
+        <div id="launcher-grid">
+            ${LAUNCHER_APPS.map(app => `
+                <div class="launcher-item" data-target="${app.id}">
+                    <div class="launcher-item-icon">${app.icon}</div>
+                    <div class="launcher-item-label">${app.label}</div>
+                </div>
+            `).join('')}
+        </div>
+        <div id="launcher-hint">Double-click an icon to open the application</div>
+        <div id="launcher-statusbar">
+            <span>${LAUNCHER_APPS.length} object(s)</span>
+        </div>
+    `;
+    document.body.appendChild(el);
+
+    // Close
+    el.querySelector('#launcher-close').addEventListener('click', closeLauncher);
+
+    // Click-outside closes
+    document.addEventListener('mousedown', e => {
+        if (launcherEl && !launcherEl.contains(e.target)) closeLauncher();
+    }, { capture: true });
+
+    // Escape closes
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && launcherEl && !launcherEl.classList.contains('launcher-hidden'))
+            closeLauncher();
+    });
+
+    // Icon clicks → dblclick on the desktop icon (or trigger a synthetic click)
+    el.querySelectorAll('.launcher-item').forEach(item => {
+        item.addEventListener('dblclick', () => {
+            const targetId = item.dataset.target;
+            const icon = document.getElementById(targetId);
+            if (icon) {
+                closeLauncher();
+                // Dispatch dblclick so the existing icon handler fires
+                icon.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+            }
+        });
+        // Single click = highlight
+        item.addEventListener('click', () => {
+            el.querySelectorAll('.launcher-item').forEach(i => i.classList.remove('launcher-selected'));
+            item.classList.add('launcher-selected');
+            // Update status bar
+            const label = item.querySelector('.launcher-item-label').textContent;
+            el.querySelector('#launcher-statusbar span').textContent = label;
+        });
+    });
+
+    // Make draggable by title bar
+    let drag = false, ox = 0, oy = 0;
+    const titlebar = el.querySelector('#launcher-titlebar');
+    titlebar.addEventListener('mousedown', e => {
+        if (e.target.closest('#launcher-controls')) return;
+        drag = true;
+        const r = el.getBoundingClientRect();
+        ox = e.clientX - r.left; oy = e.clientY - r.top;
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+        if (!drag) return;
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const w = el.offsetWidth, h = el.offsetHeight;
+        el.style.left = Math.max(0, Math.min(vw-w, e.clientX-ox)) + 'px';
+        el.style.top  = Math.max(0, Math.min(vh-h-50, e.clientY-oy)) + 'px';
+        el.style.transform = 'none';
+    });
+    document.addEventListener('mouseup', () => { drag = false; });
+
+    return el;
+}
+
+function openLauncher() {
+    if (!launcherEl) launcherEl = buildLauncher();
+    launcherEl.classList.remove('launcher-hidden');
+    // Reset to centered position each open
+    launcherEl.style.left = '';
+    launcherEl.style.top  = '';
+    launcherEl.style.transform = '';
+}
+
+function closeLauncher() {
+    launcherEl?.classList.add('launcher-hidden');
+}
+
 function initStartMenu() {
     const startBtn    = document.querySelector('.start-btn');
     const startMenu   = document.getElementById('start-menu');
@@ -469,6 +595,16 @@ function initStartMenu() {
     });
 
     startMenu.addEventListener('click', e => e.stopPropagation());
+
+    // ── Applications button → Win98 Programs launcher ─────────
+    const appsBtn = Array.from(startMenu.querySelectorAll('.menu-btn'))
+        .find(b => b.querySelector('.menu-text')?.textContent.trim() === 'Applications');
+    if (appsBtn) {
+        appsBtn.addEventListener('click', () => {
+            startMenu.classList.add('hidden');
+            openLauncher();
+        });
+    }
 
     shutdownBtn.addEventListener('click', () => {
         window.open('', '_self', '');

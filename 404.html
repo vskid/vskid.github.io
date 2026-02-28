@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  404.html — vskid.github.io
+  Windows XP / 2000 Blue Screen of Death aesthetic.
+  Auto-"reboots" (redirects to /) after 30s countdown,
+  or user can click the button immediately.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAGE_FAULT_IN_NONPAGED_AREA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Perfect+DOS+VGA+437&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bsod-blue:   #0000aa;
+      --bsod-bg:     #0000aa;
+      --bsod-text:   #aaaaaa;
+      --bsod-white:  #ffffff;
+      --bsod-yellow: #ffff55;
+      --bsod-cyan:   #55ffff;
+      --bsod-lgreen: #55ff55;
+      --font: 'Perfect DOS VGA 437', 'Courier New', monospace;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bsod-bg);
+      color: var(--bsod-text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow: hidden;
+      cursor: default;
+      user-select: none;
+    }
+
+    /* CRT scanline overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .screen {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── Header bar ── */
+    .bsod-header {
+      background: var(--bsod-cyan);
+      color: var(--bsod-blue);
+      font-family: var(--font);
+      font-size: 16px;
+      font-weight: bold;
+      padding: 2px 8px;
+      margin-bottom: 28px;
+      letter-spacing: 0;
+    }
+
+    /* ── Body text ── */
+    .bsod-body {
+      color: var(--bsod-white);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .bsod-body .error-code {
+      color: var(--bsod-white);
+      font-weight: bold;
+    }
+
+    .bsod-body .addr {
+      color: var(--bsod-cyan);
+    }
+
+    .bsod-body .note {
+      color: var(--bsod-yellow);
+    }
+
+    .bsod-body .dim {
+      color: #7777cc;
+    }
+
+    /* ── Divider ── */
+    .bsod-div {
+      border: none;
+      border-top: 1px solid #3333aa;
+      margin: 20px 0;
+    }
+
+    /* ── Progress / countdown bar ── */
+    .bsod-countdown-wrap {
+      margin-top: 24px;
+      font-family: var(--font);
+      font-size: 16px;
+      color: var(--bsod-white);
+    }
+
+    .bsod-bar-track {
+      display: inline-block;
+      width: 180px;
+      height: 16px;
+      background: #000077;
+      border: 1px solid #5555cc;
+      vertical-align: middle;
+      overflow: hidden;
+      margin: 0 6px;
+    }
+    .bsod-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--bsod-cyan);
+      transform-origin: left;
+      transform: scaleX(1);
+      /* filled from right → left as countdown ticks down */
+      transition: transform 1s linear;
+    }
+
+    /* ── Reboot button — Win XP dialog style ── */
+    .bsod-btn-wrap {
+      margin-top: 28px;
+    }
+
+    .bsod-btn {
+      display: inline-block;
+      background: #d4d0c8;
+      color: #000;
+      font-family: 'Tahoma', 'Arial', sans-serif;
+      font-size: 11px;
+      padding: 4px 18px;
+      border: none;
+      border-top:    2px solid #ffffff;
+      border-left:   2px solid #ffffff;
+      border-right:  2px solid #404040;
+      border-bottom: 2px solid #404040;
+      box-shadow: 1px 1px 0 #808080;
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 0;
+      outline: 1px dotted transparent;
+    }
+    .bsod-btn:hover {
+      background: #c8d0e4;
+      outline-color: #000;
+    }
+    .bsod-btn:active {
+      border-top:    2px solid #404040;
+      border-left:   2px solid #404040;
+      border-right:  2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      box-shadow: none;
+      padding: 5px 17px 3px 19px;
+    }
+
+    /* ── Blinking cursor ── */
+    .blink {
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* ── Stop code line ── */
+    .stop-line {
+      margin-top: 24px;
+      color: var(--bsod-white);
+      font-family: var(--font);
+      font-size: 16px;
+    }
+    .stop-line span {
+      color: var(--bsod-yellow);
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="screen">
+
+  <div class="bsod-header">Windows</div>
+
+  <div class="bsod-body">A problem has been detected and vskid.github.io has been shut
+down to prevent damage to your computer.
+
+<span class="error-code">PAGE_NOT_FOUND_IN_NONPAGED_AREA</span>
+
+If this is the first time you've seen this Stop error screen,
+try navigating back to the home page. If this screen appears
+again, follow these steps:
+
+Check to make sure the URL you typed is spelled correctly.
+URLs are case-sensitive on this server. Verify that the
+resource you are trying to access has not been moved or
+deleted.
+
+<span class="note">Technical information:</span>
+
+<span class="dim">*** STOP: 0x00000404</span> <span class="addr">(0x00000000404, 0xC0000034,
+                  0x00000000, 0x00000000)</span>
+
+<span class="dim">***   http.sys - Address</span> <span class="addr">F86B5A89</span> <span class="dim">base at</span> <span class="addr">F86B5000</span><span class="dim">,
+          DateStamp</span> <span class="addr">3d6dd67c</span></div>
+
+  <hr class="bsod-div">
+
+  <div class="bsod-body"><span class="dim">Beginning dump of physical memory
+Physical memory dump complete.
+Contact your system administrator or technical support group
+for further assistance.</span></div>
+
+  <div class="stop-line">
+    <span id="countdown-label">Rebooting in <span id="countdown-num">30</span>s</span><span class="blink">_</span>
+  </div>
+
+  <div class="bsod-countdown-wrap">
+    <span class="bsod-bar-track"><span class="bsod-bar-fill" id="bar-fill"></span></span>
+  </div>
+
+  <div class="bsod-btn-wrap">
+    <a href="/" class="bsod-btn" id="reboot-btn">↵ Return to Desktop</a>
+  </div>
+
+</div>
+
+<script>
+  const total   = 30;
+  let remaining = total;
+  const numEl   = document.getElementById('countdown-num');
+  const barFill = document.getElementById('bar-fill');
+
+  function tick() {
+    remaining--;
+    numEl.textContent = remaining;
+    // Bar shrinks left-to-right as time runs out
+    barFill.style.transform = 'scaleX(' + (remaining / total) + ')';
+    if (remaining <= 0) {
+      window.location.href = '/';
+    } else {
+      setTimeout(tick, 1000);
+    }
+  }
+
+  // Start countdown after a beat so it feels like the "screen just appeared"
+  setTimeout(tick, 1000);
+</script>
+
+</body>
+</html>
