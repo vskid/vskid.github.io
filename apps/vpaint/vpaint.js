@@ -67,9 +67,10 @@ async function deleteWork(id) {
 }
 
 async function togglePin(id, pinned) {
+    // return=minimal → 204 No Content; avoids 406 if anon key lacks SELECT
     return sbFetch(TABLE + '?id=eq.' + id, {
         method:  'PATCH',
-        headers: { 'Prefer': 'return=representation' },
+        headers: { 'Prefer': 'return=minimal' },
         body:    JSON.stringify({ pinned }),
     }, false);
 }
@@ -77,7 +78,7 @@ async function togglePin(id, pinned) {
 async function toggleHideWork(id, hidden) {
     return sbFetch(TABLE + '?id=eq.' + id, {
         method:  'PATCH',
-        headers: { 'Prefer': 'return=representation' },
+        headers: { 'Prefer': 'return=minimal' },
         body:    JSON.stringify({ hidden }),
     }, false);
 }

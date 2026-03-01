@@ -1,10 +1,11 @@
 /* ============================================================
-   apps/vmap/vmap.css
-   vMap — Transit Fantasy / Travel Map
+   apps/vmap/vmap.css  —  vMap: Travel Map
+   macOS Aqua aesthetic.
    ============================================================ */
 
-/* ── Window ──────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Share+Tech+Mono&display=swap');
 
+/* ── Window ──────────────────────────────────────────────── */
 #vmap-window {
     width: 700px;
     height: 520px;
@@ -13,194 +14,117 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.7);
 }
-
 #vmap-window.hidden,
 #vmap-window.minimized { display: none; }
 
-/* ── Title bar ───────────────────────────────────────────── */
-
-.vmap-title-bar {
-    background: linear-gradient(to bottom, #2a2e2a, #1c201c);
-    border-bottom: 1px solid #3a4a3a;
-    flex-shrink: 0;
-}
-
+/* ── Title bar — inherits Aqua .title-bar from desktop.css ── */
 .vmap-title-bar .title-text {
-    color: #a8c8a0;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    color: #18284a;
 }
 
-#vmap-window .window-controls .minimize-btn,
-#vmap-window .window-controls .close-btn {
-    color: #8aaa80;
-    border-color: #3a4a3a;
-}
-
-#vmap-window .window-controls .minimize-btn:hover,
-#vmap-window .window-controls .close-btn:hover {
-    background: #3a5a3a;
-    color: #fff;
-}
-
-/* ── Body — the map fills it entirely ───────────────────── */
-
+/* ── Body — map fills it ─────────────────────────────────── */
 .vmap-body {
     flex: 1;
     position: relative;
     overflow: hidden;
-    background: #1a2020;
+    background: #c8d8e8;
     min-height: 0;
 }
+#vmap-leaflet { position: absolute; inset: 0; }
 
-#vmap-leaflet {
-    position: absolute;
-    inset: 0;
-}
-
-/* ── Override Leaflet chrome to match the desktop theme ──── */
-
+/* ── Leaflet overrides to match Aqua palette ─────────────── */
 .leaflet-container {
-    background: #1a2028 !important;
-    font-family: 'Barlow Condensed', sans-serif !important;
+    background: #c4d4e4 !important;
+    font-family: -apple-system, 'Lucida Grande', 'Barlow Condensed', sans-serif !important;
 }
-
-/* Attribution — keep it but make it unobtrusive */
 .leaflet-control-attribution {
-    background: rgba(0,0,0,0.55) !important;
-    color: #555 !important;
-    font-size: 0.55rem !important;
+    background: rgba(230,240,255,0.72) !important;
+    color: rgba(30,60,130,0.50) !important;
+    font-size: 0.52rem !important;
     padding: 1px 5px !important;
+    border-radius: 3px !important;
 }
+.leaflet-control-attribution a { color: rgba(30,80,200,0.60) !important; }
 
-.leaflet-control-attribution a { color: #667 !important; }
-
-/* Zoom buttons */
 .leaflet-control-zoom a {
-    background: #1e2420 !important;
-    color: #8ab890 !important;
-    border-color: #2e3e2e !important;
-    font-size: 1rem !important;
-    line-height: 26px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,0.88) 0%, rgba(210,230,255,0.78) 100%) !important;
+    color: #1a3a80 !important;
+    border-color: rgba(130,170,230,0.55) !important;
+    font-size: 1rem !important; line-height: 26px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.80) !important;
 }
-
 .leaflet-control-zoom a:hover {
-    background: #2a3a2a !important;
-    color: #b0d8a8 !important;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(190,220,255,0.88) 100%) !important;
+    color: #0a2060 !important;
 }
 
-/* ── LoD City markers ────────────────────────────────────── */
-
-/* Base dot — visible at all zoom levels */
+/* ── City markers ────────────────────────────────────────── */
 .vmap-marker {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: all;
-    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: all; cursor: pointer;
 }
-
 .vmap-dot {
     border-radius: 50%;
-    background: #7ab870;
-    border: 1.5px solid #b0d8a8;
-    box-shadow: 0 0 4px rgba(120,200,100,0.4);
+    background: radial-gradient(circle at 38% 32%, #6ab4f8, #3478f6 65%, #1a5cd4);
+    border: 1.5px solid rgba(255,255,255,0.75);
+    box-shadow: 0 0 6px rgba(52,120,246,0.55), 0 1px 3px rgba(0,0,0,0.25);
     transition: transform 0.15s, background 0.15s;
     flex-shrink: 0;
 }
-
 .vmap-marker:hover .vmap-dot {
-    background: #a0e890;
-    transform: scale(1.5);
-    box-shadow: 0 0 8px rgba(140,240,110,0.6);
+    background: radial-gradient(circle at 38% 32%, #90d0ff, #5aacff 65%, #2a80ff);
+    transform: scale(1.6);
+    box-shadow: 0 0 12px rgba(90,170,255,0.72);
 }
 
-/* Label — shown at mid/high zoom via JS class toggling */
 .vmap-label {
     position: absolute;
-    left: calc(100% + 4px);
-    top: 50%;
-    transform: translateY(-50%);
+    left: calc(100% + 5px); top: 50%; transform: translateY(-50%);
     white-space: nowrap;
     font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #b0c8a8;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.8);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s;
+    font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+    color: #1a3a80;
+    text-shadow: 0 1px 3px rgba(255,255,255,0.82);
+    pointer-events: none; opacity: 0; transition: opacity 0.2s;
 }
+.vmap-marker.lod-label  .vmap-label { opacity: 1; font-size: 0.58rem; }
+.vmap-marker.lod-detail .vmap-label { opacity: 1; font-size: 0.70rem; color: #0a2860; }
 
-.vmap-marker.lod-label  .vmap-label { opacity: 1; font-size: 0.6rem; }
-.vmap-marker.lod-detail .vmap-label { opacity: 1; font-size: 0.72rem; color: #d0e8c8; }
-
-/* Dot sizing per LoD */
-.vmap-marker.lod-dot    .vmap-dot { width: 5px;  height: 5px;  }
-.vmap-marker.lod-label  .vmap-dot { width: 7px;  height: 7px;  }
+.vmap-marker.lod-dot    .vmap-dot { width: 5px;  height: 5px; }
+.vmap-marker.lod-label  .vmap-dot { width: 7px;  height: 7px; }
 .vmap-marker.lod-detail .vmap-dot { width: 9px;  height: 9px;  border-width: 2px; }
 
 /* ── Popup ───────────────────────────────────────────────── */
-
 .leaflet-popup-content-wrapper {
-    background: #1c2820 !important;
-    border: 1px solid #3a5a3a !important;
-    border-radius: 3px !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.6) !important;
-    color: #b0c8a8 !important;
-    font-family: 'Barlow Condensed', sans-serif !important;
+    background: rgba(234,242,255,0.96) !important;
+    backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(140,175,230,0.50) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 28px rgba(0,30,120,0.30) !important;
+    color: #1a2e5a !important;
+    font-family: -apple-system, 'Lucida Grande', sans-serif !important;
     padding: 0 !important;
 }
-
-.leaflet-popup-tip {
-    background: #1c2820 !important;
-}
-
-.leaflet-popup-content {
-    margin: 0 !important;
-    padding: 10px 14px !important;
-}
+.leaflet-popup-tip { background: rgba(234,242,255,0.96) !important; }
+.leaflet-popup-content { margin: 0 !important; padding: 10px 14px !important; }
 
 .vmap-popup-city {
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: #c8e8c0;
-    margin-bottom: 3px;
+    font-size: 0.88rem; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #0a2060; margin-bottom: 3px;
 }
-
-.vmap-popup-tz {
-    font-size: 0.6rem;
-    color: #607858;
-    letter-spacing: 0.08em;
-}
-
+.vmap-popup-tz { font-size: 0.58rem; color: rgba(30,60,140,0.52); letter-spacing: 0.06em; }
 .vmap-popup-time {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 0.75rem;
-    color: #90b888;
-    margin-top: 4px;
+    font-size: 0.72rem; color: #1a4aaa; margin-top: 4px;
 }
-
 .vmap-popup-link {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #7ab870;
+    display: inline-block; margin-top: 6px;
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.10em;
+    text-transform: uppercase; color: #3478f6;
     cursor: pointer;
-    border-bottom: 1px solid #3a5a3a;
+    border-bottom: 1px solid rgba(52,120,246,0.35);
     padding-bottom: 1px;
 }
-
-.vmap-popup-link:hover { color: #a0d898; border-color: #6a9860; }
+.vmap-popup-link:hover { color: #1a60d4; border-color: #3478f6; }

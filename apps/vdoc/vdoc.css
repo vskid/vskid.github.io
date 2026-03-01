@@ -27,32 +27,8 @@
 #vdoc-window.hidden,
 #vdoc-window.minimized { display: none; }
 
-/* ── Title bar ───────────────────────────────────────────── */
-
-.vdoc-title-bar {
-    background: linear-gradient(to bottom, #1a2e50, #122240);
-    border-bottom: 2px solid #2a5298;
-    flex-shrink: 0;
-}
-
-.vdoc-title-bar .title-text {
-    color: #c8deff;
-    font-size: 0.85rem;
-    letter-spacing: 0.06em;
-    font-weight: 600;
-}
-
-#vdoc-window .window-controls .minimize-btn,
-#vdoc-window .window-controls .close-btn {
-    color: rgba(200, 222, 255, 0.65);
-    border-color: rgba(200, 222, 255, 0.18);
-}
-
-#vdoc-window .window-controls .minimize-btn:hover,
-#vdoc-window .window-controls .close-btn:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #c8deff;
-}
+/* ── Title bar — standard Aqua from desktop.css ─────────── */
+/* No override; .title-bar in desktop.css handles this.      */
 
 /* ── Toolbar strip ───────────────────────────────────────── */
 

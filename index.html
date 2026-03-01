@@ -108,45 +108,53 @@
 
   </div>
   <!-- =====================================================
-       START MENU
+       MACOS MENU BAR  (top, full-width, 24px)
   ====================================================== -->
-  <div class="start-menu glass-panel hidden" id="start-menu">
-    <div class="start-menu-sidebar">
-      <div class="user-profile">
-        <div class="avatar">👤</div>
-        <span>vskid</span>
-      </div>
+  <nav class="menubar">
+    <!-- Left: Apple + app name + menus -->
+    <button class="menubar-apple" title="Apple menu" aria-haspopup="true">v</button>
+    <span class="menubar-app-name">vskid's homepage</span>
+    <div class="menubar-sep"></div>
+    <span class="menubar-item">File</span>
+    <span class="menubar-item">Edit</span>
+    <span class="menubar-item">View</span>
+    <span class="menubar-item">Window</span>
+    <span class="menubar-item">Help</span>
+    <!-- Right: extras + clock -->
+    <div class="menubar-spacer"></div>
+    <div class="menubar-extras">
+      <span class="menubar-extra-item" title="Wi-Fi">⌘</span>
+      <span class="menubar-extra-item" title="Battery">🔋</span>
+      <div class="menubar-sep"></div>
+      <span class="menubar-clock menubar-extra-item" id="clock">Mon 00/00  00:00</span>
     </div>
-    <div class="start-menu-content">
-      <div class="start-menu-grid">
-        <div class="menu-btn">
-          <span class="menu-icon">📱</span>
-          <span class="menu-text">Applications</span>
-        </div>
-        <div class="menu-btn">
-          <span class="menu-icon">⚙️</span>
-          <span class="menu-text">Settings</span>
-        </div>
-        <div class="menu-btn" id="shutdown-btn">
-          <span class="menu-icon">🛑</span>
-          <span class="menu-text">Shutdown</span>
-        </div>
-      </div>
-    </div>
+  </nav>
+
+  <!-- Apple menu dropdown (hidden until apple btn clicked) -->
+  <div class="apple-menu hidden" id="apple-menu" role="menu">
+    <div class="apple-menu-item disabled">About This Site</div>
+    <div class="apple-menu-hr"></div>
+    <div class="apple-menu-item" data-action="apps">📱 Applications…</div>
+    <div class="apple-menu-hr"></div>
+    <div class="apple-menu-item" data-action="shutdown">🛑 Shut Down…</div>
   </div>
 
   <!-- =====================================================
-       TASKBAR
+       LAUNCHPAD  (full-screen app grid, Aqua style)
   ====================================================== -->
-  <div class="taskbar glass-panel">
-    <button class="start-btn">
-      <span class="start-logo">v</span>
-      Start
-    </button>
-    <div class="taskbar-apps"></div>
-    <div class="system-tray">
-      <div class="time-widget" id="clock">00:00</div>
+  <div id="launchpad">
+    <div id="launchpad-title">Applications</div>
+    <div id="launchpad-grid">
+      <!-- Items injected by desktop.js -->
     </div>
+    <div id="launchpad-hint">Press Escape or click outside to close</div>
+  </div>
+
+  <!-- =====================================================
+       DOCK  (bottom glass shelf — icons only)
+  ====================================================== -->
+  <div class="taskbar">
+    <div class="taskbar-apps"></div>
   </div>
 
   <!-- ES module entry point -->

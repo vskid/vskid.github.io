@@ -68,6 +68,7 @@ function inl(s) {
         .replace(/__([^_]+)__/g,'<strong>$1</strong>')
         .replace(/\*([^*]+)\*/g,'<em>$1</em>')
         .replace(/_([^_]+)_/g,'<em>$1</em>')
+        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img src="$2" alt="$1" style="max-width:100%;height:auto;border-radius:4px;margin:0.5em 0;display:block;">')
         .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
 }
 
@@ -109,6 +110,9 @@ export async function initVDoc({ registerWindow, openWindow }) {
     const windowEl = document.getElementById('vdoc-window');
     if (!windowEl) return;
     const entry = registerWindow(windowEl, { icon: '📝' });
+
+    // NOTE: open-docs desktop icon is handled by explorer.js.
+    // vDoc only opens in response to file-open events (type === 'doc').
 
     document.addEventListener('file-open', e => {
         if (e.detail?.type !== 'doc') return;

@@ -42,41 +42,18 @@
     flex-direction: column;
     background: transparent;
     overflow: hidden;
-    /* Hard pixel shadow — no blur */
-    box-shadow: 3px 3px 0 #1a1a1a, 5px 5px 0 #333;
+    border-radius: 10px;
+    box-shadow:
+        0 0 0 1px rgba(60,90,150,0.28),
+        0 20px 55px rgba(0,0,0,0.52),
+        0 4px 12px rgba(0,0,0,0.22);
 }
 
 #snake-window.hidden,
 #snake-window.minimized { display: none; }
 
-/* ── Title bar ───────────────────────────────────────────── */
-
-.snake-title-bar {
-    background: #3c3c3c;
-    border-bottom: 2px solid #1a1a1a;
-}
-
-.snake-title-bar .title-text {
-    color: #a8b89a;
-    font-weight: 700;
-    font-size: 0.75rem;
-    letter-spacing: 0.18em;
-    font-family: 'Share Tech Mono', 'Courier New', monospace;
-    text-shadow: none;
-}
-
-#snake-window .window-controls .minimize-btn,
-#snake-window .window-controls .close-btn {
-    color: #a8b89a;
-    border-color: #555;
-    font-family: 'Share Tech Mono', 'Courier New', monospace;
-}
-
-#snake-window .window-controls .minimize-btn:hover,
-#snake-window .window-controls .close-btn:hover {
-    background: #1a2410;
-    color: #a8b89a;
-}
+/* ── Title bar — standard Aqua, all overrides removed ───── */
+/* .snake-title-bar inherits .title-bar from desktop.css     */
 
 /* ── Phone body ──────────────────────────────────────────── */
 

@@ -14,12 +14,19 @@
 // Updates the taskbar time display every second.
 
 function initClock() {
-    const el = document.getElementById('clock');
+    // Update both the legacy #clock id (if present) AND the new menubar clock
     const tick = () => {
-        const now = new Date();
-        el.textContent =
-            String(now.getHours()).padStart(2, '0') + ':' +
-            String(now.getMinutes()).padStart(2, '0');
+        const now  = new Date();
+        const days  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const day   = days[now.getDay()];
+        const mo    = String(now.getMonth() + 1).padStart(2, '0');
+        const dt    = String(now.getDate()).padStart(2, '0');
+        const hr    = String(now.getHours()).padStart(2, '0');
+        const mn    = String(now.getMinutes()).padStart(2, '0');
+        const str   = `${day} ${mo}/${dt}  ${hr}:${mn}`;
+        document.querySelectorAll('.menubar-clock, #clock').forEach(el => {
+            el.textContent = str;
+        });
     };
     setInterval(tick, 1000);
     tick();
@@ -460,11 +467,6 @@ function makeResizable(windowEl) {
 // it's a static manifest, not auto-discovered.
 
 const LAUNCHER_APPS = [
-    { icon: '📁', label: 'Projects',   id: 'open-projects'  },
-    { icon: '🎬', label: 'Videos',     id: 'open-videos'    },
-    { icon: '🎵', label: 'Music',      id: 'open-music'     },
-    { icon: '🖼️', label: 'Pictures',   id: 'open-pictures'  },
-    { icon: '📄', label: 'Documents',  id: 'open-docs'      },
     { icon: '📖', label: 'The Wall',   id: 'open-wall'      },
     { icon: '🐍', label: 'vSnake',     id: 'open-snake'     },
     { icon: '🕓', label: 'vClock',     id: 'open-vclock'    },
@@ -580,34 +582,11 @@ function closeLauncher() {
 }
 
 function initStartMenu() {
-    const startBtn    = document.querySelector('.start-btn');
-    const startMenu   = document.getElementById('start-menu');
-    const shutdownBtn = document.getElementById('shutdown-btn');
+    // Legacy: no-op. The Apple menu is in initMenuBar() below.
+}
 
-    startBtn.addEventListener('click', e => {
-        e.stopPropagation();
-        startMenu.classList.toggle('hidden');
-    });
-
-    document.addEventListener('click', e => {
-        if (!startMenu.contains(e.target) && !startBtn.contains(e.target))
-            startMenu.classList.add('hidden');
-    });
-
-    startMenu.addEventListener('click', e => e.stopPropagation());
-
-    // ── Applications button → Win98 Programs launcher ─────────
-    const appsBtn = Array.from(startMenu.querySelectorAll('.menu-btn'))
-        .find(b => b.querySelector('.menu-text')?.textContent.trim() === 'Applications');
-    if (appsBtn) {
-        appsBtn.addEventListener('click', () => {
-            startMenu.classList.add('hidden');
-            openLauncher();
-        });
-    }
-
-    shutdownBtn.addEventListener('click', () => {
-        window.open('', '_self', '');
+function doShutdown() {
+    window.open('', '_self', '');
         window.close();
         setTimeout(() => {
             const style = document.createElement('style');
@@ -630,6 +609,53 @@ function initStartMenu() {
                 }
             }, 1000);
         }, 100);
+}
+
+
+// ── MACOS MENU BAR ────────────────────────────────────────────
+// Builds the thin top menu bar: Apple menu, app items, clock.
+// Called once from init(). The bar is injected into index.html's
+// .menubar element (already in the DOM).
+
+function initMenuBar() {
+    const bar = document.querySelector('.menubar');
+    if (!bar) return;
+
+    // ── Apple menu dropdown ──────────────────────────────────
+    const appleBtn  = bar.querySelector('.menubar-apple');
+    const appleMenu = document.querySelector('.apple-menu');
+    if (!appleBtn || !appleMenu) return;
+
+    function closeApple() { appleMenu.classList.add('hidden'); }
+    function openApple()  { appleMenu.classList.remove('hidden'); }
+
+    appleBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        appleMenu.classList.contains('hidden') ? openApple() : closeApple();
+    });
+
+    document.addEventListener('click', e => {
+        if (!appleMenu.contains(e.target) && e.target !== appleBtn) closeApple();
+    });
+
+    // Wire menu items
+    appleMenu.querySelectorAll('.apple-menu-item[data-action]').forEach(item => {
+        item.addEventListener('click', () => {
+            closeApple();
+            const action = item.dataset.action;
+            if (action === 'apps')     openLauncher();
+            if (action === 'shutdown') doShutdown();
+        });
+    });
+
+    // ── Menubar item hover highlight ─────────────────────────
+    bar.querySelectorAll('.menubar-item').forEach(item => {
+        item.addEventListener('click', () => {
+            // Could open per-app menus in future; for now just ripple active
+            bar.querySelectorAll('.menubar-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            setTimeout(() => item.classList.remove('active'), 350);
+        });
     });
 }
 
@@ -639,5 +665,6 @@ function initStartMenu() {
 export function init() {
     initClock();
     initStartMenu();
+    initMenuBar();
     return initWindowSystem(); // returns { registerWindow, openWindow, ... }
 }

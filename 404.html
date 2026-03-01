@@ -2,270 +2,277 @@
 <html lang="en">
 <!--
   404.html — vskid.github.io
-  Windows XP / 2000 Blue Screen of Death aesthetic.
-  Auto-"reboots" (redirects to /) after 30s countdown,
-  or user can click the button immediately.
+  Full-screen Windows 2000 BSOD. Genuinely traumatizing edition:
+  - Full viewport, no scroll, no escape
+  - CRT scanlines + phosphor flicker animation  
+  - Typewriter memory dump
+  - Any keypress → home
+  - 30s countdown bar → auto-redirect
 -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PAGE_FAULT_IN_NONPAGED_AREA</title>
+  <title>STOP: 0x0000404 — PAGE_NOT_FOUND</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Perfect+DOS+VGA+437&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bsod-blue:   #0000aa;
-      --bsod-bg:     #0000aa;
-      --bsod-text:   #aaaaaa;
-      --bsod-white:  #ffffff;
-      --bsod-yellow: #ffff55;
-      --bsod-cyan:   #55ffff;
-      --bsod-lgreen: #55ff55;
-      --font: 'Perfect DOS VGA 437', 'Courier New', monospace;
-    }
-
     html, body {
-      width: 100%; height: 100%;
-      background: var(--bsod-bg);
-      color: var(--bsod-text);
-      font-family: var(--font);
-      font-size: 16px;
-      line-height: 1.6;
+      width: 100vw; height: 100vh;
       overflow: hidden;
+      background: #0000aa;
+      color: #fff;
+      font-family: 'Courier New', 'Lucida Console', monospace;
+      font-size: clamp(12px, 1.6vw, 16px);
+      line-height: 1.65;
       cursor: default;
       user-select: none;
     }
 
-    /* CRT scanline overlay */
-    body::after {
+    /* Full-screen CRT scanlines */
+    body::before {
       content: '';
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: repeating-linear-gradient(
         0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.08) 2px,
-        rgba(0,0,0,0.08) 4px
+        transparent 0px, transparent 2px,
+        rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px
       );
       pointer-events: none;
-      z-index: 999;
+      z-index: 1000;
     }
 
-    .screen {
-      width: 100%;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 40px 32px;
-      display: flex;
-      flex-direction: column;
+    /* Phosphor screen flicker — irregular, unsettling */
+    @keyframes flicker {
+      0%,89%,91%,93%,96%,100% { opacity:1; }
+      90%  { opacity:0.75; }
+      92%  { opacity:0.95; }
+      94%  { opacity:0.6; }
+      95%  { opacity:1; }
+    }
+    html { animation: flicker 11s step-end infinite; }
+
+    /* Full-page layout */
+    .bsod {
+      width: 100vw; height: 100vh;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: clamp(24px, 6vw, 80px) clamp(24px, 9vw, 120px);
       gap: 0;
+      position: relative;
     }
 
-    /* ── Header bar ── */
-    .bsod-header {
-      background: var(--bsod-cyan);
-      color: var(--bsod-blue);
-      font-family: var(--font);
-      font-size: 16px;
+    /* Top cyan bar */
+    .header {
+      background: #55ffff;
+      color: #0000aa;
       font-weight: bold;
-      padding: 2px 8px;
-      margin-bottom: 28px;
-      letter-spacing: 0;
+      padding: 1px 10px;
+      margin-bottom: 1.6em;
+      width: fit-content;
+      letter-spacing: 0.01em;
     }
 
-    /* ── Body text ── */
-    .bsod-body {
-      color: var(--bsod-white);
-      font-family: var(--font);
-      font-size: 16px;
-      line-height: 1.65;
+    /* Main body text block */
+    pre.body {
+      max-width: 72ch;
       white-space: pre-wrap;
       word-break: break-word;
+      margin-bottom: 1.2em;
+      font-family: inherit;
+      font-size: inherit;
+      line-height: inherit;
     }
 
-    .bsod-body .error-code {
-      color: var(--bsod-white);
-      font-weight: bold;
-    }
+    .c  { color: #55ffff; }  /* cyan  */
+    .y  { color: #ffff55; }  /* yellow */
+    .d  { color: #7777cc; }  /* dim purple */
+    .w  { color: #ffffff; font-weight: bold; }  /* bright white */
 
-    .bsod-body .addr {
-      color: var(--bsod-cyan);
-    }
+    hr  { border: none; border-top: 1px solid #2222aa; margin: 1em 0; max-width: 72ch; }
 
-    .bsod-body .note {
-      color: var(--bsod-yellow);
-    }
-
-    .bsod-body .dim {
+    /* Memory dump typewriter */
+    #dump {
+      font-size: 0.82em;
       color: #7777cc;
-    }
-
-    /* ── Divider ── */
-    .bsod-div {
-      border: none;
-      border-top: 1px solid #3333aa;
-      margin: 20px 0;
-    }
-
-    /* ── Progress / countdown bar ── */
-    .bsod-countdown-wrap {
-      margin-top: 24px;
-      font-family: var(--font);
-      font-size: 16px;
-      color: var(--bsod-white);
-    }
-
-    .bsod-bar-track {
-      display: inline-block;
-      width: 180px;
-      height: 16px;
-      background: #000077;
-      border: 1px solid #5555cc;
-      vertical-align: middle;
+      max-width: 72ch;
+      white-space: pre;
+      min-height: 5.5em;
+      margin-bottom: 1em;
       overflow: hidden;
-      margin: 0 6px;
     }
-    .bsod-bar-fill {
+
+    /* STOP line */
+    .stop {
+      margin: 0.5em 0 0.4em;
+      font-size: 1em;
+    }
+
+    /* Countdown */
+    .cdown-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0.5em 0 1.2em;
+    }
+    .bar-track {
+      display: inline-block;
+      width: clamp(120px, 18vw, 200px);
+      height: 1em;
+      background: #000066;
+      border: 1px solid #4444aa;
+      overflow: hidden;
+    }
+    .bar-fill {
       height: 100%;
-      width: 100%;
-      background: var(--bsod-cyan);
+      background: #55ffff;
       transform-origin: left;
       transform: scaleX(1);
-      /* filled from right → left as countdown ticks down */
       transition: transform 1s linear;
     }
 
-    /* ── Reboot button — Win XP dialog style ── */
-    .bsod-btn-wrap {
-      margin-top: 28px;
-    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .cur { animation: blink 1s step-end infinite; }
 
-    .bsod-btn {
+    /* Return button — genuine Win2000 style */
+    .btn-row { margin-top: 0.2em; }
+    .ret {
       display: inline-block;
+      font-family: 'Tahoma', Arial, sans-serif;
+      font-size: 11px;
       background: #d4d0c8;
       color: #000;
-      font-family: 'Tahoma', 'Arial', sans-serif;
-      font-size: 11px;
-      padding: 4px 18px;
-      border: none;
-      border-top:    2px solid #ffffff;
-      border-left:   2px solid #ffffff;
+      padding: 3px 18px;
+      text-decoration: none;
+      border-top:    2px solid #fff;
+      border-left:   2px solid #fff;
       border-right:  2px solid #404040;
       border-bottom: 2px solid #404040;
       box-shadow: 1px 1px 0 #808080;
-      cursor: pointer;
-      text-decoration: none;
-      letter-spacing: 0;
       outline: 1px dotted transparent;
     }
-    .bsod-btn:hover {
-      background: #c8d0e4;
-      outline-color: #000;
-    }
-    .bsod-btn:active {
-      border-top:    2px solid #404040;
-      border-left:   2px solid #404040;
-      border-right:  2px solid #ffffff;
-      border-bottom: 2px solid #ffffff;
-      box-shadow: none;
-      padding: 5px 17px 3px 19px;
+    .ret:hover  { background: #c8d0e4; outline-color: #000080; }
+    .ret:active {
+      border-top:  2px solid #404040; border-left:  2px solid #404040;
+      border-right:2px solid #fff;    border-bottom:2px solid #fff;
+      box-shadow:none; padding:4px 17px 2px 19px;
     }
 
-    /* ── Blinking cursor ── */
-    .blink {
-      animation: blink 1s step-end infinite;
+    /* Corner version watermark */
+    .watermark {
+      position: fixed;
+      bottom: 12px; right: 16px;
+      font-size: 0.72em;
+      color: #3333aa;
+      pointer-events: none;
     }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0; }
-    }
-
-    /* ── Stop code line ── */
-    .stop-line {
-      margin-top: 24px;
-      color: var(--bsod-white);
-      font-family: var(--font);
-      font-size: 16px;
-    }
-    .stop-line span {
-      color: var(--bsod-yellow);
-    }
-
   </style>
 </head>
 <body>
+<div class="bsod">
 
-<div class="screen">
+  <div class="header">&nbsp;Windows 2000&nbsp;</div>
 
-  <div class="bsod-header">Windows</div>
+  <pre class="body"><span class="w">A problem has been detected and Windows has been shut down to prevent
+damage to your computer.</span>
 
-  <div class="bsod-body">A problem has been detected and vskid.github.io has been shut
-down to prevent damage to your computer.
-
-<span class="error-code">PAGE_NOT_FOUND_IN_NONPAGED_AREA</span>
+<span class="w">PAGE_NOT_FOUND_IN_NONPAGED_AREA</span>
 
 If this is the first time you've seen this Stop error screen,
-try navigating back to the home page. If this screen appears
-again, follow these steps:
+press any key to return to the home page. If this screen
+appears again, follow these steps:
 
-Check to make sure the URL you typed is spelled correctly.
-URLs are case-sensitive on this server. Verify that the
-resource you are trying to access has not been moved or
-deleted.
+Check the URL you typed. URLs on this server are case-sensitive.
+If the page existed before, it may have been moved or deleted.
 
-<span class="note">Technical information:</span>
+<span class="y">Technical information:</span>
 
-<span class="dim">*** STOP: 0x00000404</span> <span class="addr">(0x00000000404, 0xC0000034,
-                  0x00000000, 0x00000000)</span>
+<span class="d">*** STOP: <span id="stop-hex" class="c">0x00000404</span> (<span class="c">0xC0000034, 0x00000000, 0x00000000, 0xDEADBEEF</span>)</span>
 
-<span class="dim">***   http.sys - Address</span> <span class="addr">F86B5A89</span> <span class="dim">base at</span> <span class="addr">F86B5000</span><span class="dim">,
-          DateStamp</span> <span class="addr">3d6dd67c</span></div>
+<span class="d">*** http.sys – Address <span id="fault-addr" class="c">F86B5A89</span> base at <span class="c">F86B5000</span>, DateStamp 3d6dd67c</span></pre>
 
-  <hr class="bsod-div">
+  <hr>
 
-  <div class="bsod-body"><span class="dim">Beginning dump of physical memory
-Physical memory dump complete.
-Contact your system administrator or technical support group
-for further assistance.</span></div>
+  <div id="dump"></div>
 
-  <div class="stop-line">
-    <span id="countdown-label">Rebooting in <span id="countdown-num">30</span>s</span><span class="blink">_</span>
+  <div class="stop"><span class="d">Beginning dump of physical memory. Physical memory dump complete.
+Contact your system administrator or technical support group.</span></div>
+
+  <div class="cdown-row">
+    <div class="bar-track"><div class="bar-fill" id="bar"></div></div>
+    <span>Rebooting in <span id="cnum">30</span>s<span class="cur">_</span></span>
   </div>
 
-  <div class="bsod-countdown-wrap">
-    <span class="bsod-bar-track"><span class="bsod-bar-fill" id="bar-fill"></span></span>
-  </div>
-
-  <div class="bsod-btn-wrap">
-    <a href="/" class="bsod-btn" id="reboot-btn">↵ Return to Desktop</a>
+  <div class="btn-row">
+    <a href="/" class="ret">&#8629;&nbsp;Return to Desktop</a>
   </div>
 
 </div>
 
+<div class="watermark">Microsoft Windows 2000 [Version 5.00.2195]</div>
+
 <script>
-  const total   = 30;
-  let remaining = total;
-  const numEl   = document.getElementById('countdown-num');
-  const barFill = document.getElementById('bar-fill');
+// ── Randomise addresses ──────────────────────────────────
+function rh(n) { return Math.floor(Math.random()*n).toString(16).toUpperCase().padStart(8,'0'); }
+document.getElementById('fault-addr').textContent = rh(0xFFFFFFFF);
+document.getElementById('stop-hex').textContent   =
+  '0x' + Math.floor(Math.random()*0xFFFF).toString(16).toUpperCase().padStart(8,'0');
 
-  function tick() {
-    remaining--;
-    numEl.textContent = remaining;
-    // Bar shrinks left-to-right as time runs out
-    barFill.style.transform = 'scaleX(' + (remaining / total) + ')';
-    if (remaining <= 0) {
-      window.location.href = '/';
-    } else {
-      setTimeout(tick, 1000);
-    }
+// ── Memory dump typewriter ────────────────────────────────
+const dumpEl = document.getElementById('dump');
+const lines  = [
+  'MEMORY.DMP – Physical Memory Dump (kernel)',
+  '',
+  'Loading symbols for ntoskrnl.exe ...',
+  'ERROR: Symbol file could not be found. Defaulting to export symbols.',
+  '',
+];
+for (let i = 0; i < 10; i++) {
+  const addr  = (0xC0001000 + i * 0x100 + Math.floor(Math.random()*0x100))
+                  .toString(16).toUpperCase();
+  const words = Array.from({length:4}, () =>
+    Math.floor(Math.random()*0xFFFFFFFF).toString(16).toUpperCase().padStart(8,'0')
+  ).join('  ');
+  lines.push('0x' + addr + ':  ' + words);
+}
+lines.push('', 'Kernel Version 2195 MP (2 procs) Free x86 compatible', '');
+
+let li = 0, ci = 0, txt = '';
+function typeNext() {
+  if (li >= lines.length) return;
+  const line = lines[li];
+  if (ci < line.length) {
+    txt += line[ci++];
+    dumpEl.textContent = txt;
+    setTimeout(typeNext, 14 + Math.random()*8);
+  } else {
+    txt += '\n';
+    dumpEl.textContent = txt;
+    li++; ci = 0;
+    setTimeout(typeNext, li < 3 ? 90 : 22);
   }
+}
+setTimeout(typeNext, 800);
 
-  // Start countdown after a beat so it feels like the "screen just appeared"
-  setTimeout(tick, 1000);
+// ── Countdown bar ─────────────────────────────────────────
+const TOTAL = 30;
+let rem = TOTAL;
+const numEl = document.getElementById('cnum');
+const bar   = document.getElementById('bar');
+
+function tick() {
+  rem--;
+  numEl.textContent = rem;
+  bar.style.transform = 'scaleX(' + (rem / TOTAL) + ')';
+  if (rem <= 0) window.location.href = '/';
+  else setTimeout(tick, 1000);
+}
+setTimeout(tick, 1000);
+
+// ── Any keypress → home ───────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (['Tab','F5','F12','Meta','Control','Alt','Shift','CapsLock'].includes(e.key)) return;
+  window.location.href = '/';
+});
 </script>
-
 </body>
 </html>

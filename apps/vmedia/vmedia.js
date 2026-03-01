@@ -37,6 +37,9 @@ export async function initVMedia({ registerWindow, openWindow }) {
     if (!windowEl) return;
     const entry = registerWindow(windowEl);
 
+    // ── Desktop icon — double-click to open
+    document.getElementById('open-vmedia')?.addEventListener('dblclick', () => openWindow(entry));
+
     // ── DOM refs ─────────────────────────────────────────────
     const audioEl       = document.getElementById('wmp-audio');
     const screenWrap    = document.getElementById('wmp-screen');

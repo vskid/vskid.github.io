@@ -62,94 +62,82 @@ async function getCount() {
     return rows?.[0]?.count ?? null;
 }
 
-// ── Win98 CSS ──────────────────────────────────────────────
+// ── Aqua CSS ───────────────────────────────────────────────
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-
-/* Win98 bevel helpers */
-.w98-raised {
-    border-top:    2px solid #ffffff;
-    border-left:   2px solid #ffffff;
-    border-right:  2px solid #808080;
-    border-bottom: 2px solid #808080;
-    box-shadow: 1px 1px 0 #000 inset, -1px -1px 0 #dfdfdf inset;
-}
-.w98-sunken {
-    border-top:    2px solid #808080;
-    border-left:   2px solid #808080;
-    border-right:  2px solid #ffffff;
-    border-bottom: 2px solid #ffffff;
-    box-shadow: -1px -1px 0 #dfdfdf inset, 1px 1px 0 #000 inset;
-}
-
 #vcounter-win {
     position: fixed;
-    bottom: 62px;
+    bottom: 100px;
     right: 14px;
     width: 210px;
     z-index: 90;
-    background: #d4d0c8;
-    font-family: 'MS Sans Serif', 'Tahoma', 'Arial', sans-serif;
-    font-size: 11px;
-    color: #000;
-    border-top:    2px solid #ffffff;
-    border-left:   2px solid #ffffff;
-    border-right:  2px solid #404040;
-    border-bottom: 2px solid #404040;
-    box-shadow:    1px 1px 0 #808080;
-    user-select:   none;
+    background: linear-gradient(180deg, rgba(232,242,255,0.97) 0%, rgba(218,234,252,0.97) 100%);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    font-family: -apple-system, 'Lucida Grande', Helvetica, sans-serif;
+    font-size: 12px;
+    color: #1a2e55;
+    border-radius: 10px;
+    border: 1px solid rgba(130,170,230,0.50);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.88),
+        0 0 0 1px rgba(60,90,150,0.18),
+        0 12px 36px rgba(0,30,120,0.28),
+        0 3px 8px rgba(0,0,0,0.16);
+    user-select: none;
+    overflow: hidden;
 }
 
-/* Title bar — exact Win98 gradient */
+/* Title bar — Aqua gradient */
 #vcounter-titlebar {
-    height: 18px;
-    background: linear-gradient(to right, #000080 0%, #1084d0 100%);
+    height: 28px;
+    background: linear-gradient(180deg,
+        #e8f2fc 0%,
+        #c8e0f5 38%,
+        #aacde8 62%,
+        #cce2f6 100%);
+    border-bottom: 1px solid rgba(80,130,180,0.40);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.88);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 2px 0 4px;
+    padding: 0 8px;
+    gap: 7px;
     cursor: default;
 }
 #vcounter-titlebar.inactive {
-    background: linear-gradient(to right, #808080 0%, #b0b0b0 100%);
+    background: linear-gradient(180deg, #e0e8f0 0%, #ccd8e8 100%);
+    filter: saturate(0.4);
 }
-#vcounter-title-text {
-    color: white;
-    font-size: 11px;
-    font-weight: bold;
-    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-shadow: none;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-}
+
+/* Traffic light close button */
 #vcounter-close {
-    width: 14px;
-    height: 14px;
-    background: #d4d0c8;
-    border-top:    1px solid #ffffff;
-    border-left:   1px solid #ffffff;
-    border-right:  1px solid #404040;
-    border-bottom: 1px solid #404040;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 32%, #ff8a80, #ff5f57 62%, #c0392b);
+    border: 1px solid #c0392b;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.55), 0 1px 2px rgba(0,0,0,0.25);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 9px;
-    font-weight: bold;
-    color: #000;
+    font-size: 0;
     cursor: pointer;
     flex-shrink: 0;
-    font-family: 'Marlett', 'Arial', sans-serif;
-    line-height: 1;
+    transition: filter 0.1s;
 }
-#vcounter-close:active {
-    border-top:    1px solid #404040;
-    border-left:   1px solid #404040;
-    border-right:  1px solid #ffffff;
-    border-bottom: 1px solid #ffffff;
+#vcounter-close:hover { filter: brightness(1.15); font-size: 8px; color: rgba(80,0,0,0.7); }
+
+#vcounter-title-text {
+    color: #18284a;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.80);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 /* Body */
@@ -161,15 +149,13 @@ const CSS = `
     gap: 6px;
 }
 
-/* "You are visitor number" text */
+/* Marquee strip */
 #vcounter-marquee-wrap {
     width: 100%;
     overflow: hidden;
-    background: #fff;
-    border-top:    1px solid #808080;
-    border-left:   1px solid #808080;
-    border-right:  1px solid #ffffff;
-    border-bottom: 1px solid #ffffff;
+    background: rgba(255,255,255,0.70);
+    border: 1px solid rgba(130,170,230,0.40);
+    border-radius: 4px;
     height: 18px;
     display: flex;
     align-items: center;
@@ -177,10 +163,10 @@ const CSS = `
 #vcounter-marquee {
     display: inline-block;
     white-space: nowrap;
-    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    font-family: -apple-system, 'Lucida Grande', sans-serif;
     font-size: 10px;
-    color: #000080;
-    font-weight: bold;
+    color: #1a4aaa;
+    font-weight: 600;
     padding-left: 100%;
     animation: vc-scroll 12s linear infinite;
 }
@@ -189,15 +175,13 @@ const CSS = `
     100% { transform: translateX(-200%); }
 }
 
-/* LED counter panel — sunken frame */
+/* LED counter panel */
 #vcounter-screen-frame {
     width: 100%;
-    background: #000;
-    border-top:    2px solid #404040;
-    border-left:   2px solid #404040;
-    border-right:  2px solid #dfdfdf;
-    border-bottom: 2px solid #dfdfdf;
-    box-shadow:    -1px -1px 0 #808080 inset;
+    background: #0a1020;
+    border: 1px solid rgba(60,90,150,0.50);
+    border-radius: 6px;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.50);
     padding: 5px 6px 6px;
     display: flex;
     flex-direction: column;
@@ -221,7 +205,6 @@ const CSS = `
     gap: 0;
 }
 
-/* Individual 7-seg-style digit cell */
 .vc98-digit {
     font-family: 'VT323', 'Courier New', monospace;
     font-size: 28px;
@@ -238,7 +221,6 @@ const CSS = `
     display: inline-block;
 }
 
-/* Ghost digit (dim 8 behind real digit) */
 .vc98-digit-wrap {
     position: relative;
     width: 18px;
@@ -268,7 +250,6 @@ const CSS = `
     padding-bottom: 3px;
 }
 
-/* Loading — pulse all digits */
 .vc-loading .vc98-digit {
     color: rgba(0,150,50,0.3);
     text-shadow: none;
@@ -279,7 +260,6 @@ const CSS = `
     50%      { opacity: 0.7;  }
 }
 
-/* Reveal animation */
 @keyframes vc98-drop {
     0%   { opacity:0; transform:translateY(-8px); }
     60%  { transform:translateY(2px); }
@@ -297,18 +277,18 @@ const CSS = `
 .vc-ready .vc98-digit-wrap:nth-child(7) .vc98-digit { animation-delay: 0.30s; }
 .vc-ready .vc98-digit-wrap:nth-child(8) .vc98-digit { animation-delay: 0.35s; }
 
-/* "You are visitor #N" badge — shown on first visit */
+/* "You are visitor #N" badge */
 #vcounter-badge {
     width: 100%;
-    background: #000080;
+    background: linear-gradient(180deg, rgba(52,120,246,0.88) 0%, rgba(30,90,220,0.88) 100%);
     color: #ffffff;
-    font-family: 'MS Sans Serif', 'Tahoma', sans-serif;
+    font-family: -apple-system, 'Lucida Grande', sans-serif;
     font-size: 10px;
-    font-weight: bold;
+    font-weight: 700;
     text-align: center;
-    padding: 3px 4px;
-    border-top:    1px solid #6060c0;
-    border-bottom: 1px solid #000040;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(30,80,200,0.55);
     display: none;
     animation: vc-fadein 0.8s ease 0.6s both;
 }
