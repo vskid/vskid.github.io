@@ -11,7 +11,7 @@ export const CITIES = [
     // ── Southeast Asia ──────────────────────────────────────
     { id: 'WIII', label: 'Jakarta',      tz: 'Asia/Jakarta',        vdocId: null, lat: -6.2088,  lng: 106.8456  },
     { id: 'WAHQ', label: 'Solo',         tz: 'Asia/Jakarta',        vdocId: null, lat: -7.5755,  lng: 110.8243  },
-    { id: 'WIJJ', label: 'Jambi',        tz: 'Asia/Jakarta',        vdocId: null, lat: -1.6101,  lng: 103.6131  }
+    { id: 'WIJJ', label: 'Jambi',        tz: 'Asia/Jakarta',        vdocId: null, lat: -1.6101,  lng: 103.6131  },
     { id: 'WAHS', label: 'Semarang',     tz: 'Asia/Jakarta',        vdocId: null, lat: -6.9666,  lng: 110.4201  },
     { id: 'WADL', label: 'Lombok',       tz: 'Asia/Makassar',       vdocId: null, lat: -8.6500,  lng: 116.3242  },
     { id: 'WADD', label: 'Bali',         tz: 'Asia/Makassar',       vdocId: null, lat: -8.3405,  lng: 115.0920  },
