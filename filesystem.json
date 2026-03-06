@@ -139,6 +139,14 @@
           "date": "01 - 01 - 2025",
           "src": "https://upload.wikimedia.org/wikipedia/en/7/73/Trollface.png",
           "title": "Test Image"
+        },
+        {
+          "type": "image",
+          "icon": "🖼️",
+          "name": "CGKLoopRailMaybe",
+          "date": "01 - 01 - 2025",
+          "src": "/pictures/CGKLoopRailMaybe.jpg",
+          "title": "Test Image"
         }
       ],
       "desktopIcon": "open-pictures",

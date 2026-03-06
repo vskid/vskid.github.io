@@ -206,6 +206,7 @@ function initWindowSystem() {
         if (!entry.taskbarBtn) {
             const btn = document.createElement('button');
             btn.className = 'taskbar-app-btn';
+            btn.title = entry.title;   /* CSS ::before tooltip uses attr(title) */
             btn.innerHTML = `<span class="taskbar-app-icon">${entry.icon}</span>`;
             document.querySelector('.taskbar-apps').appendChild(btn);
             entry.taskbarBtn = btn;

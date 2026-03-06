@@ -61,12 +61,27 @@ export async function initVviewer({ registerWindow, openWindow }) {
     const MAX_SCALE = 8;
     const ZOOM_STEP = 0.25;
 
-    // ── Load image list from the Pictures folder ─────────────
-    function refreshImageList() {
-        const folder = document.getElementById('pictures-window');
-        if (!folder) return;
-        images = Array.from(folder.querySelectorAll('.file-item[data-type="image"]'))
-            .map(el => ({ src: el.dataset.src, title: el.dataset.title ?? 'Untitled' }));
+    // ── Load image list from filesystem.json ─────────────────
+    // Walks the full tree and collects every {type:"image"} entry.
+    // This is independent of which explorer window (if any) is open.
+    function walkImages(node, out = []) {
+        if (node.type === 'image' && node.src) {
+            out.push({ src: node.src, title: node.title ?? node.name ?? 'Untitled' });
+        }
+        for (const child of node.children ?? []) walkImages(child, out);
+        return out;
+    }
+
+    async function refreshImageList() {
+        try {
+            const res = await fetch('/filesystem.json');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const fs = await res.json();
+            images = walkImages(fs);
+        } catch (err) {
+            console.warn('[vviewer] Could not load filesystem.json:', err.message);
+            // Fall back: keep whatever images array we already have
+        }
     }
 
     // ── Display a specific index ─────────────────────────────
@@ -169,9 +184,9 @@ export async function initVviewer({ registerWindow, openWindow }) {
     });
 
     // ── file-open event ──────────────────────────────────────
-    document.addEventListener('file-open', e => {
+    document.addEventListener('file-open', async e => {
         if (e.detail.type !== 'image') return;
-        refreshImageList();
+        await refreshImageList();
         const idx = images.findIndex(im => im.src === e.detail.src);
         showAt(idx >= 0 ? idx : 0);
         openWindow(entry);

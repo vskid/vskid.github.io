@@ -41,7 +41,7 @@
     --win-shadow:  0 0 0 1px rgba(60,90,150,0.28), 0 14px 50px rgba(0,0,0,0.46), 0 4px 12px rgba(0,0,0,0.22);
 
     /* Dock (bottom shelf) */
-    --dock-h: 68px;
+    --dock-h: 90px;
     /* Menu bar (top) */
     --menubar-h: 24px;
 
@@ -360,35 +360,88 @@ body {
    ============================================================ */
 .taskbar {
     position: fixed;
-    bottom: 0; left: 0;
-    width: 100%;
-    height: var(--dock-h);
-    background: linear-gradient(to bottom,
-        rgba(220, 235, 255, 0.38) 0%,
-        rgba(175, 210, 248, 0.56) 55%,
-        rgba(140, 185, 235, 0.66) 100%);
-    backdrop-filter: blur(22px) saturate(160%);
-    -webkit-backdrop-filter: blur(22px) saturate(160%);
-    border-top: 1px solid rgba(255,255,255,0.55);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.68),
-        0 -3px 24px rgba(0,30,90,0.26);
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    max-width: calc(100vw - 32px);
+    height: auto;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
+    box-shadow: none;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     padding: 0;
     justify-content: center;
     z-index: 100;
+    pointer-events: none;  /* let desktop clicks pass through gap areas */
 }
 
-/* Dock inner pill — optional visual separator */
+/* Dock inner pill — the actual visible glass shelf */
 .taskbar-apps {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding: 6px 20px;
+    padding: 8px 16px 10px;
     gap: 10px;
-    height: 100%;
+    height: auto;
+    pointer-events: all;
+
+    /* Aqua glass shelf */
+    background: linear-gradient(180deg,
+        rgba(235,245,255,0.72) 0%,
+        rgba(185,215,250,0.82) 55%,
+        rgba(155,195,240,0.88) 100%);
+    backdrop-filter: blur(28px) saturate(185%);
+    -webkit-backdrop-filter: blur(28px) saturate(185%);
+
+    /* Pill shape */
+    border-radius: 18px 18px 14px 14px;
+    border: 1px solid rgba(255,255,255,0.62);
+    border-bottom-color: rgba(180,210,245,0.50);
+
+    /* Shelf depth */
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.82),   /* top gloss */
+        inset 0 -1px 0 rgba(100,160,220,0.28),   /* bottom shade */
+        0 8px 32px rgba(0,30,90,0.36),            /* main shadow */
+        0 2px 6px rgba(0,0,0,0.18),               /* sharp base shadow */
+        0 0 0 1px rgba(120,170,230,0.22);         /* outer glow ring */
+
+    /* Gloss stripe */
+    position: relative;
 }
+
+/* Top gloss highlight stripe across pill */
+.taskbar-apps::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 16px; right: 16px;
+    height: 40%;
+    border-radius: 14px 14px 50% 50%;
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.55) 0%,
+        rgba(255,255,255,0.08) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Ground reflection / shadow under dock */
+.taskbar-apps::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 10%; right: 10%;
+    height: 10px;
+    background: radial-gradient(ellipse at center,
+        rgba(0,40,120,0.28) 0%,
+        transparent 70%);
+    pointer-events: none;
+    border-radius: 50%;
+}
+
 
 /* ── Legacy aliases: .start-btn / .start-logo / .system-tray / .time-widget ──
    These are no longer in the HTML; kept here only so any lingering reference
@@ -400,18 +453,18 @@ body {
 
 /* ============================================================
    6. DOCK BUTTONS  (.taskbar-app-btn)
-   Square icons. Hover: Aqua magnification bounce.
-   Running dot underneath active icon.
+   Floating pill icons. Hover: Aqua magnification bounce.
+   Running dot underneath active icon. Tooltip on hover.
    ============================================================ */
 .taskbar-app-btn {
-    height: 50px; width: 50px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.42);
-    background: linear-gradient(to bottom,
-        rgba(255,255,255,0.38) 0%,
-        rgba(190,220,255,0.28) 100%);
+    height: 52px; width: 52px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.45);
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.40) 0%,
+        rgba(190,220,255,0.30) 100%);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.65),
+        inset 0 1px 0 rgba(255,255,255,0.68),
         0 2px 6px rgba(0,0,0,0.22);
     color: #002244;
     display: flex;
@@ -423,22 +476,55 @@ body {
         box-shadow 0.16s;
     max-width: unset;
     position: relative;
+    transform-origin: bottom center;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+/* Tooltip label above icon */
+.taskbar-app-btn::before {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.85);
+    white-space: nowrap;
+    background: rgba(20,30,55,0.88);
+    backdrop-filter: blur(10px);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    font-family: -apple-system, 'Lucida Grande', sans-serif;
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s, transform 0.12s;
+    letter-spacing: 0.01em;
+    z-index: 20;
+}
+
+.taskbar-app-btn:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
 }
 
 .taskbar-app-btn:hover {
-    transform: scale(1.32) translateY(-8px);
-    background: linear-gradient(to bottom,
-        rgba(255,255,255,0.60) 0%,
-        rgba(200,232,255,0.50) 100%);
+    transform: scale(1.45) translateY(-10px);
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.65) 0%,
+        rgba(205,235,255,0.55) 100%);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.85),
-        0 8px 24px rgba(50,130,255,0.38),
-        0 0 0 1px rgba(100,170,255,0.32);
-    z-index: 5;
+        inset 0 1px 0 rgba(255,255,255,0.90),
+        0 10px 28px rgba(50,130,255,0.40),
+        0 0 0 1px rgba(100,170,255,0.35);
+    z-index: 10;
 }
 
 .taskbar-app-btn.active {
-    background: linear-gradient(to bottom,
+    background: linear-gradient(180deg,
         rgba(200,228,255,0.55) 0%,
         rgba(165,205,245,0.45) 100%);
     box-shadow:
@@ -454,22 +540,24 @@ body {
     left: 50%; transform: translateX(-50%);
     width: 4px; height: 4px;
     border-radius: 50%;
-    background: rgba(0,60,180,0.75);
-    box-shadow: 0 0 5px rgba(60,130,255,.6);
+    background: rgba(0,60,180,0.80);
+    box-shadow: 0 0 6px rgba(60,130,255,0.65);
 }
+
 
 .taskbar-app-btn.dragging {
     z-index: 999;
     cursor: grabbing;
-    transform: scale(1.35) translateY(-10px);
-    box-shadow: 0 14px 36px rgba(0,0,0,0.38), inset 0 1px 0 rgba(255,255,255,0.8);
+    transform: scale(1.40) translateY(-12px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.85);
 }
 
 .taskbar-app-icon {
-    font-size: 1.9rem;
+    font-size: 2.0rem;
     flex-shrink: 0;
     line-height: 1;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18));
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.22));
+    pointer-events: none;
 }
 
 .taskbar-app-label { display: none; }
@@ -942,7 +1030,9 @@ body {
     .menubar-app-name { display: none; }
     .menubar-sep  { display: none; }
 
-    .taskbar-app-btn { height: 42px; width: 42px; border-radius: 10px; }
-    .taskbar-app-icon { font-size: 1.55rem; }
-    .taskbar-app-btn:hover { transform: scale(1.18) translateY(-4px); }
+    .taskbar-app-btn { height: 44px; width: 44px; border-radius: 10px; }
+    .taskbar-app-icon { font-size: 1.6rem; }
+    .taskbar-app-btn:hover { transform: scale(1.22) translateY(-5px); }
+    .taskbar-apps { padding: 6px 12px 8px; gap: 8px; }
+    .taskbar-app-btn::before { display: none; } /* hide tooltips on mobile */
 }
