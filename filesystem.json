@@ -11,6 +11,13 @@
           "name": "Momentum",
           "date": "21 - 02 - 2026",
           "href": "https://github.com/notifications-star/lifeos"
+        },
+        {
+          "type": "project",
+          "icon": "🔗",
+          "name": "Sporasync",
+          "date": "06 - 03 - 2026",
+          "href": "https://github.com/aubreyasta/SporaSync"
         }
       ],
       "desktopIcon": "open-projects",
