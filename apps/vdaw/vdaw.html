@@ -1,0 +1,218 @@
+<!--
+  apps/vdaw/vdaw.html
+  Screen 0: Mixer  (master strip pinned left + track strips)
+  Screen 1: Piano Roll  (NOTES / INSTR tabs — INSTR panel slides in from right)
+-->
+<div class="window hidden" id="vdaw-window">
+  <div class="title-bar">
+    <div class="title-text">vDAW</div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"    title="Close">x</button>
+    </div>
+  </div>
+
+  <div class="vdaw-shell">
+
+    <!-- ══ TRANSPORT ══════════════════════════════════════════ -->
+    <div class="vdaw-transport" id="vdaw-transport">
+      <button class="vdaw-tbtn vdaw-play" id="vdaw-play">&#x25BA;</button>
+      <button class="vdaw-tbtn vdaw-stop" id="vdaw-stop">&#x25FC;</button>
+      <div class="vdaw-tsep"></div>
+      <div class="vdaw-bpm-grp">
+        <span class="vdaw-tlbl">BPM</span>
+        <button class="vdaw-nudge" id="vdaw-bpm-dn">&#8722;</button>
+        <span class="vdaw-bpmval" id="vdaw-bpm-val">120</span>
+        <button class="vdaw-nudge" id="vdaw-bpm-up">&#43;</button>
+      </div>
+      <div class="vdaw-tsep"></div>
+      <span class="vdaw-tlbl">SWING</span>
+      <input type="range" class="vdaw-tslider" id="vdaw-swing" min="0" max="100" value="0">
+      <span class="vdaw-tlbl" id="vdaw-swing-lbl">0%</span>
+      <div class="vdaw-tsep"></div>
+      <span class="vdaw-tlbl">BARS</span>
+      <button class="vdaw-nudge" id="vdaw-bars-dn">&#8722;</button>
+      <span class="vdaw-bpmval" id="vdaw-bars-val">4</span>
+      <button class="vdaw-nudge" id="vdaw-bars-up">&#43;</button>
+      <div class="vdaw-tsep"></div>
+      <div class="vdaw-pips">
+        <span class="vdaw-pip" id="vdaw-pip-0"></span>
+        <span class="vdaw-pip" id="vdaw-pip-1"></span>
+        <span class="vdaw-pip" id="vdaw-pip-2"></span>
+        <span class="vdaw-pip" id="vdaw-pip-3"></span>
+      </div>
+      <div class="vdaw-tspacer"></div>
+      <span class="vdaw-autosave-dot" id="vdaw-autosave">&#11044;</span>
+      <button class="vdaw-tbtn vdaw-tsave" id="vdaw-save">SAVE</button>
+    </div>
+
+    <!-- ══ SCREENS ════════════════════════════════════════════ -->
+    <div class="vdaw-viewport">
+      <div class="vdaw-screen-track" id="vdaw-screen-track">
+
+        <!-- ── SCREEN 0: MIXER ──────────────────────────────── -->
+        <div class="vdaw-screen" id="vdaw-screen-mixer">
+          <div class="vdaw-screen-hdr">
+            <span class="vdaw-screen-title">MIXER</span>
+            <div class="vdaw-hdr-right">
+              <button class="vdaw-tbtn vdaw-addtrack-btn" id="vdaw-add-track">+ TRACK</button>
+            </div>
+          </div>
+
+          <div class="vdaw-mixer-area">
+
+            <!-- Master strip — pinned left, undeletable -->
+            <div class="vdaw-strip vdaw-master-strip" id="vdaw-master-strip">
+              <div class="vdaw-strip-crown" title="Master">♛</div>
+              <div class="vdaw-strip-name vdaw-master-name">MASTER</div>
+              <div class="vdaw-vu"><div class="vdaw-vu-fill" id="vu-master"></div></div>
+              <div class="vdaw-fader-track">
+                <div class="vdaw-fader-groove"></div>
+                <input type="range" class="vdaw-fader-input" id="vdaw-master-vol"
+                       min="0" max="100" value="80">
+              </div>
+              <div class="vdaw-strip-vol-lbl" id="vdaw-mvol-lbl">80%</div>
+              <div class="vdaw-strip-open vdaw-master-open">&#9881; COMP</div>
+            </div>
+
+            <div class="vdaw-mixer-divider"></div>
+
+            <!-- Track strips (scrollable) -->
+            <div class="vdaw-mixer-scroll" id="vdaw-mixer-scroll">
+              <div class="vdaw-mixer-strips" id="vdaw-mixer-strips">
+                <!-- injected by JS -->
+              </div>
+            </div>
+
+          </div>
+        </div><!-- /screen-mixer -->
+
+        <!-- ── SCREEN 1: PIANO ROLL ─────────────────────────── -->
+        <div class="vdaw-screen" id="vdaw-screen-roll">
+
+          <div class="vdaw-screen-hdr">
+            <button class="vdaw-back-btn" id="vdaw-roll-back">&#8592; MIXER</button>
+            <span class="vdaw-crumb">
+              <span class="vdaw-crumb-dot" id="vdaw-roll-crumb-dot"></span>
+              <span id="vdaw-roll-crumb-name">Track</span>
+            </span>
+            <div class="vdaw-hdr-right">
+              <div class="vdaw-roll-tabs" id="vdaw-roll-tabs">
+                <button class="vdaw-roll-tab active" data-tab="notes">NOTES</button>
+                <button class="vdaw-roll-tab"        data-tab="instr">&#9881; INSTR</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Roll body: the piano roll canvas + slide-in panels -->
+          <div class="vdaw-roll-body" id="vdaw-roll-body">
+
+            <!-- Piano roll (always behind) -->
+            <div class="vdaw-roll-layout">
+              <div class="vdaw-roll-right" id="vdaw-roll-right">
+                <canvas class="vdaw-ruler" id="vdaw-ruler"></canvas>
+                <div class="vdaw-roll-scroll" id="vdaw-roll-scroll">
+                  <!-- Key labels are INSIDE rollScroll so they scroll vertically
+                       with the canvas but stay pinned left via CSS sticky.        -->
+                  <canvas class="vdaw-key-labels" id="vdaw-key-labels"></canvas>
+                  <div class="vdaw-roll-inner">
+                    <canvas class="vdaw-roll" id="vdaw-roll"></canvas>
+                    <div class="vdaw-playhead" id="vdaw-playhead"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- INSTR panel — slides in from right over the roll -->
+            <div class="vdaw-side-panel" id="vdaw-instr-panel">
+              <div class="vdaw-side-panel-hdr">
+                <span class="vdaw-lbl" id="vdaw-instr-panel-title">INSTRUMENT</span>
+                <div style="margin-left:auto">
+                  <select class="vdaw-insp-type" id="vdaw-insp-type">
+                    <option value="kick">Kick</option>
+                    <option value="snare">Snare</option>
+                    <option value="hihat">Hi-Hat</option>
+                    <option value="perc">Perc</option>
+                    <option value="bass">Bass</option>
+                    <option value="lead">Lead</option>
+                    <option value="pad">Pad</option>
+                    <option value="pluck">Pluck</option>
+                    <option value="sampler">Sampler</option>
+                  </select>
+                </div>
+              </div>
+              <div class="vdaw-side-panel-scroll" id="vdaw-instr-panel-scroll">
+
+                <details class="vdaw-sec" open>
+                  <summary class="vdaw-sec-hdr">AMP ENVELOPE</summary>
+                  <div class="vdaw-sec-body">
+                    <div class="vdaw-knob-row">
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="amp.attack"  data-min="1"  data-max="2000" data-val="10"  data-unit="ms"></canvas><span>ATK</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="amp.decay"   data-min="1"  data-max="2000" data-val="100" data-unit="ms"></canvas><span>DEC</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="amp.sustain" data-min="0"  data-max="100"  data-val="70"  data-unit="%"></canvas><span>SUS</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="amp.release" data-min="10" data-max="4000" data-val="300" data-unit="ms"></canvas><span>REL</span></div>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="vdaw-sec" open>
+                  <summary class="vdaw-sec-hdr">FILTER</summary>
+                  <div class="vdaw-sec-body">
+                    <div class="vdaw-row-gap">
+                      <span class="vdaw-lbl">TYPE</span>
+                      <div class="vdaw-seg" id="vdaw-filt-type">
+                        <button class="vdaw-seg-btn active" data-val="lowpass">LP</button>
+                        <button class="vdaw-seg-btn" data-val="highpass">HP</button>
+                        <button class="vdaw-seg-btn" data-val="bandpass">BP</button>
+                        <button class="vdaw-seg-btn" data-val="notch">NOTCH</button>
+                      </div>
+                    </div>
+                    <div class="vdaw-knob-row">
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="filter.cutoff"    data-min="20" data-max="20000" data-val="8000" data-unit="Hz" data-log="1"></canvas><span>CUT</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="filter.resonance" data-min="0"  data-max="30"    data-val="1"    data-unit="Q"></canvas><span>RES</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="filter.envDepth"  data-min="-100" data-max="100" data-val="0"    data-unit="%"></canvas><span>ENV</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="filter.attack"    data-min="1"  data-max="2000"  data-val="10"   data-unit="ms"></canvas><span>ATK</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="filter.decay"     data-min="1"  data-max="2000"  data-val="200"  data-unit="ms"></canvas><span>DEC</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="filter.sustain"   data-min="0"  data-max="100"   data-val="50"   data-unit="%"></canvas><span>SUS</span></div>
+                      <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="filter.release"   data-min="10" data-max="4000"  data-val="400"  data-unit="ms"></canvas><span>REL</span></div>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="vdaw-sec" open>
+                  <summary class="vdaw-sec-hdr" id="vdaw-instr-hdr">INSTRUMENT</summary>
+                  <div class="vdaw-sec-body" id="vdaw-instr-body">
+                    <!-- filled by JS per instrument type -->
+                  </div>
+                </details>
+
+              </div>
+            </div><!-- /instr-panel -->
+
+            <!-- MASTER COMPRESSOR panel — slides in from right, opened from master strip -->
+            <div class="vdaw-side-panel" id="vdaw-master-panel">
+              <div class="vdaw-side-panel-hdr">
+                <span class="vdaw-lbl" style="color:var(--acc2)">♛ MASTER COMPRESSOR</span>
+              </div>
+              <div class="vdaw-side-panel-scroll">
+                <div class="vdaw-sec-body" style="padding:10px 10px 16px">
+                  <div class="vdaw-knob-row">
+                    <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="master.threshold" data-min="-60" data-max="0"    data-val="-24" data-unit="dB"></canvas><span>THR</span></div>
+                    <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="master.ratio"     data-min="1"   data-max="20"   data-val="4"   data-unit=":1"></canvas><span>RAT</span></div>
+                    <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="master.knee"      data-min="0"   data-max="40"   data-val="10"  data-unit="dB"></canvas><span>KNEE</span></div>
+                    <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="master.attack"    data-min="0"   data-max="200"  data-val="10"  data-unit="ms"></canvas><span>ATK</span></div>
+                    <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="master.release"   data-min="10"  data-max="1000" data-val="150" data-unit="ms"></canvas><span>REL</span></div>
+                    <div class="vdaw-kc"><canvas class="vdaw-knob" data-param="master.makeup"    data-min="0"   data-max="24"   data-val="6"   data-unit="dB"></canvas><span>MKP</span></div>
+                  </div>
+                </div>
+              </div>
+            </div><!-- /master-panel -->
+
+          </div><!-- /roll-body -->
+        </div><!-- /screen-roll -->
+
+      </div><!-- /screen-track -->
+    </div><!-- /viewport -->
+
+  </div><!-- /shell -->
+</div>

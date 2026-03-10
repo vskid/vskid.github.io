@@ -1,0 +1,1054 @@
+/* ============================================================
+   apps/vdaw/vdaw.css  — v5  iOS-Era Deep Skeuomorphic Edition
+   Aesthetic: Real glass, polished aluminium, leather headers,
+   linen texture, deep embossed hardware, specular highlights.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+:root {
+    /* Palette */
+    --bg0:  #080c12;
+    --bg1:  #111826;
+    --bg2:  #182030;
+    --bg3:  #1e2a3c;
+    --bd:   #243448;
+    --bd2:  #304a68;
+    --acc:  #0af;
+    --acc2: #00e5cc;
+    --acc3: #bf5fff;
+    --txt:  #e8f0fc;
+    --txt2: #7a9ab8;
+    --txt3: #3d5570;
+    --red:  #ff2d44;
+    --grn:  #00cc77;
+    --yel:  #ffcc00;
+
+    /* Layout */
+    --transport-h:   44px;
+    --screenhdr-h:   36px;
+    --key-w:         52px;
+    --ruler-h:       18px;
+    --row-h:         14px;
+    --beat-w:        48px;
+    --side-panel-w:  288px;
+
+    /* ── iOS-era skeu surfaces ── */
+    /* Polished aluminium panel */
+    --skeu-al:
+        linear-gradient(180deg,
+            #3a4e68 0%,
+            #2a3c54 12%,
+            #1e2d42 28%,
+            #192638 50%,
+            #1c2d42 72%,
+            #253648 88%,
+            #1a2636 100%);
+    /* Raised button face — gloss highlight + depth */
+    --skeu-btn:
+        linear-gradient(180deg,
+            #38516e 0%, #2b3f5a 18%,
+            #1e2e44 45%, #16222f 100%);
+    /* Deep inset well */
+    --skeu-inset:
+        linear-gradient(180deg,
+            #060a0f 0%, #0d1520 40%, #141e2e 100%);
+    /* Header bar — dark brushed steel */
+    --skeu-hdr:
+        linear-gradient(180deg,
+            #2c3e58 0%, #1e2d44 30%,
+            #141e30 70%, #1a2840 100%);
+
+    --skeu-shadow-out:
+        0 1px 0 rgba(255,255,255,0.09) inset,
+        0 3px 8px rgba(0,0,0,0.65),
+        0 1px 2px rgba(0,0,0,0.45);
+    --skeu-shadow-in:
+        inset 0 3px 7px rgba(0,0,0,0.75),
+        inset 0 1px 2px rgba(0,0,0,0.50),
+        0 1px 0 rgba(255,255,255,0.04);
+
+    /* Glass pill glow */
+    --glass-green:  linear-gradient(180deg,#4dff9a 0%,#00cc66 45%,#009944 100%);
+    --glass-red:    linear-gradient(180deg,#ff7a7a 0%,#e82020 45%,#a00 100%);
+    --glass-blue:   linear-gradient(180deg,#66d0ff 0%,#0099ee 45%,#005bb5 100%);
+    --glass-purple: linear-gradient(180deg,#d588ff 0%,#9933cc 45%,#6600aa 100%);
+    --glass-amber:  linear-gradient(180deg,#ffe066 0%,#e6a800 45%,#996600 100%);
+}
+
+/* ── Window ──────────────────────────────────────────────── */
+#vdaw-window {
+    width: 680px; height: 520px;
+    top: 4%; left: calc(50% - 340px);
+    display: flex; flex-direction: column; overflow: hidden;
+    border-radius: 12px;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.90),
+        0 0 0 2px rgba(255,255,255,0.06),
+        0 32px 80px rgba(0,0,0,0.95),
+        0 8px 24px rgba(0,0,0,0.70),
+        0 2px 6px rgba(0,0,0,0.50);
+}
+#vdaw-window.hidden,
+#vdaw-window.minimized { display: none; }
+
+/* Title bar — polished steel with glass sheen */
+#vdaw-window .title-bar {
+    background:
+        linear-gradient(180deg,
+            rgba(255,255,255,0.14) 0%,
+            rgba(255,255,255,0.04) 48%,
+            rgba(0,0,0,0.10) 49%,
+            rgba(0,0,0,0.05) 100%),
+        linear-gradient(180deg, #2e4060 0%, #1a2840 40%, #0f1c2e 60%, #1a2e48 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.75);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.22),
+        0 2px 10px rgba(0,0,0,0.60);
+}
+#vdaw-window .title-text {
+    color: var(--txt); font-weight: 700; letter-spacing: 0.12em;
+    text-shadow:
+        0 1px 3px rgba(0,0,0,0.90),
+        0 0 12px rgba(0,170,255,0.40);
+}
+
+/* ── Shell ───────────────────────────────────────────────── */
+.vdaw-shell {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column;
+    /* linen texture body */
+    background-color: #0f1620;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent, transparent 2px,
+            rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 3px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent, transparent 2px,
+            rgba(255,255,255,0.005) 2px, rgba(255,255,255,0.005) 3px
+        );
+    border: 1px solid rgba(0,0,0,0.80); border-top: none;
+    border-radius: 0 0 12px 12px; overflow: hidden;
+}
+
+/* ── Transport ───────────────────────────────────────────── */
+.vdaw-transport {
+    height: var(--transport-h); flex-shrink: 0;
+    display: flex; align-items: center; gap: 5px; padding: 0 10px;
+    background:
+        linear-gradient(180deg,
+            #0a1018 0%, #0d1520 40%,
+            #111e2e 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.80);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        inset 0 3px 8px rgba(0,0,0,0.55),
+        0 2px 0 rgba(255,255,255,0.03);
+}
+
+.vdaw-tsep {
+    width: 1px; height: 20px; flex-shrink: 0; margin: 0 3px;
+    background: linear-gradient(180deg,
+        transparent 0%, rgba(255,255,255,0.12) 30%,
+        rgba(255,255,255,0.08) 70%, transparent 100%);
+}
+.vdaw-tspacer { flex:1; }
+
+/* ── Glass pill transport buttons ── */
+.vdaw-tbtn {
+    font-family: 'Share Tech Mono',monospace;
+    font-size: 0.60rem; font-weight: 700; letter-spacing: 0.07em;
+    padding: 5px 12px; border-radius: 8px; cursor: default;
+    position: relative; overflow: hidden;
+    background: var(--skeu-btn);
+    border: 1px solid rgba(0,0,0,0.75);
+    border-top-color: rgba(255,255,255,0.12);
+    color: var(--txt);
+    box-shadow: var(--skeu-shadow-out);
+    white-space: nowrap; user-select: none;
+    transition: filter 0.06s, box-shadow 0.06s, transform 0.06s;
+}
+/* glass gloss overlay */
+.vdaw-tbtn::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 55%;
+    border-radius: 7px 7px 50% 50% / 7px 7px 40% 40%;
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.13) 0%,
+        rgba(255,255,255,0.03) 100%);
+    pointer-events: none;
+}
+.vdaw-tbtn:hover  { filter: brightness(1.25); }
+.vdaw-tbtn:active {
+    filter: brightness(0.80);
+    box-shadow: var(--skeu-shadow-in);
+    transform: translateY(1px);
+}
+
+/* Play button — green glass pill */
+.vdaw-play {
+    background: linear-gradient(180deg, #005c2e 0%, #003318 100%);
+    border-color: rgba(0,60,30,0.80);
+    border-top-color: rgba(0,200,80,0.25);
+    color: #00ff7a;
+    min-width: 34px; text-align: center;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.70),
+        0 3px 10px rgba(0,0,0,0.70),
+        inset 0 1px 0 rgba(0,255,100,0.18),
+        0 0 16px rgba(0,180,60,0.12);
+}
+.vdaw-play.playing {
+    background: linear-gradient(180deg, #5a3c00 0%, #2e1e00 100%);
+    border-top-color: rgba(255,200,0,0.25);
+    color: var(--yel);
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.70),
+        0 3px 10px rgba(0,0,0,0.70),
+        0 0 18px rgba(255,200,0,0.20);
+}
+.vdaw-stop { min-width: 30px; text-align: center; }
+
+/* Save button — purple glass */
+.vdaw-tsave {
+    background: linear-gradient(180deg, #2d0f5e 0%, #170630 100%);
+    border-color: rgba(80,20,150,0.70);
+    border-top-color: rgba(180,80,255,0.22);
+    color: var(--acc3);
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.70),
+        0 3px 8px rgba(0,0,0,0.65),
+        inset 0 1px 0 rgba(180,80,255,0.15);
+}
+.vdaw-addtrack-btn {
+    background: linear-gradient(180deg, #00294a 0%, #001428 100%);
+    border-color: rgba(0,80,130,0.70);
+    border-top-color: rgba(0,170,255,0.22);
+    color: var(--acc);
+}
+
+.vdaw-bpm-grp { display: flex; align-items: center; gap: 3px; }
+.vdaw-tlbl {
+    font-family: 'Share Tech Mono',monospace;
+    font-size: 0.50rem; font-weight: 700; letter-spacing: 0.10em;
+    color: var(--txt3); white-space: nowrap; user-select: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.90);
+}
+
+/* BPM value — inset LCD segment display */
+.vdaw-bpmval {
+    font-family: 'Share Tech Mono',monospace;
+    font-size: 1.0rem; font-weight: 700; color: var(--acc);
+    width: 32px; text-align: center;
+    text-shadow:
+        0 0 8px rgba(0,170,255,0.80),
+        0 0 20px rgba(0,170,255,0.35);
+    background: linear-gradient(180deg, #020810 0%, #060d18 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.80);
+    border-top-color: rgba(0,0,0,0.90);
+    box-shadow:
+        inset 0 2px 5px rgba(0,0,0,0.80),
+        inset 0 0 0 1px rgba(0,170,255,0.06),
+        0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* Nudge buttons — machined aluminium studs */
+.vdaw-nudge {
+    width: 18px; height: 18px; border-radius: 4px;
+    background:
+        linear-gradient(180deg,
+            rgba(255,255,255,0.10) 0%,
+            rgba(255,255,255,0.02) 50%,
+            rgba(0,0,0,0.10) 51%,
+            rgba(0,0,0,0.05) 100%),
+        linear-gradient(180deg, #2e4060 0%, #1a2840 100%);
+    border: 1px solid rgba(0,0,0,0.70);
+    border-top-color: rgba(255,255,255,0.14);
+    color: var(--txt); font-size: 0.85rem; font-weight: 700; cursor: default;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow:
+        0 2px 5px rgba(0,0,0,0.60),
+        inset 0 1px 0 rgba(255,255,255,0.12);
+    user-select: none; line-height: 1;
+    transition: filter 0.06s;
+}
+.vdaw-nudge:hover  { filter: brightness(1.35); border-top-color: rgba(0,170,255,0.40); }
+.vdaw-nudge:active { box-shadow: var(--skeu-shadow-in); transform: translateY(1px); }
+
+/* Transport range slider */
+.vdaw-tslider {
+    -webkit-appearance: none; appearance: none;
+    height: 5px; border-radius: 3px; outline: none;
+    cursor: default; min-width: 52px;
+    background: linear-gradient(180deg, #020810 0%, #060d18 100%);
+    border: 1px solid rgba(0,0,0,0.70);
+    border-bottom-color: rgba(255,255,255,0.04);
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.70),
+        inset 0 0 0 1px rgba(0,170,255,0.05);
+}
+.vdaw-tslider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 28%,
+            #88deff 0%, #22aaee 40%,
+            var(--acc) 65%, #004488 100%);
+    border: 1px solid #003366;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.50),
+        0 2px 6px rgba(0,0,0,0.60),
+        0 0 10px rgba(0,170,255,0.45);
+    cursor: default;
+}
+
+/* Beat LEDs */
+.vdaw-pips { display: flex; gap: 4px; align-items: center; }
+.vdaw-pip {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 32%, #1a2535 0%, #0a1018 100%);
+    border: 1px solid rgba(0,0,0,0.80);
+    box-shadow:
+        inset 0 1px 3px rgba(0,0,0,0.80),
+        0 1px 0 rgba(255,255,255,0.04);
+    transition: all 0.04s;
+}
+.vdaw-pip.on {
+    background: radial-gradient(circle at 35% 28%,
+        #66ffee 0%, var(--acc2) 50%, #008866 100%);
+    border-color: rgba(0,180,140,0.60);
+    box-shadow:
+        0 0 10px rgba(0,229,204,0.85),
+        0 0 20px rgba(0,229,204,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.25);
+}
+
+.vdaw-autosave-dot { font-size: 0.50rem; color: var(--txt3); transition: color 0.4s; user-select: none; }
+.vdaw-autosave-dot.dirty  { color: var(--yel); text-shadow: 0 0 8px rgba(255,204,0,0.80); }
+.vdaw-autosave-dot.saving { color: var(--acc);  text-shadow: 0 0 8px rgba(0,170,255,0.80); }
+.vdaw-autosave-dot.saved  { color: var(--grn);  text-shadow: 0 0 8px rgba(0,204,119,0.80); }
+
+/* ── Viewport / screen sliding ───────────────────────────── */
+.vdaw-viewport { flex:1; min-height:0; overflow:hidden; position:relative; }
+.vdaw-screen-track { display:flex; height:100%; width:200%; transform:translateX(0%); transition:transform 0.22s cubic-bezier(0.38,0,0.18,1); will-change:transform; }
+.vdaw-screen-track.to-1 { transform:translateX(-50%); }
+.vdaw-screen { width:50%; flex-shrink:0; height:100%; display:flex; flex-direction:column; overflow:hidden; }
+
+/* ── Screen header — brushed dark aluminium bar ──────────── */
+.vdaw-screen-hdr {
+    height: var(--screenhdr-h); flex-shrink:0;
+    display:flex; align-items:center; gap:8px; padding:0 10px;
+    background:
+        linear-gradient(180deg,
+            rgba(255,255,255,0.07) 0%,
+            rgba(255,255,255,0.02) 50%,
+            rgba(0,0,0,0.04) 100%),
+        linear-gradient(180deg, #1e2e48 0%, #141e34 60%, #0e1828 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.70);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 2px 8px rgba(0,0,0,0.50);
+    /* fine horizontal stripes = brushed metal */
+    background-blend-mode: overlay;
+}
+.vdaw-screen-title {
+    font-family: 'Share Tech Mono',monospace;
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.20em;
+    color: var(--acc);
+    text-shadow:
+        0 1px 3px rgba(0,0,0,0.90),
+        0 0 14px rgba(0,170,255,0.55);
+}
+.vdaw-hdr-right { margin-left:auto; display:flex; align-items:center; gap:6px; }
+
+.vdaw-back-btn {
+    font-family: 'Share Tech Mono',monospace;
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em;
+    color: var(--acc2); background: none; border: none; cursor: default;
+    padding: 2px 0; user-select: none;
+    text-shadow: 0 0 8px rgba(0,229,204,0.45);
+    transition: color 0.1s;
+}
+.vdaw-back-btn:hover { color: var(--txt); }
+.vdaw-crumb { display:flex; align-items:center; gap:5px; font-family:'Share Tech Mono',monospace; font-size:0.62rem; font-weight:700; color:var(--txt); }
+.vdaw-crumb-dot { width:9px; height:9px; border-radius:50%; border:1px solid rgba(0,0,0,0.40); flex-shrink:0; box-shadow: 0 0 7px currentColor, inset 0 1px 0 rgba(255,255,255,0.20); }
+
+/* Roll mode tabs — segmented glass control */
+.vdaw-roll-tabs { display:flex; gap:1px; }
+.vdaw-roll-tab {
+    font-family: 'Share Tech Mono',monospace;
+    font-size: 0.54rem; font-weight: 700; letter-spacing: 0.08em;
+    padding: 4px 12px; cursor: default; user-select: none;
+    background: var(--skeu-btn);
+    border: 1px solid rgba(0,0,0,0.60);
+    border-top-color: rgba(255,255,255,0.09);
+    color: var(--txt2);
+    box-shadow: var(--skeu-shadow-out);
+    transition: color 0.1s;
+    position: relative; overflow: hidden;
+}
+.vdaw-roll-tab::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+    pointer-events:none;
+}
+.vdaw-roll-tab:first-child { border-radius: 5px 0 0 5px; }
+.vdaw-roll-tab:last-child  { border-radius: 0 5px 5px 0; }
+.vdaw-roll-tab:hover { color: var(--txt); }
+.vdaw-roll-tab.active {
+    background:
+        linear-gradient(180deg,
+            rgba(0,170,255,0.22) 0%,
+            rgba(0,100,200,0.12) 100%);
+    color: var(--acc); border-color: rgba(0,170,255,0.55);
+    box-shadow:
+        inset 0 2px 8px rgba(0,0,0,0.50),
+        0 0 10px rgba(0,170,255,0.20);
+}
+
+/* ─────────────────────────────────────────────────────────
+   MIXER
+───────────────────────────────────────────────────────── */
+.vdaw-mixer-area {
+    flex:1; min-height:0; display:flex; flex-direction:row; overflow:hidden;
+    background:
+        linear-gradient(180deg, #080c12 0%, #0c1420 100%);
+}
+.vdaw-mixer-divider {
+    width: 2px; flex-shrink: 0; margin: 8px 0;
+    background: linear-gradient(180deg,
+        transparent 0%, rgba(255,255,255,0.10) 20%,
+        rgba(255,255,255,0.06) 80%, transparent 100%);
+    box-shadow: 1px 0 4px rgba(0,0,0,0.50);
+}
+.vdaw-mixer-scroll { flex:1; min-width:0; overflow-x:auto; overflow-y:hidden; padding:10px 10px 0; scrollbar-width:thin; scrollbar-color:var(--bd2) transparent; }
+.vdaw-mixer-scroll::-webkit-scrollbar { height:5px; }
+.vdaw-mixer-scroll::-webkit-scrollbar-thumb { background:var(--bd2); border-radius:3px; }
+.vdaw-mixer-strips { display:flex; gap:6px; height:100%; align-items:flex-end; padding-bottom:10px; }
+
+/* ── Channel strip — polished aluminium slab with edge bevel ── */
+.vdaw-strip {
+    width: 72px; flex-shrink: 0;
+    background:
+        linear-gradient(180deg,
+            rgba(255,255,255,0.07) 0%,
+            rgba(255,255,255,0.01) 15%,
+            transparent 50%),
+        linear-gradient(180deg, #283848 0%, #1a2838 20%, #141e2e 80%, #101828 100%);
+    border: 1px solid rgba(0,0,0,0.80);
+    border-top-color: rgba(255,255,255,0.10);
+    border-radius: 8px;
+    display: flex; flex-direction:column; align-items:center;
+    padding: 8px 6px 7px; gap: 5px;
+    cursor: default; position:relative;
+    box-shadow:
+        0 6px 18px rgba(0,0,0,0.65),
+        0 2px 6px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 1px 0 0 rgba(255,255,255,0.04),
+        inset -1px 0 0 rgba(0,0,0,0.30);
+    transition: border-color 0.12s;
+}
+.vdaw-strip:hover { border-color: rgba(60,90,130,0.80); }
+.vdaw-strip.selected {
+    border-color: rgba(0,170,255,0.55);
+    box-shadow:
+        0 6px 18px rgba(0,0,0,0.65),
+        0 0 0 1px rgba(0,170,255,0.20),
+        0 0 20px rgba(0,170,255,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+/* Master strip — teal-tinted version */
+.vdaw-master-strip {
+    margin: 10px 0 10px 8px;
+    background:
+        linear-gradient(180deg,
+            rgba(0,229,204,0.08) 0%,
+            rgba(0,229,204,0.01) 20%,
+            transparent 60%),
+        linear-gradient(180deg, #0e2428 0%, #091a1e 100%) !important;
+    border-color: rgba(0,229,204,0.22) !important;
+    border-top-color: rgba(0,229,204,0.18) !important;
+    box-shadow:
+        0 6px 18px rgba(0,0,0,0.65),
+        0 0 14px rgba(0,229,204,0.05),
+        inset 0 1px 0 rgba(0,229,204,0.12) !important;
+}
+.vdaw-master-strip:hover { border-color: rgba(0,229,204,0.50) !important; }
+.vdaw-strip-crown { font-size:0.90rem; color:var(--acc2); text-shadow:0 0 10px rgba(0,229,204,0.70); user-select:none; line-height:1; }
+.vdaw-strip-name  {
+    font-family:'Share Tech Mono',monospace; font-size:0.50rem; font-weight:700; letter-spacing:0.06em;
+    color:var(--txt); text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.90);
+}
+.vdaw-master-name { color:var(--acc2)!important; font-size:0.48rem; text-shadow: 0 0 8px rgba(0,229,204,0.50) !important; }
+.vdaw-strip-type  { font-family:'Share Tech Mono',monospace; font-size:0.42rem; font-weight:700; letter-spacing:0.08em; color:var(--txt3); }
+.vdaw-strip-vol-lbl { font-family:'Share Tech Mono',monospace; font-size:0.44rem; color:var(--txt3); text-shadow: 0 1px 2px rgba(0,0,0,0.80); }
+
+/* VU meter — inset deep LCD */
+.vdaw-vu {
+    width:100%; height:7px;
+    background: linear-gradient(180deg, #020508 0%, #060c14 100%);
+    border-radius: 3px; overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.80);
+    box-shadow:
+        inset 0 2px 5px rgba(0,0,0,0.85),
+        inset 0 0 0 1px rgba(0,170,255,0.04);
+}
+.vdaw-vu-fill {
+    height:100%; width:0%;
+    background: linear-gradient(90deg,
+        #00cc66 0%, #00e5cc 65%, #ffcc00 85%, #ff2244 100%);
+    border-radius: 2px;
+    transition: width 0.08s;
+    box-shadow: 0 0 6px currentColor;
+}
+
+/* Fader — long-throw rail with polished handle */
+.vdaw-fader-track { position:relative; width:20px; flex:1; min-height:60px; max-height:180px; display:flex; align-items:center; justify-content:center; }
+.vdaw-fader-groove {
+    position:absolute; width:5px; top:0; bottom:0; left:50%; transform:translateX(-50%);
+    background: linear-gradient(180deg, #020810 0%, #060d18 40%, #0a1420 100%);
+    border: 1px solid rgba(0,0,0,0.80);
+    border-right-color: rgba(255,255,255,0.04);
+    border-radius: 3px;
+    box-shadow:
+        inset 0 2px 6px rgba(0,0,0,0.80),
+        1px 0 0 rgba(255,255,255,0.03);
+}
+.vdaw-fader-input { -webkit-appearance:none; appearance:none; writing-mode:vertical-lr; direction:rtl; width:20px; height:100%; background:transparent; outline:none; cursor:default; position:relative; z-index:1; }
+.vdaw-fader-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 32px; height: 13px; border-radius: 5px;
+    background:
+        linear-gradient(180deg,
+            rgba(255,255,255,0.12) 0%,
+            rgba(255,255,255,0.04) 50%,
+            rgba(0,0,0,0.08) 51%,
+            rgba(0,0,0,0.04) 100%),
+        linear-gradient(180deg, #3e5472 0%, #2a3c58 40%, #1e2d44 100%);
+    border: 1px solid rgba(0,0,0,0.70);
+    border-top-color: rgba(255,255,255,0.14);
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.65),
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 0 0 1px rgba(0,0,0,0.50);
+    cursor: default;
+}
+.vdaw-fader-input::-webkit-slider-thumb:hover {
+    border-top-color: rgba(0,170,255,0.35);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.65), 0 0 10px rgba(0,170,255,0.25);
+}
+
+/* Mute/Solo — glass toggle pills */
+.vdaw-ms-row { display:flex; gap:2px; width:100%; }
+.vdaw-mute-btn, .vdaw-solo-btn {
+    flex:1; padding:3px 0; border-radius:4px;
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg, #1e2d40 0%, #111c28 100%);
+    border: 1px solid rgba(0,0,0,0.65);
+    border-top-color: rgba(255,255,255,0.10);
+    font-family:'Share Tech Mono',monospace; font-size:0.48rem; font-weight:700; letter-spacing:0.06em;
+    color:var(--txt3); cursor:default; user-select:none; text-align:center;
+    box-shadow:
+        0 2px 4px rgba(0,0,0,0.55),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+    transition: all 0.08s;
+}
+.vdaw-mute-btn::after, .vdaw-solo-btn::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 100%);
+    pointer-events: none;
+}
+.vdaw-mute-btn:hover { color:var(--red); border-top-color:rgba(255,50,60,0.25); }
+.vdaw-solo-btn:hover { color:var(--grn); border-top-color:rgba(0,200,100,0.25); }
+.vdaw-mute-btn.on {
+    background: linear-gradient(180deg, rgba(200,20,30,0.25) 0%, rgba(120,10,15,0.20) 100%);
+    color:var(--red); border-color:rgba(255,50,60,0.45);
+    box-shadow: 0 0 12px rgba(255,40,60,0.25), inset 0 1px 0 rgba(255,80,80,0.20);
+}
+.vdaw-solo-btn.on {
+    background: linear-gradient(180deg, rgba(0,180,80,0.22) 0%, rgba(0,100,40,0.18) 100%);
+    color:var(--grn); border-color:rgba(0,200,100,0.45);
+    box-shadow: 0 0 12px rgba(0,200,100,0.25), inset 0 1px 0 rgba(0,255,120,0.18);
+}
+
+.vdaw-strip-open {
+    font-family:'Share Tech Mono',monospace; font-size:0.46rem; font-weight:700;
+    color:var(--txt3); letter-spacing:0.06em; text-align:center;
+    cursor:default; padding:2px 0;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.80);
+    transition:color 0.1s;
+    user-select:none;
+}
+.vdaw-strip:hover .vdaw-strip-open { color:var(--acc); text-shadow:0 0 8px rgba(0,170,255,0.50); }
+.vdaw-master-open { color:var(--txt3)!important; }
+.vdaw-master-strip:hover .vdaw-master-open { color:var(--acc2)!important; text-shadow:0 0 8px rgba(0,229,204,0.50)!important; }
+
+.vdaw-strip-del {
+    position:absolute; top:3px; right:4px;
+    width:13px; height:13px; border-radius:50%;
+    background: linear-gradient(180deg, #2a1010 0%, #180808 100%);
+    border: 1px solid rgba(0,0,0,0.70);
+    border-top-color: rgba(255,80,80,0.12);
+    color:var(--txt3); font-size:0.55rem; cursor:default;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 0.1s, color 0.1s;
+    user-select:none; line-height:1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.60);
+}
+.vdaw-strip:hover .vdaw-strip-del { opacity:1; }
+.vdaw-strip-del:hover { color:var(--red); box-shadow: 0 0 8px rgba(255,40,60,0.40); }
+
+/* ─────────────────────────────────────────────────────────
+   PIANO ROLL  — key canvas INSIDE rollScroll (sticky left)
+───────────────────────────────────────────────────────── */
+.vdaw-roll-body { flex:1; min-height:0; position:relative; overflow:hidden; display:flex; flex-direction:column; }
+.vdaw-roll-layout { flex:1; min-height:0; display:flex; }
+.vdaw-roll-right { flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
+.vdaw-ruler {
+    height:var(--ruler-h); flex-shrink:0; display:block; width:100%;
+    background: linear-gradient(180deg, #0a1018 0%, #060c12 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.70);
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,0.04);
+}
+
+.vdaw-roll-scroll {
+    flex:1; overflow:auto; position:relative;
+    background: linear-gradient(180deg, #0d1520 0%, #111e2e 100%);
+    scrollbar-width:thin; scrollbar-color:var(--bd2) transparent;
+    display: flex;
+    align-items: flex-start;
+}
+.vdaw-roll-scroll::-webkit-scrollbar { width:5px; height:5px; }
+.vdaw-roll-scroll::-webkit-scrollbar-thumb { background:var(--bd2); border-radius:3px; }
+
+.vdaw-key-labels {
+    position: sticky; left: 0; z-index: 4;
+    flex-shrink: 0; display: block;
+    width: var(--key-w);
+    box-shadow: 3px 0 12px rgba(0,0,0,0.70), 1px 0 0 rgba(255,255,255,0.04);
+}
+
+.vdaw-roll-inner { position: relative; flex-shrink: 0; }
+.vdaw-roll { display:block; cursor:crosshair; }
+.vdaw-playhead {
+    position:absolute; top:0; bottom:0; width:2px;
+    background: linear-gradient(180deg, rgba(255,100,20,0) 0%, #ff5014 10%, #ff6020 90%, rgba(255,80,20,0) 100%);
+    box-shadow: 0 0 8px rgba(255,80,20,0.70), 0 0 2px rgba(255,120,60,0.90);
+    pointer-events:none; left:0; z-index:5;
+}
+
+/* ─────────────────────────────────────────────────────────
+   ROLL TOOLBAR
+───────────────────────────────────────────────────────── */
+.vdaw-roll-toolbar {
+    flex-shrink:0; display:flex; align-items:center; gap:8px; padding:4px 8px;
+    background: linear-gradient(180deg, #090e16 0%, #0c1520 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.70);
+    box-shadow:
+        inset 0 3px 6px rgba(0,0,0,0.50),
+        inset 0 1px 0 rgba(255,255,255,0.04),
+        0 1px 0 rgba(255,255,255,0.03);
+    min-height: 30px;
+}
+.vdaw-roll-modes { display:flex; gap:1px; }
+.vdaw-mode-btn {
+    font-family:'Share Tech Mono',monospace;
+    font-size:0.52rem; font-weight:700; letter-spacing:0.07em;
+    padding:4px 10px; cursor:default; user-select:none;
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg, #1e2d40 0%, #101c2c 100%);
+    border: 1px solid rgba(0,0,0,0.70);
+    border-top-color: rgba(255,255,255,0.09);
+    color:var(--txt3);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.07);
+    transition: color 0.08s;
+}
+.vdaw-mode-btn::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+    pointer-events: none;
+}
+.vdaw-mode-btn:first-child { border-radius:5px 0 0 5px; }
+.vdaw-mode-btn:last-child  { border-radius:0 5px 5px 0; }
+.vdaw-mode-btn:hover { color:var(--txt); }
+.vdaw-mode-btn.active {
+    background: linear-gradient(180deg,
+        rgba(0,170,255,0.20) 0%, rgba(0,100,180,0.12) 100%);
+    color:var(--acc); border-color:rgba(0,170,255,0.45);
+    box-shadow:
+        inset 0 3px 8px rgba(0,0,0,0.55),
+        0 0 10px rgba(0,170,255,0.15);
+}
+.vdaw-mode-btn[data-mode="erase"].active {
+    background: linear-gradient(180deg, rgba(255,45,68,0.18) 0%, rgba(180,20,40,0.12) 100%);
+    color:var(--red); border-color:rgba(255,45,68,0.45);
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.55), 0 0 10px rgba(255,40,60,0.15);
+}
+.vdaw-mode-btn[data-mode="select"].active {
+    background: linear-gradient(180deg, rgba(255,204,0,0.14) 0%, rgba(180,140,0,0.10) 100%);
+    color:var(--yel); border-color:rgba(255,204,0,0.40);
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.55), 0 0 10px rgba(255,200,0,0.12);
+}
+.vdaw-mode-btn[data-mode="slide"].active {
+    background: linear-gradient(180deg, rgba(180,80,255,0.18) 0%, rgba(120,40,180,0.12) 100%);
+    color:var(--acc3); border-color:rgba(180,80,255,0.45);
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.55), 0 0 10px rgba(160,60,255,0.15);
+}
+.vdaw-roll-hint-txt { font-family:'Share Tech Mono',monospace; font-size:0.42rem; color:var(--txt3); letter-spacing:0.05em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; user-select:none; text-shadow: 0 1px 2px rgba(0,0,0,0.80); }
+
+/* ─────────────────────────────────────────────────────────
+   VELOCITY LANE
+───────────────────────────────────────────────────────── */
+.vdaw-vel-lane-wrap {
+    flex-shrink:0; display:flex; align-items:stretch; height:56px;
+    background: linear-gradient(180deg, #060a10 0%, #080d16 100%);
+    border-top: 1px solid rgba(0,0,0,0.70);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.60);
+    overflow:hidden;
+}
+.vdaw-vel-lane-label { width:var(--key-w); flex-shrink:0; font-family:'Share Tech Mono',monospace; font-size:0.44rem; font-weight:700; letter-spacing:0.08em; color:var(--txt3); display:flex; align-items:center; justify-content:center; border-right:1px solid rgba(0,0,0,0.60); user-select:none; text-shadow: 0 1px 2px rgba(0,0,0,0.80); }
+.vdaw-vel-lane { display:block; cursor:ns-resize; flex:1; height:100%; }
+
+/* ─────────────────────────────────────────────────────────
+   SIDE PANEL (INSTR + MASTER)
+───────────────────────────────────────────────────────── */
+.vdaw-side-panel {
+    position:absolute; top:0; right:0; bottom:0;
+    width: var(--side-panel-w);
+    background-color: #0e1824;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent, transparent 2px,
+            rgba(255,255,255,0.006) 2px, rgba(255,255,255,0.006) 3px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent, transparent 2px,
+            rgba(255,255,255,0.004) 2px, rgba(255,255,255,0.004) 3px
+        );
+    border-left: 1px solid rgba(0,0,0,0.85);
+    box-shadow:
+        -8px 0 30px rgba(0,0,0,0.70),
+        inset 1px 0 0 rgba(255,255,255,0.05);
+    display:flex; flex-direction:column;
+    transform: translateX(100%);
+    transition: transform 0.20s cubic-bezier(0.38,0,0.18,1);
+    will-change: transform; z-index:20; pointer-events:none;
+}
+.vdaw-side-panel.open { transform:translateX(0%); pointer-events:all; }
+
+/* Panel header — polished steel strip */
+.vdaw-side-panel-hdr {
+    height:34px; flex-shrink:0; display:flex; align-items:center; gap:8px; padding:0 10px;
+    background:
+        linear-gradient(180deg,
+            rgba(255,255,255,0.06) 0%,
+            rgba(255,255,255,0.01) 50%,
+            rgba(0,0,0,0.06) 100%),
+        linear-gradient(180deg, #1e2e48 0%, #121e34 60%, #0d1828 100%);
+    border-bottom: 1px solid rgba(0,0,0,0.75);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.09),
+        0 2px 8px rgba(0,0,0,0.50);
+}
+.vdaw-side-panel-scroll { flex:1; min-height:0; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--bd2) transparent; }
+.vdaw-side-panel-scroll::-webkit-scrollbar { width:4px; }
+.vdaw-side-panel-scroll::-webkit-scrollbar-thumb { background:var(--bd2); border-radius:2px; }
+
+/* ─────────────────────────────────────────────────────────
+   FX SECTIONS — leather-look accordion
+───────────────────────────────────────────────────────── */
+.vdaw-sec { border-bottom: 1px solid rgba(0,0,0,0.60); }
+.vdaw-sec-hdr {
+    font-family:'Share Tech Mono',monospace; font-size:0.54rem; font-weight:700; letter-spacing:0.14em; color:var(--txt2);
+    padding:6px 10px; cursor:default;
+    background:
+        linear-gradient(180deg,
+            rgba(255,255,255,0.05) 0%,
+            rgba(255,255,255,0.01) 40%,
+            rgba(0,0,0,0.05) 100%),
+        linear-gradient(180deg, #1c2c42 0%, #141e30 60%, #0f1828 100%);
+    list-style:none; display:flex; align-items:center; gap:6px; user-select:none;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.07),
+        0 1px 0 rgba(0,0,0,0.40);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.90);
+}
+.vdaw-sec-hdr::-webkit-details-marker { display:none; }
+.vdaw-sec-hdr::before {
+    content:'▸'; font-size:0.58rem; color:var(--acc);
+    text-shadow: 0 0 8px rgba(0,170,255,0.60);
+    transition:transform 0.14s;
+}
+details[open] .vdaw-sec-hdr::before { transform:rotate(90deg); }
+.vdaw-sec-body {
+    padding:10px 10px 12px;
+    background:
+        linear-gradient(180deg, #0b1420 0%, #0e1828 100%);
+    display:flex; flex-direction:column; gap:8px;
+}
+
+/* ─────────────────────────────────────────────────────────
+   KNOBS — deep iOS-era polished aluminium with glass dome
+───────────────────────────────────────────────────────── */
+.vdaw-knob-row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+.vdaw-kc { display:flex; flex-direction:column; align-items:center; gap:3px; }
+.vdaw-kc span {
+    font-family:'Share Tech Mono',monospace; font-size:0.44rem; font-weight:700; letter-spacing:0.09em;
+    color:var(--txt2); user-select:none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.90);
+}
+.vdaw-knob {
+    width:44px; height:44px; cursor:ns-resize; display:block; touch-action:none;
+    border-radius:50%;
+    /* deep outer ring shadow — machined recess */
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.85),
+        0 5px 14px rgba(0,0,0,0.75),
+        0 2px 5px rgba(0,0,0,0.55);
+}
+
+/* ─────────────────────────────────────────────────────────
+   SEGMENTED CONTROLS — iOS glass capsule
+───────────────────────────────────────────────────────── */
+.vdaw-seg { display:flex; gap:1px; }
+.vdaw-seg-btn {
+    font-family:'Share Tech Mono',monospace; font-size:0.52rem; font-weight:700; letter-spacing:0.06em;
+    padding:4px 8px;
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg, #1e2d40 0%, #111c2c 100%);
+    border: 1px solid rgba(0,0,0,0.65);
+    border-top-color: rgba(255,255,255,0.10);
+    color:var(--txt3); cursor:default; user-select:none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.07);
+    transition:color 0.08s;
+}
+.vdaw-seg-btn::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+    pointer-events: none;
+}
+.vdaw-seg-btn:first-child { border-radius:5px 0 0 5px; }
+.vdaw-seg-btn:last-child  { border-radius:0 5px 5px 0; }
+.vdaw-seg-btn:hover { color:var(--txt); border-top-color:rgba(0,170,255,0.20); }
+.vdaw-seg-btn.active {
+    background: linear-gradient(180deg, rgba(0,170,255,0.22) 0%, rgba(0,100,180,0.14) 100%);
+    color:var(--acc); border-color:rgba(0,170,255,0.50);
+    box-shadow: inset 0 2px 7px rgba(0,0,0,0.55), 0 0 10px rgba(0,170,255,0.18);
+}
+
+.vdaw-row-gap { display:flex; align-items:center; gap:8px; }
+.vdaw-lbl {
+    font-family:'Share Tech Mono',monospace; font-size:0.52rem; font-weight:700; letter-spacing:0.09em;
+    color:var(--txt2); white-space:nowrap; user-select:none;
+    text-shadow:0 1px 3px rgba(0,0,0,0.80);
+}
+
+/* Instrument type selector */
+.vdaw-insp-type {
+    font-family:'Share Tech Mono',monospace; font-size:0.58rem; font-weight:700;
+    color:var(--txt);
+    background: linear-gradient(180deg, #0e1824 0%, #0a1018 100%);
+    border: 1px solid rgba(0,0,0,0.75);
+    border-top-color: rgba(255,255,255,0.08);
+    border-radius:5px; padding:3px 7px; outline:none; cursor:default;
+    box-shadow:
+        inset 0 2px 5px rgba(0,0,0,0.55),
+        0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* Wave selector */
+.vdaw-wave-row { display:flex; align-items:center; gap:8px; }
+.vdaw-wave-sel { display:flex; gap:1px; }
+.vdaw-wave-btn {
+    width:32px; height:26px; font-size:0.92rem;
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg, #1e2d40 0%, #111c2c 100%);
+    border:1px solid rgba(0,0,0,0.65); border-top-color:rgba(255,255,255,0.10);
+    color:var(--txt3); cursor:default; display:flex; align-items:center; justify-content:center; user-select:none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.07);
+    transition:color 0.08s;
+}
+.vdaw-wave-btn::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 100%);
+    pointer-events: none;
+}
+.vdaw-wave-btn:first-child { border-radius:5px 0 0 5px; }
+.vdaw-wave-btn:last-child  { border-radius:0 5px 5px 0; }
+.vdaw-wave-btn:hover  { color:var(--txt); }
+.vdaw-wave-btn.active {
+    background: linear-gradient(180deg, rgba(0,170,255,0.22) 0%, rgba(0,100,180,0.14) 100%);
+    color:var(--acc); border-color:rgba(0,170,255,0.50);
+    box-shadow: inset 0 2px 7px rgba(0,0,0,0.55);
+}
+
+/* ─────────────────────────────────────────────────────────
+   SAMPLER
+───────────────────────────────────────────────────────── */
+.vdaw-sampler-waveform {
+    width:100%; height:70px; display:block;
+    background: linear-gradient(180deg, #040810 0%, #060c16 100%);
+    border: 1px solid rgba(0,0,0,0.80);
+    border-top-color: rgba(255,255,255,0.04);
+    border-radius: 6px;
+    box-shadow:
+        inset 0 3px 8px rgba(0,0,0,0.70),
+        inset 0 0 0 1px rgba(0,170,255,0.04),
+        0 1px 0 rgba(255,255,255,0.04);
+    cursor: crosshair;
+}
+.vdaw-sampler-slices { display:flex; flex-wrap:wrap; gap:2px; margin-top:4px; }
+
+/* Slice trigger buttons — glassy key pads */
+.vdaw-slice-btn {
+    flex:1; min-width:20px; height:24px; border-radius:4px;
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg, #1e2d40 0%, #101c2c 100%);
+    border: 1px solid rgba(0,0,0,0.65);
+    border-top-color: rgba(255,255,255,0.10);
+    font-family:'Share Tech Mono',monospace; font-size:0.44rem; font-weight:700;
+    color:var(--txt3); cursor:default;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
+    transition: all 0.08s;
+    user-select:none;
+}
+.vdaw-slice-btn::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+    pointer-events:none;
+}
+.vdaw-slice-btn:hover {
+    background: linear-gradient(180deg, rgba(0,170,255,0.22) 0%, rgba(0,100,180,0.14) 100%);
+    border-color:rgba(0,170,255,0.45); color:var(--acc);
+    box-shadow: 0 0 10px rgba(0,170,255,0.25), inset 0 1px 0 rgba(0,200,255,0.18);
+}
+.vdaw-slice-btn.playing {
+    background: linear-gradient(180deg, rgba(0,229,204,0.28) 0%, rgba(0,160,140,0.18) 100%);
+    border-color:rgba(0,229,204,0.55); color:var(--acc2);
+    box-shadow: 0 0 14px rgba(0,229,204,0.40), inset 0 1px 0 rgba(0,255,220,0.20);
+}
+
+.vdaw-sampler-note { font-family:'Share Tech Mono',monospace; font-size:0.46rem; color:var(--txt3); margin-top:3px; text-shadow: 0 1px 2px rgba(0,0,0,0.80); }
+
+/* Slice count +/- controls */
+.vdaw-sampler-slice-ctrl {
+    display: flex; align-items: center; gap: 6px; margin-top: 6px;
+}
+.vdaw-slice-count-btn {
+    width: 24px; height: 24px; border-radius: 6px; cursor: default;
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 50%,
+        rgba(0,0,0,0.08) 51%, rgba(0,0,0,0.04) 100%),
+        linear-gradient(180deg, #2c3e58 0%, #1a2840 100%);
+    border: 1px solid rgba(0,0,0,0.70);
+    border-top-color: rgba(255,255,255,0.14);
+    color: var(--txt); font-size: 0.92rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 7px rgba(0,0,0,0.60), inset 0 1px 0 rgba(255,255,255,0.12);
+    user-select: none;
+    transition: filter 0.07s;
+}
+.vdaw-slice-count-btn:hover  { filter:brightness(1.35); border-top-color: rgba(0,170,255,0.30); }
+.vdaw-slice-count-btn:active { box-shadow:var(--skeu-shadow-in); transform:translateY(1px); }
+.vdaw-slice-count-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.95rem; font-weight: 700; color: var(--acc);
+    min-width: 24px; text-align: center;
+    text-shadow:
+        0 0 8px rgba(0,170,255,0.80),
+        0 0 20px rgba(0,170,255,0.30);
+    background: linear-gradient(180deg, #020810 0%, #060d18 100%);
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.80);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.80);
+}
+
+/* Sampler mode toggle */
+.vdaw-sampler-mode-row {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+}
+.vdaw-sampler-mode-btn {
+    flex: 1; padding: 5px 0; border-radius: 5px;
+    position: relative; overflow: hidden;
+    background: linear-gradient(180deg, #1a2838 0%, #0e1a28 100%);
+    border: 1px solid rgba(0,0,0,0.65);
+    border-top-color: rgba(255,255,255,0.09);
+    font-family: 'Share Tech Mono',monospace; font-size: 0.52rem; font-weight: 700; letter-spacing: 0.08em;
+    color: var(--txt3); cursor: default; user-select: none; text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.07);
+    transition: all 0.08s;
+}
+.vdaw-sampler-mode-btn::after {
+    content:''; position:absolute; top:0; left:0; right:0; height:50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.07) 0%, transparent 100%);
+    pointer-events: none;
+}
+.vdaw-sampler-mode-btn.active {
+    background: linear-gradient(180deg, rgba(0,229,204,0.22) 0%, rgba(0,160,140,0.14) 100%);
+    color: var(--acc2); border-color: rgba(0,229,204,0.45);
+    box-shadow: inset 0 2px 7px rgba(0,0,0,0.55), 0 0 12px rgba(0,229,204,0.18);
+}
+
+/* ── FL-style drag-number widget ──────────────────────────── */
+.vdaw-drag-number {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--bg0);
+    border: 1px solid var(--bd2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: ns-resize;
+    user-select: none;
+    transition: border-color 0.12s, background 0.12s;
+    min-width: 52px;
+    justify-content: center;
+}
+.vdaw-drag-number:hover {
+    border-color: var(--acc);
+    background: rgba(0,170,255,0.08);
+}
+.vdaw-drag-number:active {
+    border-color: var(--acc2);
+    background: rgba(0,229,204,0.10);
+}
+.vdaw-drag-number-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--acc);
+    letter-spacing: 0.04em;
+    line-height: 1;
+}
+.vdaw-drag-number-unit {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.52rem;
+    font-weight: 600;
+    color: var(--txt3);
+    line-height: 1;
+}
+/* drag cursor indicator strip at left edge */
+.vdaw-drag-number::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 14px;
+    background: linear-gradient(to bottom, var(--acc) 0%, var(--acc2) 100%);
+    border-radius: 2px;
+    opacity: 0.5;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+.vdaw-drag-number:hover::before { opacity: 1; }

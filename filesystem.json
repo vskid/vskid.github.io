@@ -129,6 +129,14 @@
           "date": "25 - 02 - 2026",
           "src": "/music/testproj2.mp3",
           "title": "Test Project #2"
+        },
+        {
+          "type": "audio",
+          "icon": "🎧",
+          "name": "Amen",
+          "date": "10 - 03 - 2026",
+          "src": "/music/amen.wav",
+          "title": "Amen"
         }
       ],
       "desktopIcon": "open-music",

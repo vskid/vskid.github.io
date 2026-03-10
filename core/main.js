@@ -12,6 +12,7 @@ import { initSnake }              from '../apps/snake/snake.js';
 import { initVClock }             from '../apps/vclock/vclock.js';
 import { initVMap }               from '../apps/vmap/vmap.js';
 import { initVisitorCounter }     from './visitor-counter.js';
+import { initVDAW }               from '../apps/vdaw/vdaw.js';
 
 const desktop = initDesktop();
 
@@ -23,13 +24,8 @@ await initVMedia(desktop);
 await initVviewer(desktop);
 await initWall(desktop);
 await initVDoc(desktop);
-
-try {
-    await initVPaint(desktop);
-} catch (err) {
-    console.error('[main] initVPaint failed:', err);
-}
-
+await initVPaint(desktop);
 await initSnake(desktop);
 await initVClock(desktop);
 await initVMap(desktop);
+await initVDAW(desktop);
