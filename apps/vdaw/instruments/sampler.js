@@ -96,7 +96,7 @@ export function injectSamplerCSS() {
 // ── Defaults ──────────────────────────────────────────────────
 
 export const SAMPLER_DEFAULTS = {
-    src: '../../../music/amen.wav',
+    src: '../../../music/amen.mp3',
     slices: 8,
     pitchShift: 0,
     melodyMode: false,
