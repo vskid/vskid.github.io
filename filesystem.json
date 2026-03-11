@@ -19,9 +19,16 @@
           {
             "type": "project",
             "icon": "🔗",
-            "name": "Sporisk",
+            "name": "GitHub repo",
             "date": "06 - 03 - 2026",
             "href": "https://github.com/aubreyasta/sporisk"
+          },
+          {
+            "type": "project",
+            "icon": "🔗",
+            "name": "Deployment",
+            "date": "06 - 03 - 2026",
+            "href": "https://sporisk-main.vercel.app"
           }
           ],
           "type": "folder"
