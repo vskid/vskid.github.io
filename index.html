@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!--
+  ============================================================
+  vskid.github.io ; index.html
+  ============================================================
+  Pure HTML/CSS/JS desktop OS. No frameworks, no build step.
+  Uses native ES modules (type="module") ; requires a server
+  (GitHub Pages works fine; locally use: npx serve)
+
+  File structure:
+    index.html              ← shell only (background, desktop, taskbar)
+    core/desktop.css        ← shell styles
+    core/desktop.js         ← window system, taskbar, drag, clock
+    core/main.js            ← entry point, boots all modules
+    core/config.js          ← content data (folders, files)
+    apps/explorer/          ← file explorer (all folders)
+    apps/vmedia/            ← video + audio player
+    apps/vviewer/           ← image viewer
+
+  Adding content:
+    Edit core/config.js ; add items to the relevant folder array.
+
+  Adding a new app:
+    1. Create apps/yourapp/ with yourapp.html, yourapp.css, yourapp.js
+    2. Add one import + one init call in core/main.js
+  ============================================================
+-->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vskid's site</title>
+  <meta name="description" content="vskid's homepage">
+  <link rel="stylesheet" href="core/desktop.css">
+</head>
+
+<body>
+
+  <!-- =====================================================
+       BACKGROUND
+  ====================================================== -->
+  <div class="background-container"></div>
+
+  <!-- =====================================================
+       DESKTOP ICON GRID
+       Icons are defined here; windows are injected by apps.
+  ====================================================== -->
+  <div class="desktop">
+
+    <div class="desktop-icon" id="open-projects" title="Projects">
+      <div class="icon-img">📁</div>
+      <span class="icon-label">Projects</span>
+    </div>
+
+    <div class="desktop-icon" id="open-videos" title="Videos">
+      <div class="icon-img">🎬</div>
+      <span class="icon-label">Videos</span>
+    </div>
+
+    <div class="desktop-icon" id="open-music" title="Music">
+      <div class="icon-img">🎵</div>
+      <span class="icon-label">Music</span>
+    </div>
+
+    <div class="desktop-icon" id="open-pictures" title="Pictures">
+      <div class="icon-img">🖼️</div>
+      <span class="icon-label">Pictures</span>
+    </div>
+
+    <div class="desktop-icon" id="open-docs" title="Documents">
+      <div class="icon-img">📄</div>
+      <span class="icon-label">Documents</span>
+    </div>
+
+    <div class="desktop-icon" id="open-wall" title="The Wall">
+      <div class="icon-img">📖</div>
+      <span class="icon-label">The Wall</span>
+    
+    </div>
+    <div class="desktop-icon" id="open-snake" title="vSnake">
+      <div class="icon-img">🐍</div>
+      <span class="icon-label">vSnake</span>
+    </div>
+
+    <div class="desktop-icon" id="open-vclock" title="vClock">
+      <div class="icon-img">🕓</div>
+      <span class="icon-label">vClock</span>
+    </div>
+
+    <div class="desktop-icon" id="open-vmap" title="vMap">
+      <div class="icon-img">🗺</div>
+      <span class="icon-label">vMap</span>
+    </div>
+
+    <div class="desktop-icon" id="open-vpaint" title="vPaint">
+      <div class="icon-img">🎨</div>
+      <span class="icon-label">vPaint</span>
+    </div>
+
+    <div class="desktop-icon" id="open-vtracker" title="vTracker">
+      <div class="icon-img">🎹</div>
+      <span class="icon-label">vTracker</span>
+    </div>
+
+    <!--
+    <div class="desktop-icon" id="open-blog" title="Blog">
+      <div class="icon-img">📝</div>
+      <span class="icon-label">Blog</span>
+    </div>
+    -->
+
+  </div>
+  <!-- =====================================================
+       MACOS MENU BAR  (top, full-width, 24px)
+  ====================================================== -->
+  <nav class="menubar">
+    <!-- Left: Apple + app name + menus -->
+    <button class="menubar-apple" title="Apple menu" aria-haspopup="true">v</button>
+    <span class="menubar-app-name">vskid's homepage</span>
+    <div class="menubar-sep"></div>
+    <span class="menubar-item">File</span>
+    <span class="menubar-item">Edit</span>
+    <span class="menubar-item">View</span>
+    <span class="menubar-item">Window</span>
+    <span class="menubar-item">Help</span>
+    <!-- Right: extras + clock -->
+    <div class="menubar-spacer"></div>
+    <div class="menubar-extras">
+      <span class="menubar-extra-item" title="Wi-Fi">⌘</span>
+      <span class="menubar-extra-item" title="Battery">🔋</span>
+      <div class="menubar-sep"></div>
+      <span class="menubar-clock menubar-extra-item" id="clock">Mon 00/00  00:00</span>
+    </div>
+  </nav>
+
+  <!-- Apple menu dropdown (hidden until apple btn clicked) -->
+  <div class="apple-menu hidden" id="apple-menu" role="menu">
+    <div class="apple-menu-item disabled">About This Site</div>
+    <div class="apple-menu-hr"></div>
+    <div class="apple-menu-item" data-action="apps">📱 Applications…</div>
+    <div class="apple-menu-hr"></div>
+    <div class="apple-menu-item" data-action="shutdown">🛑 Shut Down…</div>
+  </div>
+
+  <!-- =====================================================
+       LAUNCHPAD  (full-screen app grid, Aqua style)
+  ====================================================== -->
+  <div id="launchpad">
+    <div id="launchpad-title">Applications</div>
+    <div id="launchpad-grid">
+      <!-- Items injected by desktop.js -->
+    </div>
+    <div id="launchpad-hint">Press Escape or click outside to close</div>
+  </div>
+
+  <!-- =====================================================
+       DOCK  (bottom glass shelf — icons only)
+  ====================================================== -->
+  <div class="taskbar">
+    <div class="taskbar-apps"></div>
+  </div>
+
+  <!-- ES module entry point -->
+  <script type="module" src="core/main.js"></script>
+
+</body>
+</html>

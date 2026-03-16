@@ -1,0 +1,213 @@
+/* ============================================================
+   apps/vclock/vclock.css  —  vClock: World Clock
+   macOS Aqua aesthetic — matches the desktop theme.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Lucida+Grande&display=swap');
+
+/* ── Window ──────────────────────────────────────────────── */
+#vclock-window {
+    width: 580px;
+    height: auto;
+    min-height: unset;
+    max-height: 90vh;
+    top: 5%;
+    left: calc(50% - 290px);
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    overflow: hidden;
+}
+#vclock-window.hidden,
+#vclock-window.minimized { display: none; }
+
+/* ── Title bar — inherits Aqua from desktop.css .title-bar ── */
+.vclock-title-bar {
+    /* Uses base .title-bar styles, no override needed */
+}
+.vclock-title-bar .title-text {
+    color: #18284a;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+/* ── Body ────────────────────────────────────────────────── */
+.vclock-body {
+    background: linear-gradient(180deg, #e8eef8 0%, #dde5f4 100%);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(80,130,180,0.30);
+    border-top: none;
+    overflow-y: auto;
+    max-height: calc(90vh - 28px);
+}
+
+/* ── Top bar ─────────────────────────────────────────────── */
+.vclock-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 12px;
+    background: linear-gradient(180deg, #f0f5fc 0%, #e4ecf8 100%);
+    border-bottom: 1px solid rgba(140,165,210,0.42);
+    flex-shrink: 0;
+}
+.vclock-title-label {
+    font-size: 0.60rem;
+    font-weight: 700;
+    letter-spacing: 0.30em;
+    color: rgba(40,80,160,0.38);
+    text-transform: uppercase;
+}
+
+/* ── Mode toggle ─────────────────────────────────────────── */
+.vclock-mode-toggle {
+    display: flex;
+    background: rgba(200,218,245,0.60);
+    border: 1px solid rgba(130,165,220,0.45);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.vclock-mode-btn {
+    padding: 3px 14px;
+    border: none;
+    border-right: 1px solid rgba(130,165,220,0.35);
+    background: transparent;
+    color: rgba(30,60,130,0.55);
+    font-family: -apple-system, 'Lucida Grande', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: default;
+    transition: all 0.12s;
+    text-transform: uppercase;
+}
+.vclock-mode-btn:last-child { border-right: none; }
+.vclock-mode-btn:hover { color: #1a3a80; background: rgba(200,220,255,0.45); }
+.vclock-mode-btn.active {
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.88) 0%,
+        rgba(210,230,255,0.75) 100%);
+    color: #0a2a80;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.70);
+}
+
+/* ── Clock grid ──────────────────────────────────────────── */
+.vclock-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px;
+    background: linear-gradient(180deg, #e8eef8 0%, #dde5f4 100%);
+}
+
+/* ── Clock card ──────────────────────────────────────────── */
+.vclock-card {
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.88) 0%,
+        rgba(230,242,255,0.80) 100%);
+    border: 1px solid rgba(140,180,230,0.45);
+    border-bottom: 2px solid rgba(100,150,210,0.35);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.82),
+        0 2px 8px rgba(50,100,200,0.10);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 8px 6px;
+    gap: 5px;
+    position: relative;
+    border-radius: 8px;
+    min-width: 0;
+    transition: background 0.12s, box-shadow 0.12s;
+}
+.vclock-card:hover {
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.96) 0%,
+        rgba(220,238,255,0.92) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.92),
+        0 4px 16px rgba(50,100,220,0.18);
+}
+
+.vclock-city {
+    font-family: -apple-system, 'Lucida Grande', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: rgba(30,60,140,0.62);
+    text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 100%; text-align: center;
+}
+
+/* ── LCD display (green Casio style — keep distinctive) ──── */
+.vclock-digital {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5px 6px 4px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #b8c87a;
+    box-shadow:
+        inset 0 1px 4px rgba(0,0,0,0.40),
+        inset 0 0 0 1px rgba(0,0,0,0.20);
+}
+.vclock-seg-canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* ── Analog face ─────────────────────────────────────────── */
+.vclock-analog {
+    width: 100%; aspect-ratio: 1;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+}
+.vclock-analog-canvas {
+    display: block; width: 100%; height: 100%;
+    border-radius: 50%;
+    filter: drop-shadow(0 3px 8px rgba(0,30,100,0.40));
+}
+
+/* ── Date + timezone ─────────────────────────────────────── */
+.vclock-meta {
+    display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%;
+}
+.vclock-date {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.46rem; color: rgba(40,80,160,0.55); letter-spacing: 0.08em;
+}
+.vclock-tz {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.40rem; color: rgba(40,80,160,0.38); letter-spacing: 0.05em;
+}
+
+/* ── Linked card ─────────────────────────────────────────── */
+.vclock-card--linked { cursor: pointer; }
+.vclock-card--linked:hover {
+    background: linear-gradient(180deg,
+        rgba(255,255,255,0.96) 0%,
+        rgba(215,235,255,0.92) 100%);
+    border-color: rgba(80,140,230,0.60);
+}
+.vclock-card--linked:active { background: rgba(200,220,255,0.70); }
+
+.vclock-badge {
+    position: absolute; top: 3px; right: 4px;
+    font-size: 0.42rem; color: rgba(60,100,200,0.38);
+    font-family: 'Share Tech Mono', monospace; line-height: 1;
+    pointer-events: none;
+}
+.vclock-card--linked:hover .vclock-badge { color: rgba(30,80,200,0.70); }
+
+/* ── Scrollbar ───────────────────────────────────────────── */
+.vclock-body::-webkit-scrollbar { width: 6px; }
+.vclock-body::-webkit-scrollbar-track { background: #dce5f5; }
+.vclock-body::-webkit-scrollbar-thumb { background: rgba(130,165,220,0.55); border-radius: 3px; }
+.vclock-body::-webkit-scrollbar-thumb:hover { background: rgba(80,130,210,0.70); }

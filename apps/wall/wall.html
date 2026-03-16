@@ -1,0 +1,88 @@
+<!--
+  apps/wall/wall.html
+  The Wall — classic guestbook window.
+  Injected by wall.js on init.
+
+  Sections:
+    .wall-toolbar     — entry count + owner unlock button
+    .wall-entries     — scrollable list of posts (populated by JS)
+    .wall-compose     — write a new entry (name + message + post)
+    #wall-owner-panel — hidden owner controls (delete, pin) revealed after password
+-->
+<div class="window hidden" id="wall-window">
+
+  <div class="title-bar wall-title-bar">
+    <div class="title-text">
+      <span class="title-icon">📖</span>
+      The Wall
+    </div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"   title="Close">×</button>
+    </div>
+  </div>
+
+  <!-- Toolbar: entry count left, owner lock right -->
+  <div class="wall-toolbar">
+    <span class="wall-count" id="wall-count">0 entries</span>
+    <div class="wall-toolbar-right">
+      <button class="wall-owner-btn" id="wall-owner-btn" title="Owner login">🔒</button>
+    </div>
+  </div>
+
+  <!-- Scrollable entries list -->
+  <div class="wall-entries" id="wall-entries">
+    <div class="wall-empty" id="wall-empty">
+      <span class="wall-empty-icon">📖</span>
+      <span>No entries yet. Be the first to sign!</span>
+    </div>
+  </div>
+
+  <!-- Compose new entry -->
+  <div class="wall-compose">
+    <div class="wall-compose-fields">
+      <input
+        type="text"
+        class="wall-input wall-input-name"
+        id="wall-name"
+        placeholder="Your name / handle"
+        maxlength="32"
+        autocomplete="off"
+        spellcheck="false"
+      >
+      <span class="wall-char-count" id="wall-msg-count">0/280</span>
+    </div>
+    <textarea
+      class="wall-input wall-input-msg"
+      id="wall-msg"
+      placeholder="Leave a message..."
+      maxlength="280"
+      rows="3"
+      spellcheck="true"
+    ></textarea>
+    <div class="wall-compose-footer">
+      <span class="wall-compose-hint">vskid guestbook</span>
+      <button class="wall-post-btn" id="wall-post-btn">Post ↵</button>
+    </div>
+  </div>
+
+  <!-- Owner password modal (hidden by default) -->
+  <div class="wall-modal hidden" id="wall-owner-modal">
+    <div class="wall-modal-box">
+      <div class="wall-modal-title">Owner Access</div>
+      <input
+        type="password"
+        class="wall-input wall-modal-input"
+        id="wall-owner-pw"
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+      <div class="wall-modal-btns">
+        <button class="wall-modal-cancel" id="wall-modal-cancel">Cancel</button>
+        <button class="wall-modal-submit" id="wall-modal-submit">Unlock</button>
+      </div>
+      <div class="wall-modal-err hidden" id="wall-modal-err">Wrong password</div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,47 @@
+<!--
+  apps/vviewer/vviewer.html
+  Vviewer image viewer window ; injected by vviewer.js on init.
+-->
+<div class="window hidden" id="vviewer-window">
+
+  <div class="title-bar vv-title-bar">
+    <div class="title-text">
+      <span class="title-icon">🖼️</span>
+      Vviewer
+    </div>
+    <div class="window-controls">
+      <button class="minimize-btn" title="Minimize">_</button>
+      <button class="close-btn"   title="Close">×</button>
+    </div>
+  </div>
+
+  <div class="vv-body">
+
+    <!-- Image viewport ; mouse wheel zooms, drag pans when zoomed -->
+    <div id="vv-viewport" data-empty="NO IMAGE LOADED">
+      <img id="vv-img" src="" alt="" draggable="false">
+    </div>
+
+    <!-- Controls bar: ← title : | zoom controls -->
+    <div class="vv-controls">
+      <div class="vv-nav">
+        <button class="vv-nav-btn" id="vv-prev" title="Previous">◀</button>
+        <span id="vv-title">—</span>
+        <button class="vv-nav-btn" id="vv-next" title="Next">▶</button>
+        <span id="vv-counter"></span>
+      </div>
+      <div class="vv-zoom">
+        <button class="vv-zoom-btn" id="vv-zoom-out" title="Zoom out">−</button>
+        <button class="vv-zoom-btn" id="vv-fit"      title="Fit to window">⊡</button>
+        <button class="vv-zoom-btn" id="vv-zoom-in"  title="Zoom in">+</button>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="vv-statusbar">
+      <span class="vv-status-dot"></span>
+      <span id="vv-status">Ready</span>
+    </div>
+
+  </div>
+</div>

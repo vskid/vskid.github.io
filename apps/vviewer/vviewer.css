@@ -1,0 +1,236 @@
+/* ============================================================
+   apps/vviewer/vviewer.css
+   Vviewer ; image viewer, dark Winamp skin with Aero details.
+   ============================================================ */
+
+/* Window frame ; wide, tall, centered */
+#vviewer-window {
+    width: 680px;
+    height: 560px;
+    min-height: unset;
+    max-height: unset;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    /* NOTE: no display property here ; .window in desktop.css sets display:flex.
+       An ID selector beats a class selector, so declaring display:flex here would
+       override .window.hidden { display:none } and make the window always visible. */
+    flex-direction: column;
+    background: transparent;
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* High-specificity override so .hidden and .minimized always win */
+#vviewer-window.hidden,
+#vviewer-window.minimized {
+    display: none;
+}
+
+/* Title bar ; dark, orange glow like vMedia */
+.vv-title-bar {
+    background: linear-gradient(to bottom,
+        rgba(55, 35, 10, 0.97) 0%,
+        rgba(30, 18, 5, 0.99) 100%);
+    border-bottom: 1px solid rgba(255, 140, 20, 0.25);
+}
+
+.vv-title-bar .title-text {
+    color: #ffa820;
+    text-shadow: 0 0 10px rgba(255, 140, 0, 0.7);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+}
+
+/* Body ; dark container for viewport + controls */
+.vv-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(160deg,
+        rgba(8, 8, 15, 0.99) 0%,
+        rgba(5, 5, 12, 1) 100%);
+    overflow: hidden;
+}
+
+/* Viewport ; image display area, fills available space */
+#vv-viewport {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#vv-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transform-origin: center center;
+    transition: opacity 0.15s ease, transform 0.05s linear;
+    opacity: 1;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+    /* Checkerboard reveals transparency in PNGs/SVGs.
+       White + light-grey squares, classic Photoshop style. */
+    background-color: #fff;
+    background-image:
+        linear-gradient(45deg, #ccc 25%, transparent 25%),
+        linear-gradient(-45deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(-45deg, transparent 75%, #ccc 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
+
+/* Error placeholder: suppress checkerboard, show dark bg instead */
+#vv-img[data-error] {
+    background: rgba(40, 10, 10, 0.85);
+    background-image: none;
+}
+
+/* Empty state placeholder */
+#vv-viewport::before {
+    content: attr(data-empty);
+    position: absolute;
+    color: rgba(255, 140, 0, 0.2);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+/* Controls bar */
+.vv-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    gap: 8px;
+}
+
+.vv-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.vv-nav-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 140, 0, 0.3);
+    background: linear-gradient(145deg,
+        rgba(80, 50, 10, 0.5),
+        rgba(40, 25, 5, 0.7));
+    color: #ffb347;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.vv-nav-btn:hover:not(:disabled) {
+    background: linear-gradient(145deg,
+        rgba(120, 75, 15, 0.6),
+        rgba(70, 40, 8, 0.8));
+    color: #ffd080;
+    box-shadow: 0 0 8px rgba(255, 140, 0, 0.35);
+}
+
+.vv-nav-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+}
+
+#vv-title {
+    flex: 1;
+    font-size: 0.82rem;
+    color: #ffe0a0;
+    text-shadow: 0 0 6px rgba(255, 160, 40, 0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+#vv-counter {
+    font-size: 0.72rem;
+    color: rgba(255, 140, 0, 0.5);
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+}
+
+.vv-zoom {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.vv-zoom-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 140, 0, 0.25);
+    background: rgba(40, 25, 5, 0.6);
+    color: rgba(255, 180, 80, 0.8);
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+}
+
+.vv-zoom-btn:hover {
+    background: rgba(80, 50, 10, 0.7);
+    color: #ffd080;
+    box-shadow: 0 0 6px rgba(255, 120, 0, 0.3);
+}
+
+/* Status bar */
+.vv-statusbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 12px 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.vv-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3aff8a;
+    box-shadow: 0 0 5px rgba(58, 255, 138, 0.6);
+    flex-shrink: 0;
+    transition: background 0.25s, box-shadow 0.25s;
+}
+
+.vv-status-dot.vv-dot-error {
+    background: #ff8c00;
+    box-shadow: 0 0 6px rgba(255, 140, 0, 0.75);
+}
+
+#vv-status {
+    font-size: 0.7rem;
+    color: rgba(140, 180, 220, 0.55);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}

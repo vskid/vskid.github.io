@@ -1,0 +1,483 @@
+/* ============================================================
+   apps/vdoc/vdoc.css — vDoc blog/document viewer
+   Paper document aesthetic: white sheet, dark navy sidebar,
+   clean readable typography. Word-ish chrome, blog content.
+   ============================================================ */
+
+/* ── Window ──────────────────────────────────────────────── */
+
+#vdoc-window {
+    width: 720px;
+    height: 560px;
+    min-height: unset;
+    max-height: unset;
+    top: 8%;
+    left: calc(50% - 360px);
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    overflow: hidden;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 4px 16px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+#vdoc-window.hidden,
+#vdoc-window.minimized { display: none; }
+
+/* ── Title bar — standard Aqua from desktop.css ─────────── */
+/* No override; .title-bar in desktop.css handles this.      */
+
+/* ── Toolbar strip ───────────────────────────────────────── */
+
+.vdoc-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 12px;
+    background: #e8edf5;
+    border-bottom: 1px solid #c4cfe0;
+    flex-shrink: 0;
+    min-height: 32px;
+}
+
+.vdoc-toolbar-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1a2e50;
+    font-family: Georgia, serif;
+    letter-spacing: 0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 300px;
+}
+
+.vdoc-toolbar-spacer { flex: 1; }
+
+.vdoc-toolbar-date {
+    font-size: 0.68rem;
+    color: #6b82a0;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.04em;
+}
+
+.vdoc-owner-btn {
+    background: rgba(26, 46, 80, 0.08);
+    border: 1px solid rgba(26, 46, 80, 0.2);
+    border-radius: 3px;
+    color: #1a2e50;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+}
+
+.vdoc-owner-btn:hover {
+    background: rgba(26, 46, 80, 0.14);
+}
+
+.vdoc-owner-btn.unlocked {
+    background: #1a2e50;
+    border-color: #1a2e50;
+    color: #c8deff;
+}
+
+/* ── Body layout: sidebar + document ────────────────────── */
+
+.vdoc-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    background: #d0d8e8;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+
+.vdoc-sidebar {
+    width: 190px;
+    flex-shrink: 0;
+    background: linear-gradient(to bottom, #1a2e50, #122240);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.vdoc-sidebar-header {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(200, 222, 255, 0.4);
+    padding: 10px 14px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    flex-shrink: 0;
+    font-family: Georgia, serif;
+}
+
+.vdoc-post-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200, 222, 255, 0.15) transparent;
+}
+
+.vdoc-post-list::-webkit-scrollbar { width: 4px; }
+.vdoc-post-list::-webkit-scrollbar-thumb {
+    background: rgba(200, 222, 255, 0.15);
+    border-radius: 2px;
+}
+
+/* Post list item */
+.vdoc-post-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all 0.12s;
+}
+
+.vdoc-post-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-left-color: rgba(200, 222, 255, 0.3);
+}
+
+.vdoc-post-item.active {
+    background: rgba(255, 255, 255, 0.1);
+    border-left-color: #6b9eff;
+}
+
+.vdoc-post-item-title {
+    font-size: 0.8rem;
+    color: rgba(200, 222, 255, 0.85);
+    font-family: Georgia, serif;
+    line-height: 1.35;
+    margin-bottom: 3px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.vdoc-post-item.active .vdoc-post-item-title {
+    color: #c8deff;
+}
+
+.vdoc-post-item-date {
+    font-size: 0.6rem;
+    color: rgba(160, 190, 235, 0.4);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.04em;
+}
+
+/* ── Document wrap (grey "desk" behind paper) ────────────── */
+
+.vdoc-document-wrap {
+    flex: 1;
+    overflow-y: auto;
+    background: #d0d8e8;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    /* align-items: center would cap the paper's height at the wrap height.
+       Use flex-start + margin:auto on the child instead so the paper can
+       grow as tall as its content while staying horizontally centered. */
+    align-items: flex-start;
+    scrollbar-width: thin;
+    scrollbar-color: #aab8cc #d0d8e8;
+}
+
+.vdoc-document-wrap::-webkit-scrollbar { width: 6px; }
+.vdoc-document-wrap::-webkit-scrollbar-thumb {
+    background: #aab8cc;
+    border-radius: 3px;
+}
+
+.vdoc-document {
+    width: clamp(280px, 95%, 680px);
+    /* No min-height: 100% — that fights flex layout and caps the paper.
+       The paper is naturally as tall as its content. The wrap scrolls. */
+    margin: 0 auto; /* horizontal centering now that wrap uses align-items:flex-start */
+    background: #ffffff;
+    box-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.18),
+        0 0 0 1px rgba(0, 0, 0, 0.06);
+    padding: clamp(20px, 5%, 48px) clamp(16px, 6%, 52px);
+    box-sizing: border-box;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 0.92rem;
+    color: #1a1208;
+    line-height: 1.75;
+}
+
+/* Images inside posts scale to fit the paper column */
+.vdoc-doc-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 3px;
+    margin: 1em 0;
+}
+
+/* ── Document content typography ─────────────────────────── */
+
+.vdoc-doc-header {
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #1a2e50;
+}
+
+.vdoc-doc-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a2e50;
+    line-height: 1.25;
+    margin-bottom: 8px;
+    font-family: Georgia, serif;
+}
+
+.vdoc-doc-meta {
+    font-size: 0.72rem;
+    color: #7a8a9a;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.vdoc-doc-body {
+    /* Rendered HTML content from config */
+}
+
+.vdoc-doc-body p {
+    margin: 0 0 1em 0;
+}
+
+.vdoc-doc-body h2 {
+    font-size: 1.1rem;
+    color: #1a2e50;
+    margin: 1.5em 0 0.5em;
+    font-weight: 700;
+}
+
+.vdoc-doc-body h3 {
+    font-size: 0.95rem;
+    color: #1a2e50;
+    margin: 1.2em 0 0.4em;
+    font-weight: 700;
+}
+
+.vdoc-doc-body a {
+    color: #2a5298;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.vdoc-doc-body a:hover { color: #1a3a70; }
+
+.vdoc-doc-body blockquote {
+    border-left: 3px solid #c4cfe0;
+    margin: 1em 0;
+    padding: 4px 0 4px 16px;
+    color: #4a5a6a;
+    font-style: italic;
+}
+
+.vdoc-doc-body code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    background: #f0f4f8;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #1a2e50;
+}
+
+.vdoc-doc-body hr {
+    border: none;
+    border-top: 1px solid #c4cfe0;
+    margin: 1.5em 0;
+}
+
+/* Placeholder when no post is selected */
+.vdoc-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: #a0b0c0;
+    font-style: italic;
+    font-size: 0.88rem;
+    padding: 60px 0;
+    text-align: center;
+}
+
+.vdoc-placeholder span:first-child { font-size: 2.4rem; font-style: normal; opacity: 0.4; }
+
+/* ── Owner modal ─────────────────────────────────────────── */
+
+.vdoc-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 15, 30, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(2px);
+}
+
+.vdoc-modal.hidden { display: none; }
+
+.vdoc-modal-box {
+    background: #ffffff;
+    border: 2px solid #1a2e50;
+    border-radius: 4px;
+    padding: 22px 26px;
+    width: 250px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.vdoc-modal-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1a2e50;
+    font-family: Georgia, serif;
+}
+
+.vdoc-modal-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #f0f4f8;
+    border: 1px solid #c4cfe0;
+    border-bottom: 2px solid #1a2e50;
+    border-radius: 2px 2px 0 0;
+    color: #1a1208;
+    font-family: Georgia, serif;
+    font-size: 0.85rem;
+    padding: 6px 9px;
+    outline: none;
+}
+
+.vdoc-modal-input:focus { border-bottom-color: #2a5298; }
+
+.vdoc-modal-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.vdoc-modal-cancel,
+.vdoc-modal-submit {
+    padding: 5px 14px;
+    border-radius: 3px;
+    font-size: 0.77rem;
+    font-weight: 600;
+    font-family: Georgia, serif;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+
+.vdoc-modal-cancel {
+    background: transparent;
+    border: 1px solid #c4cfe0;
+    color: #4a5a6a;
+}
+
+.vdoc-modal-cancel:hover { background: #f0f4f8; }
+
+.vdoc-modal-submit {
+    background: #1a2e50;
+    border: 2px solid #1a2e50;
+    color: #c8deff;
+}
+
+.vdoc-modal-submit:hover { background: #122240; }
+
+.vdoc-modal-err {
+    font-size: 0.7rem;
+    color: #8b1a1a;
+    font-style: italic;
+    font-family: Georgia, serif;
+    text-align: center;
+    margin-top: -4px;
+}
+
+.vdoc-modal-err.hidden { display: none; }
+/* ── Sidebar toggle button ───────────────────────────────── */
+
+.vdoc-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vdoc-sidebar-toggle {
+    background: transparent;
+    border: 1px solid rgba(200, 222, 255, 0.15);
+    border-radius: 3px;
+    color: rgba(200, 222, 255, 0.5);
+    font-size: 1rem;
+    line-height: 1;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    padding: 0;
+}
+
+.vdoc-sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(200, 222, 255, 0.9);
+    border-color: rgba(200, 222, 255, 0.35);
+}
+
+/* ── Collapsed sidebar ───────────────────────────────────── */
+
+.vdoc-sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    border-right: none;
+}
+
+/* Keep the toggle button visible even when sidebar collapses —
+   it floats at the left edge of the document area */
+.vdoc-sidebar.collapsed .vdoc-sidebar-header {
+    position: absolute;
+    left: 0;
+    top: 36px; /* below toolbar */
+    z-index: 10;
+    padding: 4px;
+    background: linear-gradient(to bottom, #1a2e50, #122240);
+    border-radius: 0 4px 4px 0;
+    border: 1px solid rgba(200, 222, 255, 0.15);
+    border-left: none;
+}
+
+.vdoc-sidebar.collapsed .vdoc-sidebar-header .vdoc-sidebar-header-label {
+    display: none;
+}
+
+.vdoc-sidebar.collapsed .vdoc-post-list {
+    display: none;
+}
+
+/* Transition */
+.vdoc-sidebar {
+    transition: width 0.2s ease;
+    position: relative;
+}

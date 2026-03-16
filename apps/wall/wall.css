@@ -1,0 +1,476 @@
+/* ============================================================
+   apps/wall/wall.css — The Wall guestbook
+   Light theme: cream paper, ink text, ruled lines, warm accents.
+   Looks like an actual guestbook sitting on the dark desktop.
+   ============================================================ */
+
+#wall-window {
+    width: 500px;
+    height: 600px;
+    min-height: unset;
+    max-height: unset;
+    top: 5%;
+    left: calc(50% + 60px);
+    transform: none;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    overflow: hidden;
+    /* Soft drop shadow — paper sitting on desk */
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 4px 16px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+#wall-window.hidden,
+#wall-window.minimized { display: none; }
+
+/* ── Title bar — standard Aqua from desktop.css ─────────── */
+/* No override; .title-bar in desktop.css handles this.      */
+
+/* ── Sub-toolbar — like the top of a form page ───────────── */
+
+.wall-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 14px;
+    background: #d4b896;
+    border-bottom: 1px solid #b8956e;
+    flex-shrink: 0;
+}
+
+.wall-count {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #5a3e28;
+    font-weight: 700;
+    font-family: Georgia, serif;
+}
+
+.wall-toolbar-right { display: flex; align-items: center; gap: 6px; }
+
+.wall-owner-btn {
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(90, 62, 40, 0.3);
+    border-radius: 3px;
+    color: #5a3e28;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.wall-owner-btn:hover {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(90, 62, 40, 0.5);
+}
+
+.wall-owner-btn.unlocked {
+    background: #1e3a5f;
+    border-color: #1e3a5f;
+    color: #f5e6c8;
+}
+
+/* ── Entries — the book pages ────────────────────────────── */
+
+.wall-entries {
+    flex: 1;
+    overflow-y: auto;
+    /* Cream paper background with very subtle texture via gradient */
+    background:
+        repeating-linear-gradient(
+            transparent,
+            transparent 27px,
+            rgba(180, 140, 100, 0.12) 27px,
+            rgba(180, 140, 100, 0.12) 28px
+        ),
+        linear-gradient(to bottom, #fdf6ec, #f8eed8);
+    padding: 14px 18px 10px 52px; /* left padding leaves room for margin line */
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: #c8a882 #f0e4cc;
+}
+
+.wall-entries::-webkit-scrollbar { width: 6px; }
+.wall-entries::-webkit-scrollbar-track { background: #f0e4cc; }
+.wall-entries::-webkit-scrollbar-thumb {
+    background: #c8a882;
+    border-radius: 3px;
+}
+
+/* Red margin line — classic notebook */
+.wall-entries::before {
+    content: '';
+    position: absolute;
+    left: 38px;
+    top: 0;
+    bottom: 0;
+    width: 1.5px;
+    background: rgba(200, 80, 60, 0.35);
+    pointer-events: none;
+}
+
+/* Empty state */
+.wall-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #b89878;
+    font-size: 0.88rem;
+    font-family: Georgia, serif;
+    font-style: italic;
+    padding: 50px 0;
+    text-align: center;
+    flex: 1;
+}
+
+.wall-empty-icon {
+    font-size: 2.2rem;
+    opacity: 0.45;
+    font-style: normal;
+}
+
+/* ── Individual entry ────────────────────────────────────── */
+
+.wall-entry {
+    padding: 10px 4px 10px 0;
+    border-bottom: 1px solid rgba(180, 140, 100, 0.2);
+    position: relative;
+    animation: entrySlideIn 0.2s ease-out;
+}
+
+.wall-entry:last-of-type { border-bottom: none; }
+
+@keyframes entrySlideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Pinned: blue ink underline accent */
+.wall-entry.pinned {
+    background: rgba(30, 58, 95, 0.04);
+    border-radius: 2px;
+}
+
+/* Pin badge */
+.wall-pin-badge {
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1e3a5f;
+    font-weight: 700;
+    font-family: Georgia, serif;
+    margin-left: 6px;
+    opacity: 0.7;
+}
+
+/* Entry header */
+.wall-entry-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+/* Name — written in blue ink */
+.wall-entry-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    font-family: Georgia, serif;
+    color: #1e3a5f;
+    letter-spacing: 0.01em;
+}
+
+.wall-entry.pinned .wall-entry-name {
+    color: #8b1a1a;
+}
+
+/* Thin rule */
+.wall-entry-rule {
+    flex: 1;
+    height: 1px;
+    background: rgba(180, 140, 100, 0.25);
+}
+
+/* Timestamp — faded, like a date written in pencil */
+.wall-entry-time {
+    font-size: 0.65rem;
+    color: #a08060;
+    font-variant-numeric: tabular-nums;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.03em;
+}
+
+/* Message body — natural handwritten feel */
+.wall-entry-msg {
+    font-size: 0.87rem;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #2a1f14;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* Owner action buttons — appear inline below message */
+.wall-entry-actions {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.owner-unlocked .wall-entry-actions { display: flex; }
+
+.wall-action-btn {
+    background: rgba(30, 58, 95, 0.07);
+    border: 1px solid rgba(30, 58, 95, 0.2);
+    border-radius: 3px;
+    color: #1e3a5f;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.12s;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-family: Georgia, serif;
+}
+
+.wall-action-btn:hover {
+    background: rgba(30, 58, 95, 0.14);
+    border-color: rgba(30, 58, 95, 0.4);
+}
+
+.wall-action-btn.delete-btn:hover {
+    background: rgba(139, 26, 26, 0.08);
+    border-color: rgba(139, 26, 26, 0.35);
+    color: #8b1a1a;
+}
+
+.wall-action-btn.pin-btn.active {
+    background: rgba(30, 58, 95, 0.12);
+    border-color: #1e3a5f;
+    color: #1e3a5f;
+}
+
+/* ── Compose — "Sign the Guestbook" section ──────────────── */
+
+.wall-compose {
+    flex-shrink: 0;
+    background: linear-gradient(to bottom, #e8d5b8, #dfc9a5);
+    border-top: 2px solid #b8956e;
+    padding: 10px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+/* "Sign the Guestbook" header */
+.wall-compose::before {
+    content: '✒  Sign the Guestbook';
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5a3e28;
+    font-family: Georgia, serif;
+    margin-bottom: 2px;
+}
+
+.wall-compose-fields {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wall-char-count {
+    font-size: 0.62rem;
+    color: #8a6a4a;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.2s;
+    font-family: 'Courier New', monospace;
+}
+
+.wall-char-count.warn { color: #8b1a1a; font-weight: 700; }
+
+/* Input fields — look like paper form fields */
+.wall-input {
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    border-bottom: 2px solid #b8956e;
+    border-radius: 2px 2px 0 0;
+    color: #1a1008;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 0.85rem;
+    padding: 5px 8px;
+    outline: none;
+    resize: none;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.wall-input::placeholder {
+    color: #b8956e;
+    font-style: italic;
+}
+
+.wall-input:focus {
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom-color: #1e3a5f;
+}
+
+.wall-input-name { flex: 1; }
+
+.wall-input-msg {
+    line-height: 1.65;
+    min-height: 60px;
+}
+
+.wall-compose-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.wall-compose-hint {
+    font-size: 0.62rem;
+    color: #8a6a4a;
+    font-style: italic;
+    font-family: Georgia, serif;
+}
+
+/* Post button — looks like a rubber stamp / form submit */
+.wall-post-btn {
+    padding: 5px 18px;
+    border-radius: 3px;
+    border: 2px solid #1e3a5f;
+    background: #1e3a5f;
+    color: #f5e6c8;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: Georgia, serif;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.wall-post-btn:hover {
+    background: #162e4d;
+    border-color: #162e4d;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.wall-post-btn:active { transform: translateY(1px); }
+
+.wall-post-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* ── Owner password modal ────────────────────────────────── */
+
+.wall-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 10, 5, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(2px);
+}
+
+.wall-modal.hidden { display: none; }
+
+.wall-modal-box {
+    background: linear-gradient(to bottom, #fdf6ec, #f5e8d0);
+    border: 2px solid #1e3a5f;
+    border-radius: 4px;
+    padding: 22px 26px;
+    width: 250px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.wall-modal-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #1e3a5f;
+    font-family: Georgia, serif;
+}
+
+.wall-modal-input { width: 100%; box-sizing: border-box; }
+
+.wall-modal-btns {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.wall-modal-cancel,
+.wall-modal-submit {
+    padding: 5px 14px;
+    border-radius: 3px;
+    font-size: 0.77rem;
+    font-weight: 600;
+    font-family: Georgia, serif;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+
+.wall-modal-cancel {
+    background: transparent;
+    border: 1px solid #b8956e;
+    color: #5a3e28;
+}
+
+.wall-modal-cancel:hover {
+    background: rgba(180, 140, 100, 0.15);
+}
+
+.wall-modal-submit {
+    background: #1e3a5f;
+    border: 2px solid #1e3a5f;
+    color: #f5e6c8;
+}
+
+.wall-modal-submit:hover { background: #162e4d; }
+
+.wall-modal-err {
+    font-size: 0.7rem;
+    color: #8b1a1a;
+    font-style: italic;
+    font-family: Georgia, serif;
+    text-align: center;
+    margin-top: -4px;
+}
+
+.wall-modal-err.hidden { display: none; }
+
+/* ── Flash on new post ───────────────────────────────────── */
+
+@keyframes entryFlash {
+    0%   { background: rgba(200, 144, 42, 0.2); }
+    100% { background: transparent; }
+}
+
+.wall-entry.flash {
+    animation: entrySlideIn 0.2s ease-out,
+               entryFlash 1s ease-out 0.1s;
+}
