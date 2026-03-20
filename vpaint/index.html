@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vPaint</title>
+  <link rel="stylesheet" href="vpaint.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- Title bar -->
+  <div id="titlebar">
+    <div class="traffic-lights">
+      <button class="tl-btn tl-close" id="tl-close" title="Close">✕</button>
+      <button class="tl-btn tl-min"   id="tl-min"   title="Minimize">−</button>
+      <button class="tl-btn tl-max"   id="tl-max"   title="Maximize">+</button>
+    </div>
+    <div id="title-text"><span>🎨</span> vPaint</div>
+  </div>
+
+  <!-- Menu bar -->
+  <div id="menubar">
+    <div class="menu-item" data-menu="file">FILE</div>
+    <div class="menu-item" data-menu="edit">EDIT</div>
+    <div class="menu-item" data-menu="image">IMAGE</div>
+    <div class="menu-item" data-menu="gallery-menu">GALLERY</div>
+  </div>
+
+  <!-- Tab strip -->
+  <div id="tabstrip">
+    <button class="tab active" data-tab="paint">PAINT</button>
+    <button class="tab"        data-tab="gallery">GALLERY</button>
+    <button class="tab hidden" id="tab-admin" data-tab="admin">ADMIN</button>
+    <div style="flex:1"></div>
+    <button id="lockbtn" title="Owner login">🔒</button>
+  </div>
+
+  <!-- ══ PAINT PANEL ══════════════════════════════════════════ -->
+  <div class="panel" id="panel-paint">
+
+    <!-- Ribbon -->
+    <div id="ribbon">
+
+      <!-- Tools group -->
+      <div class="rg">
+        <div class="rg-body">
+          <div class="toolsgrid">
+            <button class="tool"        data-tool="select-rect"  title="Select (S)">⬚</button>
+            <button class="tool"        data-tool="select-lasso" title="Free Select (L)">⌖</button>
+            <button class="tool"        data-tool="pencil"       title="Pencil (P)">✏️</button>
+            <button class="tool"        data-tool="brush"        title="Brush (B)">🖌️</button>
+            <button class="tool"        data-tool="airbrush"     title="Airbrush (A)">💨</button>
+            <button class="tool"        data-tool="fill"         title="Fill (F)">🪣</button>
+            <button class="tool"        data-tool="text"         title="Text (T)"><b>A</b></button>
+            <button class="tool"        data-tool="eraser"       title="Eraser (E)">⌫</button>
+            <button class="tool"        data-tool="picker"       title="Pick colour (I)">💉</button>
+            <button class="tool"        data-tool="zoom"         title="Zoom (Z)">🔍</button>
+            <button class="tool"        data-tool="line"         title="Line">╱</button>
+            <button class="tool"        data-tool="curve"        title="Curve (C)">〜</button>
+            <button class="tool"        data-tool="rect"         title="Rectangle (R)">▭</button>
+            <button class="tool"        data-tool="roundrect"    title="Rounded rect">▢</button>
+            <button class="tool active" data-tool="ellipse"      title="Ellipse (O)">◯</button>
+            <button class="tool"        data-tool="triangle"     title="Triangle">△</button>
+            <button class="tool"        data-tool="polygon"      title="Polygon (G)">⬠</button>
+          </div>
+        </div>
+        <div class="rg-lbl">TOOLS</div>
+      </div>
+      <div class="rsep"></div>
+
+      <!-- Size group -->
+      <div class="rg">
+        <div class="rg-body">
+          <div class="sizecol">
+            <button class="szbtn active" data-size="1"  title="1px"><span class="szline" style="height:1px"></span></button>
+            <button class="szbtn"        data-size="3"  title="3px"><span class="szline" style="height:3px"></span></button>
+            <button class="szbtn"        data-size="6"  title="6px"><span class="szline" style="height:6px"></span></button>
+            <button class="szbtn"        data-size="12" title="12px"><span class="szline" style="height:9px"></span></button>
+          </div>
+        </div>
+        <div class="rg-lbl">SIZE</div>
+      </div>
+      <div class="rsep"></div>
+
+      <!-- Style group -->
+      <div class="rg">
+        <div class="rg-body">
+          <div class="col2">
+            <select class="drop drop-med" id="outline-style" title="Outline">
+              <option value="solid">─ SOLID</option>
+              <option value="dash">- DASH</option>
+              <option value="none">NONE</option>
+            </select>
+            <select class="drop drop-med" id="fill-style" title="Fill">
+              <option value="none">NO FILL</option>
+              <option value="fg">FG</option>
+              <option value="bg">BG</option>
+            </select>
+          </div>
+        </div>
+        <div class="rg-lbl">STYLE</div>
+      </div>
+      <div class="rsep"></div>
+
+      <!-- Selection ops — shown when select tool active -->
+      <div class="rg" id="rg-sel-ops">
+        <div class="rg-body">
+          <div class="col2">
+            <button class="btn-sm" id="sel-rot-ccw" title="Rotate selection −15°">↺15°</button>
+            <button class="btn-sm" id="sel-rot-cw"  title="Rotate selection +15°">↻15°</button>
+          </div>
+          <div class="col2">
+            <button class="btn-sm" id="sel-fliph"   title="Flip H">⇆</button>
+            <button class="btn-sm" id="sel-flipv"   title="Flip V">⇅</button>
+          </div>
+          <div class="col2">
+            <button class="btn-sm" id="sel-invert"  title="Invert colours">⊠</button>
+            <label class="chklbl"><input type="checkbox" id="sel-transparent"> TRANSP</label>
+          </div>
+        </div>
+        <div class="rg-lbl">SELECTION</div>
+      </div>
+
+      <!-- Text ops — shown when text tool active -->
+      <div class="rg" id="rg-text-ops">
+        <div class="rg-body" style="gap:4px">
+          <select class="drop drop-wide" id="text-font" title="Font family"></select>
+          <input  class="numfield" id="text-size" type="number" value="16" min="6" max="200" title="Font size">
+          <div class="col2">
+            <button class="btn-sm" id="text-bold"   title="Bold"><b>B</b></button>
+            <button class="btn-sm" id="text-italic" title="Italic"><i>I</i></button>
+          </div>
+        </div>
+        <div class="rg-lbl">TEXT</div>
+      </div>
+
+      <!-- Zoom ops — shown when zoom tool active -->
+      <div class="rg" id="rg-zoom-ops">
+        <div class="rg-body">
+          <div class="col2">
+            <button class="btn-sm" id="zoom-in-btn"  title="Zoom in">+ IN</button>
+            <button class="btn-sm" id="zoom-out-btn" title="Zoom out">− OUT</button>
+          </div>
+          <button class="btn-sm" id="zoom-reset-btn" title="Reset zoom">1:1</button>
+        </div>
+        <div class="rg-lbl">ZOOM</div>
+      </div>
+
+      <!-- Curve ops — shown when curve tool active -->
+      <div class="rg" id="rg-curve-ops">
+        <div class="rg-body">
+          <button class="btn-sm" id="curve-commit" title="Bake curve (Enter)">✓ BAKE</button>
+          <button class="btn-sm" id="curve-cancel" title="Cancel (Escape)">✕ CANCEL</button>
+        </div>
+        <div class="rg-lbl">CURVE</div>
+      </div>
+
+      <div style="flex:1"></div>
+      <div class="rsep"></div>
+
+      <!-- Actions group -->
+      <div class="rg">
+        <div class="rg-body">
+          <div class="col2">
+            <button class="btn-sm" id="btn-undo"  title="Undo (Ctrl+Z)">↩ UNDO</button>
+            <button class="btn-sm" id="btn-redo"  title="Redo (Ctrl+Y)">↪ REDO</button>
+          </div>
+          <div class="col2">
+            <button class="btn-sm" id="btn-save"  title="Save PNG">💾 SAVE</button>
+            <button class="btn-sm" id="btn-clear" title="Clear canvas">🗑 CLEAR</button>
+          </div>
+        </div>
+        <div class="rg-lbl">ACTIONS</div>
+      </div>
+
+    </div><!-- /ribbon -->
+
+    <!-- Colour bar -->
+    <div id="colbar">
+      <div class="swatches" title="Click FG swatch to swap FG/BG | Right-click palette = set BG">
+        <div class="sw-bg" id="sw-bg"></div>
+        <div class="sw-fg" id="sw-fg"></div>
+      </div>
+      <div id="palette"></div>
+    </div>
+
+    <!-- Canvas area -->
+    <div id="canvas-area">
+      <div id="canvas-wrap">
+        <canvas id="main-canvas"></canvas>
+        <canvas id="overlay-canvas"></canvas>
+        <!-- Selection handles injected by JS -->
+        <!-- Canvas resize handles injected by JS -->
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div id="statusbar">
+      <span id="s-tool">Ellipse</span>
+      <span id="s-pos">0, 0</span>
+      <span id="s-dim">640 × 480</span>
+      <span id="s-sel"></span>
+      <span id="s-zoom">100%</span>
+      <span id="s-snap" style="display:none"></span>
+    </div>
+
+  </div><!-- /panel-paint -->
+
+  <!-- ══ GALLERY PANEL ════════════════════════════════════════ -->
+  <div class="panel hidden" id="panel-gallery">
+    <div class="gallbar">
+      <span class="galltitle">// COMMUNITY GALLERY</span>
+      <span class="gallcount" id="gallery-count"></span>
+      <div style="flex:1"></div>
+      <button class="btn-sm" id="gallery-refresh">↻ REFRESH</button>
+    </div>
+    <div class="gallgrid" id="gallery-grid">
+      <p class="gridmsg" id="gallery-msg">LOADING…</p>
+    </div>
+  </div>
+
+  <!-- ══ ADMIN PANEL ══════════════════════════════════════════ -->
+  <div class="panel hidden" id="panel-admin">
+    <div class="gallbar">
+      <span class="galltitle">// ADMIN</span>
+      <div style="flex:1"></div>
+      <button class="btn-sm" id="admin-refresh">↻ REFRESH</button>
+    </div>
+    <div class="gallgrid" id="admin-grid">
+      <p class="gridmsg">LOADING…</p>
+    </div>
+  </div>
+
+  <!-- ══ DIALOGS ══════════════════════════════════════════════ -->
+
+  <!-- Canvas Attributes / Resize -->
+  <div class="overlay hidden" id="dlg-attributes">
+    <div class="dlg" style="width:300px">
+      <div class="dlg-title">// IMAGE ATTRIBUTES</div>
+      <div class="dlg-body">
+        <div class="dlg-sec">CANVAS SIZE</div>
+        <div class="dlg-row">
+          <label>Width <input  class="dlg-input dlg-num" id="attr-w" type="number" min="1" max="9999"></label>
+          <label>Height <input class="dlg-input dlg-num" id="attr-h" type="number" min="1" max="9999"></label>
+          <label><input type="checkbox" id="attr-lock" checked> Lock ratio</label>
+        </div>
+        <div class="dlg-sec">RESIZE / SKEW</div>
+        <div class="dlg-row">
+          <label><input type="radio" name="resize-unit" value="pct" checked> %</label>
+          <label><input type="radio" name="resize-unit" value="px"> PX</label>
+        </div>
+        <div class="dlg-row">
+          <label>W <input class="dlg-input dlg-num" id="rs-w" type="number" value="100" min="1" max="9999"></label>
+          <label>H <input class="dlg-input dlg-num" id="rs-h" type="number" value="100" min="1" max="9999"></label>
+          <label><input type="checkbox" id="rs-maintain" checked> Lock</label>
+        </div>
+        <div class="dlg-sec">SKEW (DEG)</div>
+        <div class="dlg-row">
+          <label>H <input class="dlg-input dlg-num" id="skew-h" type="number" value="0" min="-89" max="89"></label>
+          <label>V <input class="dlg-input dlg-num" id="skew-v" type="number" value="0" min="-89" max="89"></label>
+        </div>
+      </div>
+      <div class="dlg-btns">
+        <button id="attr-cancel">CANCEL</button>
+        <button id="attr-resize-ok" class="dlg-ok">RESIZE</button>
+        <button id="attr-canvas-ok" class="dlg-ok">SET CANVAS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post to Gallery -->
+  <div class="overlay hidden" id="dlg-post">
+    <div class="dlg" style="width:220px">
+      <div class="dlg-title">// POST TO GALLERY</div>
+      <div class="dlg-body">
+        <div class="dlg-row">
+          <label style="flex:1">Handle (optional)<br>
+            <input type="text" class="dlg-input" id="post-name" placeholder="anonymous" maxlength="32" style="width:100%;margin-top:3px">
+          </label>
+        </div>
+        <div class="dlg-err hidden" id="post-err"></div>
+      </div>
+      <div class="dlg-btns">
+        <button id="post-cancel">CANCEL</button>
+        <button id="post-submit" class="dlg-ok">TRANSMIT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Owner modal -->
+  <div class="overlay hidden" id="dlg-owner">
+    <div class="dlg" style="width:220px">
+      <div class="dlg-title">// OWNER ACCESS</div>
+      <div class="dlg-body">
+        <input type="password" class="dlg-input" id="owner-pw" placeholder="PASSPHRASE" style="width:100%">
+        <div class="dlg-err hidden" id="owner-err">ACCESS DENIED</div>
+      </div>
+      <div class="dlg-btns">
+        <button id="owner-cancel">CANCEL</button>
+        <button id="owner-submit" class="dlg-ok">UNLOCK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="hidden">
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden"></div>
+
+</div><!-- /app -->
+<script src="vpaint.js"></script>
+</body>
+</html>

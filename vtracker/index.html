@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vTracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+  <link rel="stylesheet" href="vtracker.css">
+</head>
+<body>
+<div id="app">
+
+  <div id="titlebar">
+    <div class="tl">
+      <button class="tl-btn tl-close" id="tl-close">✕</button>
+      <button class="tl-btn tl-min"   id="tl-min">−</button>
+      <button class="tl-btn tl-max"   id="tl-max">+</button>
+    </div>
+    <div id="title-text">vTracker</div>
+  </div>
+
+  <div id="topbar">
+
+    <!-- ORDER LIST -->
+    <div id="order-panel">
+      <div class="panel-label">Order
+        <div style="display:flex;gap:2px">
+          <button class="aq-nudge" id="ord-add">+</button>
+          <button class="aq-nudge" id="ord-del">−</button>
+          <button class="aq-nudge" id="ord-dup">D</button>
+        </div>
+      </div>
+      <div id="order-list"></div>
+    </div>
+
+    <!-- TRANSPORT + FIELDS -->
+    <div id="transport-panel">
+      <div class="transport-row">
+        <button class="aq-btn play" id="btn-play-song">▶ Song</button>
+        <button class="aq-btn play" id="btn-play-pat">▷ Patt</button>
+        <button class="aq-btn stop" id="btn-stop">■ Stop</button>
+        <button class="aq-btn"      id="btn-edit">Edit</button>
+      </div>
+      <div class="bpm-row">
+        <div class="field-grp">
+          <span class="field-lbl">BPM</span>
+          <button class="aq-nudge" id="bpm-dn">−</button>
+          <span class="aq-numval" id="bpm-val">125</span>
+          <button class="aq-nudge" id="bpm-up">+</button>
+        </div>
+        <div class="field-grp">
+          <span class="field-lbl">Spd</span>
+          <button class="aq-nudge" id="spd-dn">−</button>
+          <span class="aq-numval" id="spd-val">6</span>
+          <button class="aq-nudge" id="spd-up">+</button>
+        </div>
+        <div class="field-grp">
+          <span class="field-lbl">Oct</span>
+          <button class="aq-nudge" id="oct-dn">−</button>
+          <span class="aq-numval" id="oct-val">4</span>
+          <button class="aq-nudge" id="oct-up">+</button>
+        </div>
+        <div class="field-grp">
+          <span class="field-lbl">Add</span>
+          <button class="aq-nudge" id="add-dn">−</button>
+          <span class="aq-numval" id="add-val">1</span>
+          <button class="aq-nudge" id="add-up">+</button>
+        </div>
+      </div>
+      <div class="bpm-row">
+        <div class="field-grp">
+          <span class="field-lbl">Pat</span>
+          <button class="aq-nudge" id="pat-dn">−</button>
+          <span class="aq-numval" id="pat-val">00</span>
+          <button class="aq-nudge" id="pat-up">+</button>
+        </div>
+        <div class="field-grp">
+          <span class="field-lbl">Len</span>
+          <select class="aq-select" id="pat-len">
+            <option value="16">16</option>
+            <option value="32">32</option>
+            <option value="64" selected>64</option>
+            <option value="128">128</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:2px;margin-left:auto">
+          <button class="aq-btn" id="btn-save">💾</button>
+          <button class="aq-btn" id="btn-load-trigger">📂</button>
+          <input type="file" id="btn-load" accept=".vtk,.json" style="display:none">
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER: cycled views -->
+    <div id="center-panel">
+      <div id="center-top">
+        <div id="logo-small">FastTracker II</div>
+        <div id="center-view-btns">
+          <button class="center-view-btn active" data-view="scope">Scope</button>
+          <button class="center-view-btn"        data-view="disk">Disk</button>
+          <button class="center-view-btn"        data-view="keys">Keys</button>
+        </div>
+      </div>
+
+      <!-- SCOPE VIEW -->
+      <div class="center-view active" id="scope-view">
+        <div id="topbar-scopes"></div>
+      </div>
+
+      <!-- DISK OPS VIEW -->
+      <div class="center-view" id="disk-view">
+        <div class="disk-grid">
+          <button class="aq-btn disk-btn" id="disk-save-mod">💾 Save Module</button>
+          <button class="aq-btn disk-btn" id="disk-load-mod">📂 Load Module
+            <input type="file" id="disk-load-file" accept=".vtk,.json" style="display:none">
+          </button>
+          <button class="aq-btn disk-btn" id="disk-save-smp">💾 Save Sample</button>
+          <button class="aq-btn disk-btn" id="disk-load-smp">📂 Load Sample
+            <input type="file" id="disk-load-smp-file" accept="audio/*" style="display:none">
+          </button>
+          <button class="aq-btn disk-btn" id="disk-export-wav" disabled>🎵 Export WAV</button>
+          <div class="disk-status" id="disk-status">Ready.</div>
+        </div>
+      </div>
+
+      <!-- KEY REFERENCE VIEW -->
+      <div class="center-view" id="keyref-view">
+        <div class="keyref-grid">
+          <span class="kr-key">Space</span><span class="kr-desc">Toggle edit mode</span>
+          <span class="kr-key">Enter</span><span class="kr-desc">Play song</span>
+          <span class="kr-key">Alt</span><span class="kr-desc">Play pattern</span>
+          <span class="kr-key">Esc</span><span class="kr-desc">Stop</span>
+          <span class="kr-key">= / −</span><span class="kr-desc">Octave up/down</span>
+          <span class="kr-key">Tab</span><span class="kr-desc">Next channel</span>
+          <span class="kr-key">Z–M</span><span class="kr-desc">Notes (lower oct)</span>
+          <span class="kr-key">Q–U</span><span class="kr-desc">Notes (upper oct)</span>
+          <span class="kr-key">`</span><span class="kr-desc">Insert OFF note (===)</span>
+          <span class="kr-key">Del</span><span class="kr-desc">Clear cell</span>
+          <span class="kr-key">Ctrl+Z</span><span class="kr-desc">Undo</span>
+          <span class="kr-key">Ctrl+S</span><span class="kr-desc">Save</span>
+          <span class="kr-key">Shift+↑↓←→</span><span class="kr-desc">Select block</span>
+          <span class="kr-key">Ctrl+A</span><span class="kr-desc">Select all</span>
+          <span class="kr-key">Ctrl+C</span><span class="kr-desc">Copy block</span>
+          <span class="kr-key">Ctrl+X</span><span class="kr-desc">Cut block</span>
+          <span class="kr-key">Ctrl+V</span><span class="kr-desc">Paste block</span>
+          <span class="kr-key">Ctrl+D</span><span class="kr-desc">Duplicate block</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTRUMENT LIST -->
+    <div id="inst-panel">
+      <div class="panel-label">Instruments
+        <div style="display:flex;gap:2px">
+          <button class="aq-nudge" id="inst-up">↑</button>
+          <button class="aq-nudge" id="inst-dn">↓</button>
+        </div>
+      </div>
+      <div id="inst-list"></div>
+    </div>
+
+  </div><!-- /topbar -->
+
+  <div id="tabstrip">
+    <button class="tab active" data-tab="pattern">Pattern</button>
+    <button class="tab"        data-tab="instrument">Instrument</button>
+    <button class="tab"        data-tab="song">Song</button>
+    <button class="tab"        data-tab="mixer">Mixer</button>
+  </div>
+
+  <!-- PATTERN PANEL -->
+  <div class="panel" id="panel-pattern">
+    <div id="ch-headers">
+      <div class="ch-gutter"></div>
+      <div id="ch-headers-slave"></div>
+    </div>
+    <div id="scope-strip">
+      <div class="scope-gutter"></div>
+      <div id="scope-slave"></div>
+    </div>
+    <div id="grid-scroll">
+      <div id="pattern-grid" tabindex="0"></div>
+    </div>
+  </div>
+
+  <!-- INSTRUMENT PANEL -->
+  <div class="panel hidden" id="panel-instrument">
+    <div class="inst-ed-right" id="smp-editor" style="flex:1;overflow-y:auto">
+      <div style="color:var(--ft-text3);font-style:italic;text-align:center;padding:40px 0;font-size:10px">
+        Select an instrument from the list above
+      </div>
+    </div>
+  </div>
+
+  <!-- MIXER PANEL -->
+  <div class="panel hidden" id="panel-mixer">
+    <div id="mixer-channels"></div>
+    <div id="mixer-compressor">
+      <div class="mix-comp-label">COMPRESSOR</div>
+      <div id="mixer-comp-controls"></div>
+      <label class="mix-comp-bypass">
+        <input type="checkbox" id="comp-enabled" checked> On
+      </label>
+    </div>
+  </div>
+
+  <!-- SONG PANEL -->
+  <div class="panel hidden" id="panel-song">
+    <div class="song-left">
+      <div class="song-section-hdr">Order List
+        <div style="display:flex;gap:2px;margin-left:auto">
+          <button class="aq-nudge" id="song-ord-add">+</button>
+          <button class="aq-nudge" id="song-ord-del">−</button>
+          <button class="aq-nudge" id="song-ord-dup">D</button>
+        </div>
+      </div>
+      <div id="order-editor"></div>
+    </div>
+    <div class="song-right">
+      <div class="song-section-hdr">Patterns
+        <div style="display:flex;gap:2px;margin-left:auto">
+          <button class="aq-nudge" id="song-pat-new">New</button>
+          <button class="aq-nudge" id="song-pat-clone">Cln</button>
+          <button class="aq-nudge" id="song-pat-del">Del</button>
+        </div>
+      </div>
+      <div id="pat-list-editor"></div>
+    </div>
+  </div>
+
+  <div id="statusbar">
+    <span id="status-msg">Ready.</span>
+    <span id="status-pos"></span>
+    <span style="flex:1"></span>
+    <span id="status-keys">Spc=Edit · Enter=Play · Alt=Patt · Z-M/Q-U=Notes · =/−=Oct</span>
+  </div>
+
+</div>
+
+<div class="overlay hidden" id="dlg-newpat">
+  <div class="dlg" style="width:220px">
+    <div class="dlg-title">New Pattern</div>
+    <div class="dlg-body">
+      <div class="dlg-row">
+        <span style="font-size:10px;color:var(--ft-text2)">Length:</span>
+        <select class="aq-select dlg-input" id="newpat-len" style="width:70px">
+          <option value="16">16</option>
+          <option value="32">32</option>
+          <option value="64" selected>64</option>
+          <option value="128">128</option>
+        </select>
+      </div>
+    </div>
+    <div class="dlg-btns">
+      <button id="newpat-cancel">Cancel</button>
+      <button id="newpat-ok" class="dlg-ok">Create</button>
+    </div>
+  </div>
+</div>
+
+<script src="vtracker.js"></script>
+</body>
+</html>
