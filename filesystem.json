@@ -32,6 +32,27 @@
           }
           ],
           "type": "folder"
+        },
+        {
+          "name": "Revolt",
+          "icon": "📁",
+          "children": [
+          {
+            "type": "project",
+            "icon": "🔗",
+            "name": "GitHub repo",
+            "date": "06 - 03 - 2026",
+            "href": "https://github.com/aubreyasta/ReVolt-OS"
+          },
+          {
+            "type": "project",
+            "icon": "🔗",
+            "name": "Deployment",
+            "date": "06 - 03 - 2026",
+            "href": "https://revolt-puce.vercel.app"
+          }
+          ],
+          "type": "folder"
         }
       ],
       "desktopIcon": "open-projects",
